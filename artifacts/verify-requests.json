@@ -1,0 +1,104 @@
+{
+  "requests": [
+    {
+      "id": "vrf_1780581549049_02y7lm",
+      "clerkId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
+      "lphId": "LP1409663811",
+      "fullName": "يوسف حسين",
+      "email": "syrnero3@gmail.com",
+      "requestedAt": "2026-06-04T13:59:09.049Z",
+      "status": "approved",
+      "approvedAt": "2026-06-04T13:59:43.501Z"
+    },
+    {
+      "id": "vrf_1780518141687_yea1ff",
+      "clerkId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
+      "lphId": "LP1409663811",
+      "fullName": "يوسف حسين",
+      "email": "syrnero3@gmail.com",
+      "requestedAt": "2026-06-03T20:22:21.687Z",
+      "status": "rejected",
+      "rejectedAt": "2026-06-04T13:51:42.169Z"
+    },
+    {
+      "id": "vrf_1780492391878_wxgmym",
+      "clerkId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
+      "lphId": "LP4759719882",
+      "fullName": "يوسف حسين",
+      "email": "syrnero3@gmail.com",
+      "requestedAt": "2026-06-03T13:13:11.878Z",
+      "status": "approved",
+      "approvedAt": "2026-06-03T13:14:17.709Z"
+    },
+    {
+      "id": "vrf_1780392255749_4stdqt",
+      "clerkId": "8751d349-9ed6-42d8-8e81-d54adf2eb210",
+      "lphId": "LP1431197589",
+      "fullName": "نضال حسين",
+      "email": "emrah66890@gmail.com",
+      "requestedAt": "2026-06-02T09:24:15.750Z",
+      "status": "approved",
+      "approvedAt": "2026-06-02T13:22:01.645Z"
+    },
+    {
+      "id": "vrf_1780322869979_g6s1l8",
+      "clerkId": "acb4b114-b7e7-4b4e-9c37-ef9e0ce22760",
+      "lphId": "LP0752932074",
+      "fullName": "محمد حمادة",
+      "email": "syrnero18@gmail.com",
+      "requestedAt": "2026-06-01T14:07:49.979Z",
+      "status": "approved",
+      "approvedAt": "2026-06-01T14:16:28.738Z"
+    },
+    {
+      "id": "vrf_1779975499775_o3g3fa",
+      "clerkId": "a226b23d-e16f-4bfe-bd55-62a84ac02e16",
+      "lphId": "LP9112860958EP",
+      "fullName": "محمد ابراهيم",
+      "email": "freshfruit.ctr@gmail.com",
+      "requestedAt": "2026-05-28T13:38:19.775Z",
+      "status": "approved",
+      "approvedAt": "2026-05-28T13:39:01.438Z"
+    },
+    {
+      "id": "vrf_1779961952213_ty0iqi",
+      "clerkId": "a226b23d-e16f-4bfe-bd55-62a84ac02e16",
+      "lphId": "LP9112860958EP",
+      "fullName": "محمد ابراهيم",
+      "email": "freshfruit.ctr@gmail.com",
+      "requestedAt": "2026-05-28T09:52:32.213Z",
+      "status": "rejected",
+      "rejectedAt": "2026-05-28T09:56:49.902Z"
+    },
+    {
+      "id": "vrf_1779929537286_8l7wkf",
+      "clerkId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
+      "lphId": "LP6448101019",
+      "fullName": "يوسف حسين",
+      "email": "syrnero3@gmail.com",
+      "requestedAt": "2026-05-28T00:52:17.286Z",
+      "status": "rejected",
+      "rejectedAt": "2026-05-28T09:56:47.898Z"
+    },
+    {
+      "id": "vrf_1779929433363_uqwmp0",
+      "clerkId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
+      "lphId": "LP6448101019",
+      "fullName": "يوسف حسين",
+      "email": "syrnero3@gmail.com",
+      "requestedAt": "2026-05-28T00:50:33.363Z",
+      "status": "rejected",
+      "rejectedAt": "2026-05-28T00:52:06.466Z"
+    },
+    {
+      "id": "vrf_1779897488605_k4dbfh",
+      "clerkId": "user-abc-456",
+      "lphId": "LPH1234567890EP",
+      "fullName": "سارة المحمد",
+      "email": "sara@test.com",
+      "requestedAt": "2026-05-27T15:58:08.605Z",
+      "status": "approved",
+      "approvedAt": "2026-05-27T18:04:42.051Z"
+    }
+  ]
+}

@@ -1,0 +1,396 @@
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Bell, X, BellOff, Info, AlertTriangle, CheckCircle, TrendingUp, ShieldCheck, Trash2 } from 'lucide-react';
+import { GoldenBadge, AdminBadge, RainbowBadge } from './golden-badge';
+import { useCheckAlerts } from '@workspace/api-client-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useUser } from '@/context/auth-context';
+
+interface Notification {
+  id: number;
+  title: string;
+  body: string;
+  type: 'info' | 'warning' | 'success' | 'price';
+  icon: string;
+  createdAt: string;
+  sender?: string;
+}
+
+const TYPE_STYLE: Record<string, { bg: string; border: string; icon: React.ReactNode }> = {
+  info:    { bg: 'bg-blue-50 dark:bg-blue-900/20',   border: 'border-blue-200 dark:border-blue-800',   icon: <Info className="w-4 h-4 text-blue-500" /> },
+  warning: { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', icon: <AlertTriangle className="w-4 h-4 text-amber-500" /> },
+  success: { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', icon: <CheckCircle className="w-4 h-4 text-green-500" /> },
+  price:   { bg: 'bg-primary/5',                      border: 'border-primary/20',                       icon: <TrendingUp className="w-4 h-4 text-primary" /> },
+};
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'الآن';
+  if (mins < 60) return `منذ ${mins} د`;
+  const h = Math.floor(mins / 60);
+  if (h < 24) return `منذ ${h} س`;
+  return `منذ ${Math.floor(h / 24)} ي`;
+}
+
+const READ_KEY = 'syp-notifications-read';
+const LOCAL_KEY = 'syp-local-notifications-v2';
+const WELCOME_KEY = 'syp-welcome-notif-v4';
+
+function getReadIds(): Set<number> {
+  try {
+    const raw = localStorage.getItem(READ_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch { return new Set(); }
+}
+
+function markRead(ids: number[]): void {
+  const existing = getReadIds();
+  ids.forEach(id => existing.add(id));
+  localStorage.setItem(READ_KEY, JSON.stringify([...existing]));
+}
+
+function getLocalNotifications(): Notification[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+export function addLocalNotification(n: Notification) {
+  const existing = getLocalNotifications();
+  if (existing.some(e => e.id === n.id)) return;
+  existing.unshift(n);
+  localStorage.setItem(LOCAL_KEY, JSON.stringify(existing.slice(0, 30)));
+}
+
+function getOrCreateWelcomeNotification(): Notification[] {
+  if (localStorage.getItem(WELCOME_KEY)) return [];
+  const welcome: Notification = {
+    id: 1000000004,
+    title: '🎉 مرحباً بك في LiraPro',
+    body: 'منصتك الشاملة لأسعار الصرف والذهب والمعادن الثمينة. أضف تنبيهات أسعار من تفاصيل أي عملة أو معدن وسيصلك إشعار فوري عند تحقق السعر.',
+    type: 'success',
+    icon: 'welcome',
+    sender: 'LiraPro',
+    createdAt: new Date().toISOString(),
+  };
+  localStorage.setItem(WELCOME_KEY, '1');
+  return [welcome];
+}
+
+// Call this hook from any page that has live exchange rates to auto-check user alerts
+export function useAlertChecker(rates: Record<string, number> | undefined) {
+  const { isSignedIn } = useUser();
+  const queryClient = useQueryClient();
+  const { mutateAsync: checkAlerts } = useCheckAlerts();
+  const lastCheckedRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!isSignedIn || !rates || Object.keys(rates).length === 0) return;
+    const now = Date.now();
+    if (now - lastCheckedRef.current < 5 * 60 * 1000) return;
+    lastCheckedRef.current = now;
+
+    checkAlerts({ data: { rates } })
+      .then(triggered => {
+        if (triggered.length === 0) return;
+        queryClient.invalidateQueries({ queryKey: ['getAlerts'] });
+        for (const alert of triggered) {
+          const direction = alert.type === 'buy' ? '🔽' : '🔼';
+          addLocalNotification({
+            id: Date.now() + alert.id,
+            title: `${direction} تنبيه سعر: ${alert.code}`,
+            body: `وصل سعر ${alert.nameAr ?? alert.code} إلى ${alert.targetPrice.toLocaleString('ar-SY')} ل.س — السعر المستهدف تحقّق!`,
+            type: 'price',
+            icon: 'trending',
+            createdAt: new Date().toISOString(),
+          });
+        }
+      })
+      .catch(() => {});
+  }, [rates, isSignedIn, checkAlerts, queryClient]);
+}
+
+function SenderBadge({ sender }: { sender: string }) {
+  const isLira = sender === 'LiraPro';
+  const isTeam = sender === 'فريق LiraPro';
+  const isAdminSender = isLira || isTeam;
+
+  return (
+    <div className="flex items-center gap-1.5 mt-1.5">
+      {isAdminSender ? (
+        <div className="flex-shrink-0">
+          {isLira ? <RainbowBadge size={16} /> : <AdminBadge size={16} />}
+        </div>
+      ) : (
+        <ShieldCheck className="w-3.5 h-3.5 text-[#003C32] flex-shrink-0" />
+      )}
+      <span className="text-[11px] font-black text-[#003C32] dark:text-emerald-400 leading-none">{sender}</span>
+    </div>
+  );
+}
+
+export function NotificationsPanel() {
+  const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>(() => getOrCreateWelcomeNotification());
+  const [readIds, setReadIds] = useState<Set<number>>(getReadIds);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const { user } = useUser();
+
+  useEffect(() => {
+    if (user?.id) {
+      try { localStorage.setItem('syp-wallet-id', user.id); } catch { /**/ }
+    }
+  }, [user?.id]);
+
+  const getPerUserAdminMessages = (): Notification[] => {
+    try {
+      const walletId = localStorage.getItem('syp-wallet-id');
+      if (!walletId) return [];
+      const key = `syp-admin-messages-${walletId}`;
+      const raw = localStorage.getItem(key);
+      if (!raw) return [];
+      const msgs = JSON.parse(raw) as Array<{ id: number; title: string; body: string; type: string; createdAt: string }>;
+      return msgs.map(m => ({
+        id: m.id,
+        title: m.title,
+        body: m.body,
+        type: (m.type ?? 'info') as Notification['type'],
+        icon: 'admin',
+        createdAt: m.createdAt,
+        sender: 'LiraPro',
+      }));
+    } catch { return []; }
+  };
+
+  const fetchNotifications = useCallback(async () => {
+    const adminMsgs = getPerUserAdminMessages();
+    const walletId = localStorage.getItem('syp-wallet-id');
+    let serverUserMsgs: Notification[] = [];
+    if (walletId) {
+      try {
+        const userRes = await fetch(`/api/notifications/user?walletId=${encodeURIComponent(walletId)}`);
+        if (userRes.ok) serverUserMsgs = await userRes.json() as Notification[];
+      } catch { /* ignore */ }
+    }
+    try {
+      const res = await fetch('/api/notifications');
+      if (!res.ok) return;
+      const remote: Notification[] = await res.json();
+      const welcome = getOrCreateWelcomeNotification();
+      const local = getLocalNotifications();
+      const remoteIds = new Set(remote.map(n => n.id));
+      const seen = new Set<number>();
+      const extras = [...serverUserMsgs, ...welcome, ...local, ...adminMsgs].filter(w => {
+        if (remoteIds.has(w.id) || seen.has(w.id)) return false;
+        seen.add(w.id);
+        return true;
+      });
+      const merged = [...extras, ...remote].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setNotifications(merged.slice(0, 50));
+    } catch {
+      const welcome = getOrCreateWelcomeNotification();
+      const local = getLocalNotifications();
+      setNotifications([...serverUserMsgs, ...welcome, ...local, ...adminMsgs]);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 8 * 1000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const local = getLocalNotifications();
+      if (local.length === 0) return;
+      setNotifications(prev => {
+        const existingIds = new Set(prev.map(n => n.id));
+        const newOnes = local.filter(n => !existingIds.has(n.id));
+        if (newOnes.length === 0) return prev;
+        return [...newOnes, ...prev].slice(0, 50);
+      });
+    }, 8_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const unreadCount = notifications.filter(n => !readIds.has(n.id)).length;
+
+  const prevUnreadRef = useRef(0);
+  const [badgePulse, setBadgePulse] = useState(false);
+  useEffect(() => {
+    if (unreadCount > prevUnreadRef.current) {
+      setBadgePulse(true);
+      const t = setTimeout(() => setBadgePulse(false), 800);
+      prevUnreadRef.current = unreadCount;
+      return () => clearTimeout(t);
+    }
+    prevUnreadRef.current = unreadCount;
+    return undefined;
+  }, [unreadCount]);
+
+  function handleOpen() {
+    setOpen(o => !o);
+    if (!open && unreadCount > 0) {
+      const allIds = notifications.map(n => n.id);
+      markRead(allIds);
+      setReadIds(new Set(allIds));
+      fetchNotifications();
+      const walletId = user?.id ?? localStorage.getItem('syp-wallet-id');
+      if (walletId) {
+        for (const n of notifications) {
+          if (!readIds.has(n.id) && n.id < 1000000000) {
+            fetch(`/api/notifications/${n.id}/view`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ walletId }),
+            }).catch(() => {});
+          }
+        }
+      }
+    }
+  }
+
+  function handleClearAll() {
+    // Clear local notifications
+    localStorage.removeItem(LOCAL_KEY);
+    // Mark all as read
+    const allIds = notifications.map(n => n.id);
+    markRead(allIds);
+    setReadIds(new Set(allIds));
+    setNotifications([]);
+  }
+
+  return (
+    <div className="relative" ref={panelRef}>
+      <button
+        onClick={handleOpen}
+        className="relative p-1.5 rounded-full hover:bg-secondary transition-colors"
+        aria-label="الإشعارات"
+      >
+        <Bell className="w-5 h-5 text-foreground" />
+        <AnimatePresence>
+          {unreadCount > 0 && (
+            <motion.span
+              key="badge"
+              initial={{ scale: 0 }}
+              animate={badgePulse ? { scale: [1, 1.5, 1], transition: { duration: 0.4 } } : { scale: 1 }}
+              exit={{ scale: 0 }}
+              className="absolute -top-0.5 -left-0.5 min-w-[16px] h-4 rounded-full bg-[#D20073] text-white text-[9px] font-bold flex items-center justify-center px-1 shadow"
+            >
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: -8 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 300 }}
+            className="absolute right-0 top-9 w-[340px] max-w-[calc(100vw-1rem)] bg-card border border-border rounded-2xl shadow-2xl z-[200] overflow-hidden"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b bg-primary/5">
+              <div className="flex items-center gap-2">
+                <Bell className="w-4 h-4 text-primary" />
+                <h3 className="font-bold text-sm">الإشعارات</h3>
+                {unreadCount > 0 && (
+                  <span className="text-[9px] bg-[#D20073] text-white rounded-full px-1.5 py-0.5 font-bold">{unreadCount}</span>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                {notifications.length > 0 && (
+                  <button
+                    onClick={handleClearAll}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    title="مسح جميع الإشعارات"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    مسح الكل
+                  </button>
+                )}
+                <button onClick={() => setOpen(false)} className="p-1 rounded-full hover:bg-secondary">
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </div>
+            </div>
+
+            <div className="max-h-[420px] overflow-y-auto">
+              {notifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 gap-3 text-muted-foreground">
+                  <BellOff className="w-10 h-10 opacity-20" />
+                  <p className="text-sm">لا توجد إشعارات</p>
+                </div>
+              ) : (
+                <div className="flex flex-col divide-y divide-border">
+                  {notifications.map(n => {
+                    const style = TYPE_STYLE[n.type] ?? TYPE_STYLE.info;
+                    const isRead = readIds.has(n.id);
+                    return (
+                      <div key={n.id} className={`px-4 py-3.5 flex gap-3 transition-colors ${!isRead ? 'bg-accent/5' : ''}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${style.bg} border ${style.border}`}>
+                          {style.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-1 mb-0.5">
+                            <p className={`text-sm font-bold leading-tight ${!isRead ? 'text-foreground' : 'text-muted-foreground'}`}>
+                              {n.title}
+                            </p>
+                            {!isRead && <span className="w-2 h-2 rounded-full bg-[#D20073] flex-shrink-0 mt-1.5" />}
+                          </div>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{n.body}</p>
+                          {n.sender && <SenderBadge sender={n.sender} />}
+                          <p className="text-[10px] text-muted-foreground/60 mt-1.5">{timeAgo(n.createdAt)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// Legacy hook for backward compatibility
+export function useAutoNotifications(usdToSyp: number) {
+  const prevRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!usdToSyp || usdToSyp === 0) return;
+    const prev = prevRef.current;
+    if (prev !== null && Math.abs(usdToSyp - prev) / prev > 0.005) {
+      const direction = usdToSyp > prev ? '🔼' : '🔽';
+      addLocalNotification({
+        id: Date.now(),
+        title: `${direction} تحديث سعر الصرف`,
+        body: `الدولار الآن: ${usdToSyp.toLocaleString('ar-SY')} ل.س (${usdToSyp > prev ? '+' : ''}${((usdToSyp - prev) / prev * 100).toFixed(2)}%)`,
+        type: 'price',
+        icon: 'trending',
+        createdAt: new Date().toISOString(),
+      });
+    }
+    prevRef.current = usdToSyp;
+  }, [usdToSyp]);
+}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>LiraPro - منصة أسعار الصرف السورية</title>
+    <meta name="description" content="منصة LiraPro — تابع أسعار صرف الليرة السورية، الذهب، المعادن، العملات الرقمية وأسعار السوق المحلية بشكل مباشر." />
+    <meta name="keywords" content="سعر الدولار في سوريا, سعر الصرف السوري, ليرة سورية, ذهب سوريا, LiraPro" />
+    <meta name="theme-color" content="#003C32" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="LiraPro" />
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="LiraPro - منصة أسعار الصرف السورية" />
+    <meta property="og:description" content="تابع أسعار صرف الليرة السورية، الذهب، المعادن، والعملات الرقمية بشكل مباشر." />
+    <meta property="og:image" content="/opengraph.jpg" />
+    <meta property="og:locale" content="ar_SY" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="LiraPro - سعر الصرف السوري" />
+    <meta name="twitter:description" content="أسعار الصرف والذهب والمعادن في سوريا — مباشر ودقيق" />
+    <meta name="twitter:image" content="/opengraph.jpg" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- DNS prefetch + preconnect for faster font resolution -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Non-blocking font load — page renders immediately with system fallbacks -->
+    <link rel="preload" as="style"
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript>
+      <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" />
+    </noscript>
+
+    <!-- Critical inline CSS — instant render before any JS/CSS bundles download -->
+    <style>
+      *,::before,::after{box-sizing:border-box}
+      html,body{margin:0;padding:0;height:100%;background:#ffffff}
+      body{
+        font-family:'Cairo',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+        direction:rtl;
+        -webkit-font-smoothing:antialiased;
+        text-rendering:optimizeSpeed;
+      }
+      #root{min-height:100vh}
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

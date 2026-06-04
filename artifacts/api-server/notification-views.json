@@ -1,0 +1,14 @@
+{
+  "1": [
+    {
+      "walletId": "user-abc-456",
+      "viewedAt": "2026-05-27T15:58:10.042Z"
+    }
+  ],
+  "999": [
+    {
+      "walletId": "test-wallet-id",
+      "viewedAt": "2026-05-27T16:01:43.696Z"
+    }
+  ]
+}

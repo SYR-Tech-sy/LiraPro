@@ -1,0 +1,2 @@
+- [Clerk removal](clerk-removal.md) — Clerk fully removed; Supabase auth used everywhere; clerkId in DB schema is just a legacy column name, not SDK dependency.
+- [Supabase secrets](supabase-secrets.md) — SUPABASE_URL (shared env), SUPABASE_ANON_KEY (secret), SUPABASE_SERVICE_KEY (secret) all required; ANON_KEY injected via vite.config.ts process.env → VITE_SUPABASE_ANON_KEY.

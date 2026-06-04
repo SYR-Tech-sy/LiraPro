@@ -1,0 +1,260 @@
+{
+  "user_3Dqqqf27wSami1xWL86fNZXzvvQ": [
+    {
+      "id": 1779467516301,
+      "title": "تم تقييد حسابك لمدة 1 يوم",
+      "body": "تم تقييد حسابك على منصة LiraPro مؤقتاً لمدة 1 يوماً.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "recipient": "specific",
+      "targetWalletId": "user_3Dqqqf27wSami1xWL86fNZXzvvQ",
+      "createdAt": "2026-05-22T16:31:56.301Z"
+    },
+    {
+      "id": 1779463807346,
+      "title": "تم تقييد حسابك",
+      "body": "تم تقييد حسابك على منصة LiraPro. للاستفسار تواصل مع الدعم.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-22T15:30:07.346Z"
+    },
+    {
+      "id": 1779463215828,
+      "title": "تم تقييد حسابك لمدة 1 يوم",
+      "body": "تم تقييد حسابك على منصة LiraPro مؤقتاً لمدة 1 يوماً.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "فريق LiraPro",
+      "createdAt": "2026-05-22T15:20:15.828Z"
+    },
+    {
+      "id": 1779462956938,
+      "title": "تم توثيق حسابك ✓",
+      "body": "تهانينا! تم توثيق حسابك على منصة LiraPro. ستظهر علامة التوثيق بجانب اسمك الآن.",
+      "type": "success",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-22T15:15:56.938Z"
+    },
+    {
+      "id": 1779458765216,
+      "title": "تم رفع التقييد عن حسابك",
+      "body": "تم رفع التقييد عن حسابك على منصة LiraPro Hub. يمكنك الآن استخدام جميع مزايا المنصة.",
+      "type": "success",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-22T14:06:05.216Z"
+    },
+    {
+      "id": 1779458605478,
+      "title": "تم تقييد حسابك لمدة 1 يوم",
+      "body": "تم تقييد حسابك على منصة LiraPro Hub مؤقتاً لمدة 1 يوماً.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-22T14:03:25.478Z"
+    },
+    {
+      "id": 1779458587727,
+      "title": "تم إلغاء توثيق حسابك",
+      "body": "تم إلغاء توثيق حسابك على منصة LiraPro Hub. للاستفسار تواصل مع الدعم.",
+      "type": "info",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-22T14:03:07.727Z"
+    },
+    {
+      "id": 1779411080963,
+      "title": "تم تقييد حسابك",
+      "body": "تم تقييد حسابك على منصة LiraPro Hub. للاستفسار تواصل مع الدعم.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-22T00:51:20.963Z"
+    },
+    {
+      "id": 1779409313999,
+      "title": "تم تقييد حسابك",
+      "body": "تم تقييد حسابك على منصة LiraPro Hub. للاستفسار تواصل مع الدعم.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-22T00:21:53.999Z"
+    },
+    {
+      "id": 1779407602605,
+      "title": "تم تقييد حسابك",
+      "body": "تم تقييد حسابك على منصة LiraPro Hub بسبب: H. للاستفسار تواصل مع الدعم.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-21T23:53:22.605Z"
+    },
+    {
+      "id": 1779407341508,
+      "title": "تم تقييد حسابك",
+      "body": "تم تقييد حسابك على منصة LiraPro Hub. للاستفسار تواصل مع الدعم.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-21T23:49:01.508Z"
+    },
+    {
+      "id": 1779407325786,
+      "title": "تم توثيق حسابك ✓",
+      "body": "تهانينا! تم توثيق حسابك على منصة LiraPro Hub. ستظهر علامة التوثيق بجانب اسمك الآن.",
+      "type": "success",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-21T23:48:45.786Z"
+    },
+    {
+      "id": 1779407314574,
+      "title": "تم إلغاء توثيق حسابك",
+      "body": "تم إلغاء توثيق حسابك على منصة LiraPro Hub. للاستفسار تواصل مع الدعم.",
+      "type": "info",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-21T23:48:34.574Z"
+    },
+    {
+      "id": 1779407267285,
+      "title": "مرحبا بك ",
+      "body": "مرحبا يوسف",
+      "type": "info",
+      "icon": "admin",
+      "sender": "LiraPro Hub",
+      "createdAt": "2026-05-21T23:47:47.285Z"
+    },
+    {
+      "id": 1779386439640,
+      "title": "تم قبول طلب العضوية ",
+      "body": "تم قبول طلب العضوية ",
+      "type": "info",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-21T18:00:39.640Z"
+    }
+  ],
+  "user_3E2iQ5rheVXlCQuOsQerP5zQQVM": [
+    {
+      "id": 1779458756081,
+      "title": "تم رفع التقييد عن حسابك",
+      "body": "تم رفع التقييد عن حسابك على منصة LiraPro Hub. يمكنك الآن استخدام جميع مزايا المنصة.",
+      "type": "success",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-22T14:05:56.081Z"
+    },
+    {
+      "id": 1779411064272,
+      "title": "تم تقييد حسابك",
+      "body": "تم تقييد حسابك على منصة LiraPro Hub. للاستفسار تواصل مع الدعم.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-22T00:51:04.272Z"
+    },
+    {
+      "id": 1779398533952,
+      "title": "تم قبول طلب التوثيق ✓",
+      "body": "تهانينا حسن حسن! تم قبول طلب توثيق حسابك على منصة LiraPro Hub. ستظهر علامة التوثيق بجانب اسمك الآن.",
+      "type": "success",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-21T21:22:13.952Z"
+    },
+    {
+      "id": 1779392566360,
+      "title": "اهلا بك ",
+      "body": "اهلا بك ",
+      "type": "info",
+      "icon": "admin",
+      "sender": "فريق LiraPro Hub",
+      "createdAt": "2026-05-21T19:42:46.360Z"
+    }
+  ],
+  "cb073a1f-e45a-407e-985b-bb3cda8460c9": [
+    {
+      "id": 1779583934449,
+      "title": "تم رفض طلب حذف حسابك",
+      "body": "تم مراجعة طلب حذف حساب  ورفضه. حسابك لا يزال نشطاً. للاستفسار تواصل معنا.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "LiraPro",
+      "recipient": "specific",
+      "targetWalletId": "cb073a1f-e45a-407e-985b-bb3cda8460c9",
+      "createdAt": "2026-05-24T00:52:14.449Z"
+    }
+  ],
+  "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84": [
+    {
+      "id": 1780581802659,
+      "title": "تم قبول طلبك",
+      "body": "مرحباً محمد حسن حسين ! تم قبول طلب عضوية \"كريبتو للمجوهرات \" في منصة LiraPro. يمكنك الآن الدخول كتاجر معتمد وإدارة أسعارك من لوحة التحكم.",
+      "type": "success",
+      "icon": "admin",
+      "recipient": "specific",
+      "targetWalletId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
+      "createdAt": "2026-06-04T14:03:22.659Z"
+    },
+    {
+      "id": 1780581584534,
+      "title": "تم قبول طلب التوثيق ✓",
+      "body": "تهانينا يوسف حسين! تم قبول طلب توثيق حسابك. ستظهر علامة التوثيق بجانب اسمك الآن.",
+      "type": "success",
+      "icon": "admin",
+      "sender": "LiraPro",
+      "recipient": "specific",
+      "targetWalletId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
+      "createdAt": "2026-06-04T13:59:44.534Z"
+    },
+    {
+      "id": 1780581236661,
+      "title": "أهلا",
+      "body": "اهلا بك",
+      "type": "success",
+      "icon": "admin",
+      "sender": "LiraPro",
+      "recipient": "specific",
+      "targetWalletId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
+      "targetName": "يوسف حسين",
+      "createdAt": "2026-06-04T13:53:56.661Z"
+    },
+    {
+      "id": 1780581158728,
+      "title": "اهلا",
+      "body": "اهلا",
+      "type": "admin_message",
+      "icon": "admin",
+      "sender": "LiraPro",
+      "recipient": "specific",
+      "targetWalletId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
+      "createdAt": "2026-06-04T13:52:38.728Z"
+    },
+    {
+      "id": 1780581103210,
+      "title": "تم رفض طلب التوثيق",
+      "body": "يوسف حسين، تم مراجعة طلب التوثيق الخاص بك ورفضه في هذه المرحلة. يمكنك إعادة التقديم لاحقاً.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "LiraPro",
+      "recipient": "specific",
+      "targetWalletId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
+      "createdAt": "2026-06-04T13:51:43.210Z"
+    },
+    {
+      "id": 1780581095480,
+      "title": "تم رفض طلب حذف حسابك",
+      "body": "تم مراجعة طلب حذف حساب يوسف حسين ورفضه. حسابك لا يزال نشطاً. للاستفسار تواصل معنا.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "LiraPro",
+      "recipient": "specific",
+      "targetWalletId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
+      "createdAt": "2026-06-04T13:51:35.480Z"
+    }
+  ]
+}

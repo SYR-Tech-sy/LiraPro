@@ -1,0 +1,181 @@
+أريد تحويل المشروع بالكامل لاستخدام Supabase كقاعدة البيانات والنظام الخلفي الرئيسي بدل أي تخزين محلي أو Replit Database.
+
+استخدم:
+
+- Supabase Authentication
+- PostgreSQL Database
+- Supabase Storage
+- Realtime
+- Row Level Security Policies
+
+بيانات الربط:
+
+SUPABASE_URL:
+ضع رابط مشروعك هنا
+
+SUPABASE_ANON_KEY:
+ضع المفتاح هنا
+
+المطلوب تنفيذه بالكامل:
+
+1- تثبيت وربط:
+
+- @supabase/supabase-js
+- إنشاء ملف إعدادات Supabase
+- استخدام Replit Secrets لحفظ المفاتيح
+- التأكد أن الاتصال يعمل بدون أخطاء
+
+2- تحويل جميع البيانات الحالية إلى Supabase:
+
+- المستخدمين
+- الحسابات
+- الجلسات
+- الرسائل
+- الإشعارات
+- الخدمات
+- الأسعار
+- الصور
+- الملفات
+- إعدادات المستخدم
+- إعدادات الأدمن
+- سجلات النشاط
+- الأجهزة المتصلة
+- الحظر والتقييد
+- عمليات الدفع
+- الإعلانات
+- التقييمات
+- طلبات الدعم
+- أي بيانات أخرى داخل المشروع
+
+3- إنشاء جميع الجداول المطلوبة تلقائياً داخل Supabase مع العلاقات المناسبة والفهارس والأمان.
+
+أنشئ الجداول التالية على الأقل:
+
+users
+profiles
+admins
+sessions
+devices
+bans
+restrictions
+notifications
+messages
+conversations
+services
+service_categories
+service_requests
+service_orders
+prices
+currency_prices
+gold_prices
+metal_prices
+ads
+banners
+reports
+reviews
+ratings
+favorites
+search_history
+activity_logs
+transactions
+payments
+wallets
+support_tickets
+support_messages
+settings
+app_settings
+admin_logs
+media_files
+uploads
+images
+verification_requests
+verified_badges
+locations
+countries
+cities
+statistics
+visitors
+analytics
+push_notifications
+user_preferences
+saved_items
+contacts
+blocked_users
+
+4- لكل جدول:
+
+- أنشئ Primary Keys
+- Foreign Keys
+- timestamps
+- indexes
+- created_at
+- updated_at
+- user_id عند الحاجة
+
+5- فعّل Supabase Auth بالكامل:
+
+- تسجيل حساب
+- تسجيل دخول
+- تسجيل خروج
+- استعادة كلمة المرور
+- جلسات المستخدم
+- حفظ الأجهزة
+- التحقق من البريد الإلكتروني
+
+6- أنشئ نظام صلاحيات كامل:
+
+- Users
+- Admins
+- Super Admins
+- Moderators
+
+7- أنشئ Row Level Security Policies آمنة لكل الجداول بحيث:
+
+- المستخدم يرى بياناته فقط
+- الأدمن يمكنه الإدارة
+- منع الوصول غير المصرح
+
+8- أنشئ Supabase Storage للبنية التالية:
+avatars
+uploads
+services
+banners
+messages
+verification
+documents
+
+9- استبدل أي:
+
+- localStorage
+- ملفات JSON
+- Replit Database
+- بيانات وهمية
+  بـ Supabase الحقيقي.
+
+10- أصلح أي أخطاء أو تعارضات تلقائياً.
+
+11- اجعل المشروع جاهز للتوسع مستقبلاً وتطبيقات الهاتف.
+
+12- أضف نظام realtime للتحديثات المباشرة:
+
+- الرسائل
+- الإشعارات
+- الأسعار
+- الحالات
+- النشاطات
+
+13- أنشئ helper functions و API services منظمة للتعامل مع Supabase بطريقة احترافية.
+
+14- افحص المشروع كاملاً بعد الانتهاء وتأكد أن:
+
+- لا توجد أخطاء
+- جميع الصفحات تعمل
+- جميع البيانات تحفظ وتُقرأ من Supabase
+- تسجيل الدخول يعمل
+- لوحة الأدمن تعمل
+- رفع الصور يعمل
+- الحظر والتقييد يعمل
+- الجلسات تعمل
+- الإشعارات تعمل
+
+15- إذا كانت هناك جداول أو بيانات ناقصة في المشروع قم بإنشائها تلقائياً حسب الحاجة.

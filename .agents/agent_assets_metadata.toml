@@ -1,0 +1,20 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "kyHycT5CVMa9Ig7jvR59Y"
+uri = "file://lirapro-project.zip"
+type = "unspecified"
+title = "LiraPro — المشروع كامل"
+
+[[outputs]]
+id = "WLDD_gP033DZ1pDnM-Y23"
+uri = "file://workspace_export.zip"
+type = "unspecified"
+title = "LiraPro — المشروع الكامل"
+
+[[outputs]]
+id = "EmnacNbTKYDTV2UZwP7_F"
+uri = "file://lirapro_final.zip"
+type = "unspecified"
+title = "LiraPro — المشروع كامل (166 MB)"
