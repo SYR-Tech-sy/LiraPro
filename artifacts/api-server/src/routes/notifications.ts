@@ -235,6 +235,7 @@ router.delete("/notifications/:id", (req, res): void => {
 // ── Live Broadcast (in-memory, resets on restart) ─────────────────────────────
 
 interface BroadcastData {
+  speed?: 'slow' | 'normal' | 'fast';
   text: string;
   textColor: string;
   countdown?: number;
@@ -260,13 +261,14 @@ router.get("/broadcast", (_req, res): void => {
 router.post("/broadcast", (req, res): void => {
   const token = req.headers["x-admin-token"] as string;
   if (!token || token !== ADMIN_TOKEN) { res.status(403).json({ error: "Unauthorized" }); return; }
-  const { text, textColor = "#ffffff", countdown, countdownColor = "#ff4444" } = req.body as {
-    text: string; textColor?: string; countdown?: number; countdownColor?: string;
+  const { text, textColor = "#ffffff", countdown, countdownColor = "#ff4444", speed = "normal" } = req.body as {
+    text: string; textColor?: string; countdown?: number; countdownColor?: string; speed?: 'slow' | 'normal' | 'fast';
   };
   if (!text?.trim()) { res.status(400).json({ error: "text required" }); return; }
   activeBroadcast = {
     text: text.trim(),
     textColor,
+    speed,
     startedAt: new Date().toISOString(),
     ...(countdown && countdown > 0 ? {
       countdown,

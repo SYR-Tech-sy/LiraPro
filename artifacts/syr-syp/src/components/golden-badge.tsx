@@ -78,12 +78,12 @@ export const GoldenBadge = React.memo(function GoldenBadge({ size = 20, showGlow
       style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: size, height: size, cursor: 'default' }}
       animate={showGlow ? {
         filter: [
-          'drop-shadow(0 0 4px #3D180055) drop-shadow(0 0 8px #200E0033)',
-          'drop-shadow(0 0 6px #3D18007a) drop-shadow(0 0 12px #200E0055)',
-          'drop-shadow(0 0 4px #3D180055) drop-shadow(0 0 8px #200E0033)',
+          'drop-shadow(0 0 3px #FFD70055) drop-shadow(0 0 6px #C8960033)',
+          'drop-shadow(0 0 5px #FFD7007a) drop-shadow(0 0 9px #C8960055)',
+          'drop-shadow(0 0 3px #FFD70055) drop-shadow(0 0 6px #C8960033)',
         ],
       } : { filter: 'none' }}
-      whileHover={{ scale: 1.12, filter: 'brightness(1.08) drop-shadow(0 0 6px #3D1800aa) drop-shadow(0 0 14px #200E0077)' }}
+      whileHover={{ scale: 1.12, filter: 'brightness(1.08) drop-shadow(0 0 5px #FFD700aa) drop-shadow(0 0 10px #C8960077)' }}
       whileTap={{ scale: 0.95 }}
       transition={showGlow
         ? { filter: { duration: 1.8, repeat: Infinity, ease: 'easeInOut' }, scale: { type: 'spring', stiffness: 280, damping: 18 } }
@@ -110,7 +110,7 @@ export const GoldenBadge = React.memo(function GoldenBadge({ size = 20, showGlow
           </linearGradient>
           <filter id={`sf${uid}`} x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blur" />
-            <feFlood floodColor="#3D1800" floodOpacity="0.22" result="c" />
+            <feFlood floodColor="#D4A017" floodOpacity="0.22" result="c" />
             <feComposite in="c" in2="blur" operator="in" result="glow" />
             <feMerge><feMergeNode in="glow" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
@@ -131,12 +131,12 @@ export const GoldenBadge = React.memo(function GoldenBadge({ size = 20, showGlow
 
         {showGlow && (
           <>
-            {/* Dark amber glow — NO clip, renders behind badge to create dark shadow aura */}
-            <motion.circle cx={cx} cy={cy} r={50} fill="#3D1800" filter={`url(#og${uid})`}
-              animate={{ opacity: [0.65, 0.88, 0.65], r: [50, 57, 50] }}
+            {/* Gold glow — NO clip, renders behind badge to create golden aura */}
+            <motion.circle cx={cx} cy={cy} r={44} fill="#D4A017" filter={`url(#og${uid})`}
+              animate={{ opacity: [0.35, 0.55, 0.35], r: [44, 50, 44] }}
               transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }} />
-            <motion.circle cx={cx} cy={cy} r={36} fill="#200E00" filter={`url(#ig${uid})`}
-              animate={{ opacity: [0.50, 0.75, 0.50], r: [36, 42, 36] }}
+            <motion.circle cx={cx} cy={cy} r={30} fill="#FFD700" filter={`url(#ig${uid})`}
+              animate={{ opacity: [0.25, 0.45, 0.25], r: [30, 36, 30] }}
               transition={{ duration: 2.0, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }} />
           </>
         )}

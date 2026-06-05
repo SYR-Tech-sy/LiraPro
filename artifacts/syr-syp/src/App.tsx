@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, useEffect, useRef } from 'react';
+import React, { lazy, Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect, Link } from 'wouter';
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -213,6 +213,26 @@ function useVendorInfo() {
   const [isVendor, setIsVendor] = useState(() => !!localStorage.getItem('syp-vendor-biz'));
   const [businessName, setBusinessName] = useState(() => localStorage.getItem('syp-vendor-biz') ?? '');
 
+  const checkVendorStatus = useCallback(async (token: string | null) => {
+    if (!token) return;
+    try {
+      const res = await fetch('/api/vendor/profile', {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json() as { businessName: string };
+        setIsVendor(true);
+        setBusinessName(data.businessName ?? '');
+        localStorage.setItem('syp-vendor-biz', data.businessName ?? '');
+      } else {
+        setIsVendor(false);
+        setBusinessName('');
+        localStorage.removeItem('syp-vendor-biz');
+      }
+    } catch { /* keep cached */ }
+  }, []);
+
   useEffect(() => {
     if (!isSignedIn) {
       setIsVendor(false);
@@ -220,26 +240,35 @@ function useVendorInfo() {
       localStorage.removeItem('syp-vendor-biz');
       return;
     }
+    let stopped = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
     (async () => {
-      try {
-        const token = await getToken();
-        const res = await fetch('/api/vendor/profile', {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          credentials: 'include',
-        });
-        if (res.ok) {
-          const data = await res.json() as { businessName: string };
-          setIsVendor(true);
-          setBusinessName(data.businessName ?? '');
-          localStorage.setItem('syp-vendor-biz', data.businessName ?? '');
-        } else {
-          setIsVendor(false);
-          setBusinessName('');
-          localStorage.removeItem('syp-vendor-biz');
-        }
-      } catch { /* keep cached */ }
+      const token = await getToken();
+      if (stopped) return;
+      await checkVendorStatus(token);
+
+      intervalId = setInterval(async () => {
+        if (stopped) return;
+        const t = await getToken();
+        await checkVendorStatus(t);
+      }, 30_000);
     })();
-  }, [isSignedIn, getToken]);
+
+    const onFocus = async () => {
+      const t = await getToken();
+      await checkVendorStatus(t);
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('syp-vendor-approved', onFocus as EventListener);
+
+    return () => {
+      stopped = true;
+      if (intervalId) clearInterval(intervalId);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('syp-vendor-approved', onFocus as EventListener);
+    };
+  }, [isSignedIn, getToken, checkVendorStatus]);
 
   return { isVendor, businessName };
 }

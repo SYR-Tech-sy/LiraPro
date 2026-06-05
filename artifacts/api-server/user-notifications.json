@@ -191,6 +191,27 @@
   ],
   "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84": [
     {
+      "id": 1780679357230,
+      "title": "تم قبول طلبك",
+      "body": "مرحباً محمد علي علي! تم قبول طلب عضوية \"صرافة وذهب \" في منصة LiraPro. يمكنك الآن الدخول كتاجر معتمد وإدارة أسعارك من لوحة التحكم.",
+      "type": "success",
+      "icon": "admin",
+      "recipient": "specific",
+      "targetWalletId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
+      "createdAt": "2026-06-05T17:09:17.230Z"
+    },
+    {
+      "id": 1780679303766,
+      "title": "تم رفض طلب حذف حسابك",
+      "body": "تم مراجعة طلب حذف حساب محمد علي حسين ورفضه. حسابك لا يزال نشطاً. للاستفسار تواصل معنا.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "LiraPro",
+      "recipient": "specific",
+      "targetWalletId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
+      "createdAt": "2026-06-05T17:08:23.766Z"
+    },
+    {
       "id": 1780581802659,
       "title": "تم قبول طلبك",
       "body": "مرحباً محمد حسن حسين ! تم قبول طلب عضوية \"كريبتو للمجوهرات \" في منصة LiraPro. يمكنك الآن الدخول كتاجر معتمد وإدارة أسعارك من لوحة التحكم.",
@@ -255,6 +276,53 @@
       "recipient": "specific",
       "targetWalletId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
       "createdAt": "2026-06-04T13:51:35.480Z"
+    }
+  ],
+  "8751d349-9ed6-42d8-8e81-d54adf2eb210": [
+    {
+      "id": 1780680532535,
+      "title": "تم حذف حسابك",
+      "body": "تم حذف حسابك من منصة LiraPro. تواصل مع الدعم للاستفسار.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "LiraPro",
+      "recipient": "specific",
+      "targetWalletId": "8751d349-9ed6-42d8-8e81-d54adf2eb210",
+      "createdAt": "2026-06-05T17:28:52.535Z"
+    },
+    {
+      "id": 1780679419090,
+      "title": "تم تقييد حسابك لمدة 1 يوم",
+      "body": "تم تقييد حسابك على منصة LiraPro مؤقتاً لمدة 1 يوماً.",
+      "type": "warning",
+      "icon": "admin",
+      "sender": "LiraPro",
+      "recipient": "specific",
+      "targetWalletId": "8751d349-9ed6-42d8-8e81-d54adf2eb210",
+      "createdAt": "2026-06-05T17:10:19.090Z"
+    },
+    {
+      "id": 1780679404250,
+      "title": "تم توثيق حسابك ✓",
+      "body": "تهانينا! تم توثيق حسابك. ستظهر علامة التوثيق بجانب اسمك الآن.",
+      "type": "success",
+      "icon": "admin",
+      "sender": "LiraPro",
+      "recipient": "specific",
+      "targetWalletId": "8751d349-9ed6-42d8-8e81-d54adf2eb210",
+      "createdAt": "2026-06-05T17:10:04.250Z"
+    }
+  ],
+  "test-uid-123": [
+    {
+      "id": 1780682011429,
+      "title": "اختبار الرسالة",
+      "body": "هذه رسالة اختبار من الإدارة",
+      "type": "success",
+      "icon": "admin",
+      "recipient": "specific",
+      "targetWalletId": "test-uid-123",
+      "createdAt": "2026-06-05T17:53:31.429Z"
     }
   ]
 }

@@ -1487,12 +1487,13 @@ export default function AdminPage() {
   const [expandedNotifId, setExpandedNotifId] = useState<number | null>(null);
 
   // Live Broadcast state
-  interface BroadcastData { text: string; textColor: string; countdown?: number; countdownColor?: string; startedAt: string; endsAt?: string; }
+  interface BroadcastData { text: string; textColor: string; countdown?: number; countdownColor?: string; startedAt: string; endsAt?: string; speed?: 'slow' | 'normal' | 'fast'; }
   const [broadcastText, setBroadcastText] = useState('');
   const [broadcastTextColor, setBroadcastTextColor] = useState('#ffffff');
   const [broadcastCountdownEnabled, setBroadcastCountdownEnabled] = useState(false);
   const [broadcastCountdownSecs, setBroadcastCountdownSecs] = useState('60');
   const [broadcastCountdownColor, setBroadcastCountdownColor] = useState('#ff4444');
+  const [broadcastSpeed, setBroadcastSpeed] = useState<'slow' | 'normal' | 'fast'>('normal');
   const [broadcastActive, setBroadcastActive] = useState<BroadcastData | null>(null);
   const [broadcastElapsed, setBroadcastElapsed] = useState(0);
   const [broadcastRemaining, setBroadcastRemaining] = useState(0);
@@ -1633,6 +1634,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           text: broadcastText,
           textColor: broadcastTextColor,
+          speed: broadcastSpeed,
           ...(broadcastCountdownEnabled && parseInt(broadcastCountdownSecs) > 0 ? {
             countdown: parseInt(broadcastCountdownSecs),
             countdownColor: broadcastCountdownColor,
@@ -1820,6 +1822,7 @@ export default function AdminPage() {
       fetchVendors();
       setNotifyApp(acceptingApp);
       setAcceptingApp(null);
+      document.dispatchEvent(new CustomEvent('syp-vendor-approved'));
     } catch { setAcceptMsg('خطأ في الاتصال'); }
     setAcceptSaving(false);
   };
@@ -2223,12 +2226,22 @@ export default function AdminPage() {
   };
 
   const handleUndeleteUser = async (walletId: string) => {
+    const u = users.find(u => u.walletId === walletId);
     try {
-      await fetch(`/api/admin/users/${walletId}/undelete`, {
+      const res = await fetch(`/api/admin/users/${walletId}/undelete`, {
         method: 'POST',
         headers: { 'X-Admin-Token': token ?? '' },
       });
+      if (!res.ok) return;
+      setDeletingUser(null);
       await fetchUsers();
+      setActionNotif({
+        visible: true, walletId, targetName: u?.fullName || u?.businessName || walletId,
+        title: 'تم استرجاع حسابك',
+        body: 'تم استرجاع حسابك على منصة LiraPro بنجاح. يمكنك الآن تسجيل الدخول واستخدام خدمات المنصة.',
+        type: 'success', sender: (badgeAssignedSender || 'LiraPro') as 'LiraPro' | 'فريق LiraPro',
+        sending: false, msg: '',
+      });
     } catch {}
   };
 
@@ -2671,9 +2684,9 @@ export default function AdminPage() {
       .filter(u => {
         if (userFilter === 'private') return u.accountType === 'private' && !u.banned && !u.softDeleted;
         if (userFilter === 'provider') return u.accountType === 'provider' && !u.banned && !u.softDeleted;
-        if (userFilter === 'banned') return u.banned;
-        if (userFilter === 'deleted') return u.softDeleted;
-        if (userFilter === 'restricted') return !!(u as unknown as Record<string, unknown>).restricted;
+        if (userFilter === 'banned') return !!u.banned;
+        if (userFilter === 'deleted') return !!u.softDeleted;
+        if (userFilter === 'restricted') return !!u.restricted;
         return true;
       })
       .filter(u => {
@@ -3029,9 +3042,9 @@ export default function AdminPage() {
                   { label: 'الكل', val: users.length, filter: 'all', color: '#003C32' },
                   { label: 'شخصي', val: users.filter(u => u.accountType === 'private' && !u.banned && !u.softDeleted).length, filter: 'private', color: '#0284c7' },
                   { label: 'مزود', val: users.filter(u => u.accountType === 'provider' && !u.banned && !u.softDeleted).length, filter: 'provider', color: '#D20073' },
-                  { label: 'محظور', val: users.filter(u => u.banned).length, filter: 'banned', color: '#ef4444' },
-                  { label: 'مقيد', val: users.filter(u => !!(u as unknown as Record<string, unknown>).restricted).length, filter: 'restricted', color: '#f59e0b' },
-                  { label: 'محذوف', val: users.filter(u => u.softDeleted).length, filter: 'deleted', color: '#6b7280' },
+                  { label: 'محظور', val: users.filter(u => !!u.banned).length, filter: 'banned', color: '#ef4444' },
+                  { label: 'مقيد', val: users.filter(u => !!u.restricted).length, filter: 'restricted', color: '#f59e0b' },
+                  { label: 'محذوف', val: users.filter(u => !!u.softDeleted).length, filter: 'deleted', color: '#6b7280' },
                 ].map(s => (
                   <button key={s.filter} onClick={() => setUserFilter(s.filter)}
                     className={`rounded-xl p-2.5 text-center transition-all ${userFilter === s.filter ? 'shadow-md' : 'bg-card border border-border'}`}
@@ -3406,7 +3419,7 @@ export default function AdminPage() {
                                       <Button size="sm"
                                         disabled={!u.banned}
                                         className={`flex-1 gap-1 h-8 text-xs ${u.banned ? 'bg-green-600 hover:bg-green-700 text-white' : 'opacity-40 cursor-not-allowed bg-secondary text-muted-foreground'}`}
-                                        onClick={() => u.banned && handleUnbanUser(u.walletId)}>
+                                        onClick={() => { if (u.banned) handleUnbanUser(u.walletId); }}>
                                         <Unlock className="w-3 h-3" /> رفع الحظر
                                       </Button>
                                       <Button size="sm" variant="outline"
@@ -4319,6 +4332,18 @@ export default function AdminPage() {
                         <input type="color" value={broadcastTextColor} onChange={e => setBroadcastTextColor(e.target.value)}
                           className="w-8 h-8 rounded-lg border border-border cursor-pointer" />
                         <span className="text-xs font-mono text-muted-foreground">{broadcastTextColor}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <label className="text-xs font-bold text-muted-foreground">سرعة العرض</label>
+                        <div className="flex gap-1">
+                          {(['slow', 'normal', 'fast'] as const).map(s => (
+                            <button key={s} type="button"
+                              onClick={() => setBroadcastSpeed(s)}
+                              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${broadcastSpeed === s ? 'bg-red-500 text-white' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}>
+                              {s === 'slow' ? 'بطيء' : s === 'normal' ? 'عادي' : 'سريع'}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
@@ -6005,7 +6030,7 @@ export default function AdminPage() {
                   onClick={async () => {
                     setSuspiciousLoading(true);
                     try {
-                      const token = localStorage.getItem(ADMIN_TOKEN_KEY) ?? '';
+                      const token = sessionStorage.getItem(ADMIN_TOKEN_KEY) ?? '';
                       const res = await fetch('/api/market/prices', { headers: { 'x-admin-token': token } });
                       if (!res.ok) throw new Error('failed');
                       const data: Array<{id:number;vendorId:number;businessName:string;product:string;category:string;price:number|null;priceBuy:number|null;priceSell:number|null}> = await res.json();
@@ -6149,7 +6174,7 @@ export default function AdminPage() {
                       <Button size="sm"
                         className="flex-1 h-8 text-xs gap-1 bg-red-500 hover:bg-red-600 text-white"
                         onClick={async () => {
-                          const token = localStorage.getItem(ADMIN_TOKEN_KEY) ?? '';
+                          const token = sessionStorage.getItem(ADMIN_TOKEN_KEY) ?? '';
                           await fetch(`/api/admin/prices/${sp.id}`, {
                             method: 'DELETE',
                             headers: { 'x-admin-token': token },
@@ -6478,7 +6503,7 @@ export default function AdminPage() {
                             className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold ${p.isActive ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'} transition-colors`}
                             title={p.isActive ? 'إخفاء' : 'إظهار'}
                             onClick={async () => {
-                              const token = localStorage.getItem(ADMIN_TOKEN_KEY) ?? '';
+                              const token = sessionStorage.getItem(ADMIN_TOKEN_KEY) ?? '';
                               await fetch(`/api/admin/prices/${p.id}`, {
                                 method: 'PATCH',
                                 headers: { 'content-type': 'application/json', 'x-admin-token': token },
@@ -6498,7 +6523,7 @@ export default function AdminPage() {
                               destructive: true,
                               confirmLabel: 'حذف',
                               onConfirm: async () => {
-                                const tok = localStorage.getItem(ADMIN_TOKEN_KEY) ?? '';
+                                const tok = sessionStorage.getItem(ADMIN_TOKEN_KEY) ?? '';
                                 await fetch(`/api/admin/prices/${p.id}`, {
                                   method: 'DELETE',
                                   headers: { 'x-admin-token': tok },

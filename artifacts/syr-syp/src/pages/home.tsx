@@ -782,6 +782,7 @@ interface BroadcastData {
   countdownColor?: string;
   startedAt: string;
   endsAt?: string;
+  speed?: 'slow' | 'normal' | 'fast';
 }
 
 export default function HomePage() {
@@ -923,7 +924,7 @@ export default function HomePage() {
                   className="absolute inset-y-0 flex items-center whitespace-nowrap text-[11px] font-bold"
                   style={{
                     color: broadcast.textColor,
-                    animation: 'lira-ticker 20s linear infinite',
+                    animation: `lira-ticker ${broadcast.speed === 'slow' ? 35 : broadcast.speed === 'fast' ? 12 : 20}s linear infinite`,
                   }}
                 >
                   {broadcast.text}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{broadcast.text}
