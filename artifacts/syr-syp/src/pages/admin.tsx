@@ -1730,17 +1730,16 @@ export default function AdminPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '' },
         body: JSON.stringify({
-          clerkId: vendorForm.clerkId || null,
-          businessName: vendorForm.businessName,
-          fullName: vendorForm.fullName || '',
+          user_id: vendorForm.clerkId || null,
+          business_name: vendorForm.businessName,
+          owner_name: vendorForm.fullName || '',
           email: vendorForm.email || '',
           phone: vendorForm.phone || '',
           governorate: vendorForm.governorate || '',
           city: vendorForm.city || '',
           address: vendorForm.address || '',
-          category: vendorForm.category,
-          trustScore: Number(vendorForm.trustScore),
-          logoUrl: vendorForm.logoUrl || null,
+          category_ids: vendorForm.category ? [vendorForm.category] : [],
+          trust_score: Math.min(10, Math.max(1, Math.round(Number(vendorForm.trustScore) / 10))),
         }),
       });
       if (res.ok) {

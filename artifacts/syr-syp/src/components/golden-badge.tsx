@@ -78,15 +78,15 @@ export const GoldenBadge = React.memo(function GoldenBadge({ size = 20, showGlow
       style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: size, height: size, cursor: 'default' }}
       animate={showGlow ? {
         filter: [
-          'drop-shadow(0 0 3px #FFD70055) drop-shadow(0 0 6px #C8960033)',
-          'drop-shadow(0 0 5px #FFD7007a) drop-shadow(0 0 9px #C8960055)',
-          'drop-shadow(0 0 3px #FFD70055) drop-shadow(0 0 6px #C8960033)',
+          'drop-shadow(0 0 4px #FFD700aa) drop-shadow(0 0 8px #C8960066) drop-shadow(0 0 14px #FFD70033)',
+          'drop-shadow(0 0 7px #FFD700ff) drop-shadow(0 0 13px #C89600aa) drop-shadow(0 0 22px #FFD70055)',
+          'drop-shadow(0 0 4px #FFD700aa) drop-shadow(0 0 8px #C8960066) drop-shadow(0 0 14px #FFD70033)',
         ],
       } : { filter: 'none' }}
-      whileHover={{ scale: 1.12, filter: 'brightness(1.08) drop-shadow(0 0 5px #FFD700aa) drop-shadow(0 0 10px #C8960077)' }}
+      whileHover={{ scale: 1.12, filter: 'brightness(1.12) drop-shadow(0 0 8px #FFD700ff) drop-shadow(0 0 16px #C89600cc)' }}
       whileTap={{ scale: 0.95 }}
       transition={showGlow
-        ? { filter: { duration: 1.8, repeat: Infinity, ease: 'easeInOut' }, scale: { type: 'spring', stiffness: 280, damping: 18 } }
+        ? { filter: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }, scale: { type: 'spring', stiffness: 280, damping: 18 } }
         : { type: 'spring', stiffness: 280, damping: 18 }
       }
       onHoverStart={() => setHovered(true)}
@@ -132,12 +132,15 @@ export const GoldenBadge = React.memo(function GoldenBadge({ size = 20, showGlow
         {showGlow && (
           <>
             {/* Gold glow — NO clip, renders behind badge to create golden aura */}
-            <motion.circle cx={cx} cy={cy} r={44} fill="#D4A017" filter={`url(#og${uid})`}
-              animate={{ opacity: [0.35, 0.55, 0.35], r: [44, 50, 44] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }} />
-            <motion.circle cx={cx} cy={cy} r={30} fill="#FFD700" filter={`url(#ig${uid})`}
-              animate={{ opacity: [0.25, 0.45, 0.25], r: [30, 36, 30] }}
-              transition={{ duration: 2.0, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }} />
+            <motion.circle cx={cx} cy={cy} r={46} fill="#D4A017" filter={`url(#og${uid})`}
+              animate={{ opacity: [0.50, 0.80, 0.50], r: [46, 54, 46] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }} />
+            <motion.circle cx={cx} cy={cy} r={32} fill="#FFD700" filter={`url(#ig${uid})`}
+              animate={{ opacity: [0.40, 0.70, 0.40], r: [32, 40, 32] }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }} />
+            <motion.circle cx={cx} cy={cy} r={22} fill="#FFEC80" filter={`url(#ig${uid})`}
+              animate={{ opacity: [0.20, 0.45, 0.20] }}
+              transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }} />
           </>
         )}
 
@@ -600,11 +603,11 @@ export const ChatBadge = React.memo(function ChatBadge({
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'visible', flexShrink: 0, width: size, height: size }}>
       <style>{`
-        @keyframes cbg1-${animKey}{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
-        @keyframes cbg2-${animKey}{0%,100%{opacity:.28;transform:scale(1)}50%{opacity:.65;transform:scale(1.25)}}
+        @keyframes cbg1-${animKey}{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:.75;transform:scale(1.18)}}
+        @keyframes cbg2-${animKey}{0%,100%{opacity:.22;transform:scale(1)}50%{opacity:.48;transform:scale(1.12)}}
       `}</style>
-      <span style={{ position:'absolute', inset:'-4px', borderRadius:'50%', background:g1, filter:'blur(9px)', animation:`cbg1-${animKey} 2.2s ease-in-out infinite`, zIndex:0, pointerEvents:'none' }} />
-      <span style={{ position:'absolute', inset:'-6px', borderRadius:'50%', background:g2, filter:'blur(12px)', animation:`cbg2-${animKey} 1.8s ease-in-out infinite`, animationDelay:'0.35s', zIndex:0, pointerEvents:'none' }} />
+      <span style={{ position:'absolute', inset:'-1px', borderRadius:'50%', background:g1, filter:'blur(4px)', animation:`cbg1-${animKey} 2.2s ease-in-out infinite`, zIndex:0, pointerEvents:'none' }} />
+      <span style={{ position:'absolute', inset:'-2px', borderRadius:'50%', background:g2, filter:'blur(6px)', animation:`cbg2-${animKey} 1.8s ease-in-out infinite`, animationDelay:'0.35s', zIndex:0, pointerEvents:'none' }} />
       <span style={{ position:'relative', zIndex:1, display:'inline-flex', overflow:'visible' }}>
         {isLegendary ? <RainbowBadge size={size} /> : <AdminBadge size={size} />}
       </span>

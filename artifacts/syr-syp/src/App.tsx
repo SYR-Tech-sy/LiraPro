@@ -1024,6 +1024,13 @@ function BanGuard({ children }: { children: React.ReactNode }) {
           localStorage.setItem(BAN_STORAGE_KEY, JSON.stringify(d));
           if (!signedOutRef.current) {
             signedOutRef.current = true;
+            if (d.banned) {
+              fetch('/api/admin/ban-attempt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.id, email: user.email, userAgent: navigator.userAgent, reason: d.banReason, bannedAt: d.bannedAt }),
+              }).catch(() => {});
+            }
             signOut();
           }
         } else {

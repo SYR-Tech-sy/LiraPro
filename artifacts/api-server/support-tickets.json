@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "t-1780684520495-73kav",
+    "userId": "b8bc8e6c-d1c3-4c8d-80db-8bddfef97a84",
+    "userName": "يوسف",
+    "userEmail": "syrnero3@gmail.com",
+    "subject": "فتح تذكرة دعم ",
+    "status": "open",
+    "priority": "normal",
+    "createdAt": "2026-06-05T18:35:20.495Z",
+    "updatedAt": "2026-06-05T18:35:20.495Z",
+    "lastMessageAt": "2026-06-05T18:35:20.495Z",
+    "messageCount": 1,
+    "unreadAdmin": 1
+  }
+]

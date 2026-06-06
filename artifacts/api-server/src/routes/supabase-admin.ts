@@ -1,4 +1,7 @@
 import { Router, type Request, type Response } from "express";
+import { readFileSync, writeFileSync, existsSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import { supabaseAdmin } from "../lib/supabase-admin.js";
 import { getAllOverrides, setOverride, deleteOverride, clearAllOverrides } from "../services/rateOverridesService.js";
 import { incrementVisit, getVisitStats } from "../services/visitService.js";
@@ -172,16 +175,12 @@ router.post("/admin/users/:userId/ban", async (req, res): Promise<void> => {
 router.post("/admin/users/:userId/unban", async (req, res): Promise<void> => {
   if (!verifyAdmin(req, res)) return;
   try {
-    const { error } = await supabaseAdmin!.from("bans").upsert({
-      user_id: req.params.userId,
-      banned: false,
-      ban_reason: null,
-      banned_at: null,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: "user_id" });
-    if (error) throw error;
+    const userId = req.params.userId;
+    await supabaseAdmin!.from("bans")
+      .update({ banned: false, ban_reason: "", updated_at: new Date().toISOString() })
+      .eq("user_id", userId);
     res.json({ success: true });
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Failed to unban user" });
   }
 });
@@ -316,6 +315,48 @@ router.get("/admin/new-events", async (req, res): Promise<void> => {
   } catch {
     res.json({ newUsers: 0, newApplications: 0, checkedAt, since });
   }
+});
+// ── Ban Attempt Tracking ───────────────────────────────────────────────────────
+const BAN_ATTEMPTS_FILE = join(dirname(fileURLToPath(import.meta.url)), "../ban-attempts.json");
+
+function readBanAttempts(): unknown[] {
+  try {
+    if (!existsSync(BAN_ATTEMPTS_FILE)) return [];
+    return JSON.parse(readFileSync(BAN_ATTEMPTS_FILE, "utf-8")) as unknown[];
+  } catch { return []; }
+}
+function saveBanAttempts(data: unknown[]): void {
+  try { writeFileSync(BAN_ATTEMPTS_FILE, JSON.stringify(data, null, 2), "utf-8"); } catch { /**/ }
+}
+
+router.post("/admin/ban-attempt", async (req, res): Promise<void> => {
+  try {
+    const { userId, email, userAgent, reason, bannedAt } = req.body as {
+      userId?: string; email?: string; userAgent?: string; reason?: string; bannedAt?: string;
+    };
+    const attempt = {
+      id: Date.now(),
+      userId: userId ?? "unknown",
+      email: email ?? "unknown",
+      userAgent: userAgent ?? "",
+      reason: reason ?? "",
+      bannedAt: bannedAt ?? null,
+      attemptedAt: new Date().toISOString(),
+      ip: req.ip ?? req.socket?.remoteAddress ?? "unknown",
+    };
+    const all = readBanAttempts();
+    all.push(attempt);
+    saveBanAttempts(all.slice(-500));
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ error: "Failed to record ban attempt" });
+  }
+});
+
+router.get("/admin/ban-attempts", async (req, res): Promise<void> => {
+  if (!verifyAdmin(req, res)) return;
+  const all = readBanAttempts() as Array<Record<string, unknown>>;
+  res.json(all.slice(-100).reverse());
 });
 
 export default router;

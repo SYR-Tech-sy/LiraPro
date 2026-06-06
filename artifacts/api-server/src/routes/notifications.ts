@@ -164,6 +164,16 @@ router.put("/notifications/user/:walletId/:id", (req, res): void => {
   res.json(userMsgs[idx]);
 });
 
+// DELETE /api/notifications/user/:walletId/all — user self-clears all their notifications (no auth needed)
+router.delete("/notifications/user/:walletId/all", (req, res): void => {
+  const { walletId } = req.params as { walletId: string };
+  if (!walletId) { res.status(400).json({ error: "walletId required" }); return; }
+  const all = readUserNotifications();
+  all[walletId] = [];
+  saveUserNotifications(all);
+  res.json({ success: true });
+});
+
 // DELETE /api/notifications/user/:walletId/:id — admin only
 router.delete("/notifications/user/:walletId/:id", (req, res): void => {
   const token = req.headers["x-admin-token"] as string;

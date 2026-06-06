@@ -1,2 +1,4 @@
 - [Clerk removal](clerk-removal.md) — Clerk fully removed; Supabase auth used everywhere; clerkId in DB schema is just a legacy column name, not SDK dependency.
 - [Supabase secrets](supabase-secrets.md) — SUPABASE_URL (shared env), SUPABASE_ANON_KEY (secret), SUPABASE_SERVICE_KEY (secret) all required; ANON_KEY injected via vite.config.ts process.env → VITE_SUPABASE_ANON_KEY.
+- [Vendor role sync](vendor-role-sync.md) — Drizzle usersTable ("users") and Supabase "profiles" are separate tables; vendor approval must update BOTH or requireVendor middleware fails.
+- [Bans table quirks](bans-table-quirks.md) — Use .update().eq() for unban (not upsert with nulls); ban_reason NOT NULL; trust_score constraint is 0-10 (not 0-100); saveVendor must use snake_case fields (business_name, owner_name, user_id, trust_score, category_ids).

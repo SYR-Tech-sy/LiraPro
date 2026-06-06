@@ -1,5 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { supabaseAdmin } from "../lib/supabase-admin.js";
+import { db, usersTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import { addRequest, getAllRequests, markHandled, cancelRequestByWallet, deleteRequestById } from "../services/deletionService.js";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join, dirname } from "path";
@@ -90,12 +92,18 @@ router.post("/admin/vendors", async (req, res): Promise<void> => {
       .single();
     if (error) throw error;
 
-    // If user_id given, upgrade their role to vendor
+    // If user_id given, upgrade their role to vendor in both tables
     if (body.user_id) {
       await supabaseAdmin!
         .from("profiles")
         .update({ role: "vendor", updated_at: new Date().toISOString() })
         .eq("id", body.user_id);
+      const existing = await db.select({ id: usersTable.clerkId }).from(usersTable).where(eq(usersTable.clerkId, body.user_id)).limit(1);
+      if (existing.length > 0) {
+        await db.update(usersTable).set({ role: "vendor", updatedAt: new Date() }).where(eq(usersTable.clerkId, body.user_id));
+      } else {
+        await db.insert(usersTable).values({ clerkId: body.user_id, email: body.email ?? "", role: "vendor", profileCompleted: false }).onConflictDoNothing();
+      }
     }
 
     // Log admin action

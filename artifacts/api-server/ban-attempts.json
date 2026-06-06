@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1780774603407,
+    "userId": "test-123",
+    "email": "test@test.com",
+    "userAgent": "Mozilla/5.0",
+    "reason": "تجربة",
+    "bannedAt": null,
+    "attemptedAt": "2026-06-06T19:36:43.407Z",
+    "ip": "::1"
+  },
+  {
+    "id": 1780774749875,
+    "userId": "abc-123",
+    "email": "banned@test.com",
+    "userAgent": "",
+    "reason": "انتهاك الشروط",
+    "bannedAt": null,
+    "attemptedAt": "2026-06-06T19:39:09.875Z",
+    "ip": "::1"
+  }
+]

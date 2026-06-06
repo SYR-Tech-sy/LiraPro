@@ -266,14 +266,18 @@ export function NotificationsPanel() {
     }
   }
 
-  function handleClearAll() {
-    // Clear local notifications
+  async function handleClearAll() {
     localStorage.removeItem(LOCAL_KEY);
-    // Mark all as read
     const allIds = notifications.map(n => n.id);
     markRead(allIds);
     setReadIds(new Set(allIds));
     setNotifications([]);
+    const walletId = user?.id ?? localStorage.getItem('syp-wallet-id');
+    if (walletId) {
+      try {
+        await fetch(`/api/notifications/user/${encodeURIComponent(walletId)}/all`, { method: 'DELETE' });
+      } catch { /* ignore */ }
+    }
   }
 
   return (

@@ -1,1 +1,13 @@
-{}
+{
+  "t-1780684520495-73kav": [
+    {
+      "id": "msg-1780684520495",
+      "ticketId": "t-1780684520495-73kav",
+      "role": "user",
+      "text": "فتح تذكرة دعم ",
+      "createdAt": "2026-06-05T18:35:20.495Z",
+      "readByAdmin": false,
+      "readByUser": true
+    }
+  ]
+}
