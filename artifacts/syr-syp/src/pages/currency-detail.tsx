@@ -10,6 +10,7 @@ import { useApp } from '@/context/app-context';
 import { useUser } from '@/context/auth-context';
 import { GuestModal } from '@/components/guest-modal';
 import { LiveBadge, useMarketOpen } from '@/components/live-badge';
+import { ManualBadge } from '@/components/manual-badge';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 type Period = 'daily' | 'weekly' | 'monthly';
@@ -164,6 +165,7 @@ export default function CurrencyDetailPage() {
 
   const usdToSyp = ratesData?.usd_to_syp ?? 13500;
   const rates = ratesData?.rates ?? {};
+  const isManualRate = ratesData?.is_manual_rate ?? false;
 
   let rateVsSyp = usdToSyp;
   if (code === 'SYP') rateVsSyp = 1;
@@ -223,8 +225,9 @@ export default function CurrencyDetailPage() {
             <div className="flex justify-between items-start mb-2">
               <div>
                 <p className="text-primary-foreground/70 text-xs mb-1">مقابل الليرة السورية</p>
-                <div className="text-3xl font-bold">
+                <div className="text-3xl font-bold flex items-center gap-2 flex-wrap">
                   {formatNum(rateVsSyp, { decimals: 0 })} <span className="text-lg font-normal">ل.س</span>
+                  {isManualRate && <ManualBadge />}
                 </div>
               </div>
               <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${isUp ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
