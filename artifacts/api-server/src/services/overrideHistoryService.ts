@@ -1,5 +1,5 @@
 import { db, overrideHistoryTable } from "@workspace/db";
-import { desc } from "drizzle-orm";
+import { desc, lt } from "drizzle-orm";
 
 export interface OverrideHistoryEntry {
   id: number;
@@ -43,4 +43,23 @@ export async function getOverrideHistory(limit = 50): Promise<OverrideHistoryEnt
     changedBy: r.changedBy ?? null,
     changedAt: r.changedAt.toISOString(),
   }));
+}
+
+export async function clearOverrideHistory(olderThanDays?: number): Promise<number> {
+  if (olderThanDays != null && olderThanDays > 0) {
+    const cutoff = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000);
+    const result = await db
+      .delete(overrideHistoryTable)
+      .where(lt(overrideHistoryTable.changedAt, cutoff))
+      .returning({ id: overrideHistoryTable.id });
+    return result.length;
+  }
+  const result = await db
+    .delete(overrideHistoryTable)
+    .returning({ id: overrideHistoryTable.id });
+  return result.length;
+}
+
+export async function pruneOldHistory(olderThanDays = 90): Promise<void> {
+  await clearOverrideHistory(olderThanDays);
 }

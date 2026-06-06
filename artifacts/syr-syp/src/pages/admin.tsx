@@ -1314,6 +1314,9 @@ export default function AdminPage() {
   const [overrideHistory, setOverrideHistory] = useState<OverrideHistoryEntry[]>([]);
   const [overrideHistoryOpen, setOverrideHistoryOpen] = useState(false);
   const [overrideHistoryLoading, setOverrideHistoryLoading] = useState(false);
+  const [clearHistoryDialogOpen, setClearHistoryDialogOpen] = useState(false);
+  const [clearHistoryDays, setClearHistoryDays] = useState<'all' | '30' | '90'>('all');
+  const [clearHistoryLoading, setClearHistoryLoading] = useState(false);
 
   // Rates tab state
   const [sypRateCurrent, setSypRateCurrent] = useState(13500);
@@ -1915,6 +1918,26 @@ export default function AdminPage() {
       setOverrideHistoryLoading(false);
     }
   }, [token]);
+
+  const handleClearHistory = useCallback(async () => {
+    setClearHistoryLoading(true);
+    try {
+      const url = clearHistoryDays === 'all'
+        ? '/api/admin/override-history'
+        : `/api/admin/override-history?olderThanDays=${clearHistoryDays}`;
+      const res = await fetch(url, {
+        method: 'DELETE',
+        headers: { 'X-Admin-Token': token ?? '' },
+      });
+      if (res.ok) {
+        setClearHistoryDialogOpen(false);
+        setOverrideHistory([]);
+        await fetchOverrideHistory();
+      }
+    } catch {} finally {
+      setClearHistoryLoading(false);
+    }
+  }, [token, clearHistoryDays, fetchOverrideHistory]);
 
   const fetchGoldOverride = useCallback(async () => {
     try {
@@ -5040,6 +5063,64 @@ export default function AdminPage() {
                                 </div>
                               );
                             })}
+                          </div>
+                        )}
+                        {/* Clear History Button */}
+                        <div className="border-t border-border pt-2 mt-1">
+                          <button
+                            onClick={() => setClearHistoryDialogOpen(true)}
+                            className="w-full flex items-center justify-center gap-1.5 text-[11px] text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg py-1.5 transition-colors"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            مسح السجل
+                          </button>
+                        </div>
+                        {/* Clear History Confirmation Dialog */}
+                        {clearHistoryDialogOpen && (
+                          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                            <div className="bg-background border border-border rounded-2xl shadow-xl p-5 w-80 flex flex-col gap-4" dir="rtl">
+                              <div className="flex items-center gap-2 text-red-500">
+                                <Trash2 className="w-4 h-4" />
+                                <span className="font-bold text-sm">مسح سجل التغييرات</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground">اختر نطاق الحذف:</p>
+                              <div className="flex flex-col gap-2">
+                                {([
+                                  { value: 'all', label: 'مسح كل السجلات' },
+                                  { value: '90', label: 'أقدم من ٩٠ يوماً' },
+                                  { value: '30', label: 'أقدم من ٣٠ يوماً' },
+                                ] as const).map(opt => (
+                                  <label key={opt.value} className="flex items-center gap-2 cursor-pointer text-xs">
+                                    <input
+                                      type="radio"
+                                      name="clearDays"
+                                      value={opt.value}
+                                      checked={clearHistoryDays === opt.value}
+                                      onChange={() => setClearHistoryDays(opt.value)}
+                                      className="accent-red-500"
+                                    />
+                                    {opt.label}
+                                  </label>
+                                ))}
+                              </div>
+                              <div className="flex gap-2 justify-end mt-1">
+                                <button
+                                  onClick={() => setClearHistoryDialogOpen(false)}
+                                  disabled={clearHistoryLoading}
+                                  className="px-3 py-1.5 rounded-lg text-xs border border-border hover:bg-secondary transition-colors"
+                                >
+                                  إلغاء
+                                </button>
+                                <button
+                                  onClick={() => void handleClearHistory()}
+                                  disabled={clearHistoryLoading}
+                                  className="px-3 py-1.5 rounded-lg text-xs bg-red-500 hover:bg-red-600 text-white font-bold transition-colors flex items-center gap-1.5 disabled:opacity-60"
+                                >
+                                  {clearHistoryLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+                                  تأكيد الحذف
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         )}
                       </CardContent>

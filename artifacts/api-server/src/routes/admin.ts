@@ -5,7 +5,7 @@ import { getAllUsers, upsertUser, deleteUser, banUser, unbanUser, restrictUser, 
 import { getAllRequests, addRequest, markHandled, cancelRequestByWallet, deleteRequestById } from "../services/deletionService.js";
 import { getAllOverrides, setOverride, deleteOverride, clearAllOverrides } from "../services/rateOverridesService.js";
 import { incrementVisit, getVisitStats } from "../services/visitService.js";
-import { getOverrideHistory } from "../services/overrideHistoryService.js";
+import { getOverrideHistory, clearOverrideHistory } from "../services/overrideHistoryService.js";
 import { resolveAdminActor } from "../lib/resolveAdminActor.js";
 
 const router = Router();
@@ -281,6 +281,19 @@ router.get("/admin/override-history", async (req, res): Promise<void> => {
     res.json(history);
   } catch {
     res.status(500).json({ error: "Failed to fetch override history" });
+  }
+});
+
+router.delete("/admin/override-history", async (req, res): Promise<void> => {
+  if (!verifyAdmin(req, res)) return;
+  try {
+    const olderThanDays = req.query.olderThanDays
+      ? parseInt(String(req.query.olderThanDays), 10)
+      : undefined;
+    const deleted = await clearOverrideHistory(olderThanDays);
+    res.json({ success: true, deleted });
+  } catch {
+    res.status(500).json({ error: "Failed to clear override history" });
   }
 });
 

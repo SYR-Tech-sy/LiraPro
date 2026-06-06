@@ -2,6 +2,7 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { migrateJsonFileToDB } from "./services/sypRateService";
 import { getGoldOverride, getAllMetalOverrides } from "./services/goldMetalRateService";
+import { pruneOldHistory } from "./services/overrideHistoryService";
 
 const rawPort = process.env["PORT"];
 
@@ -57,6 +58,15 @@ migrateJsonFileToDB()
   .then(() => initMetalOverridePersistence())
   .catch((err) => {
     logger.warn({ err }, "Failed to read metal/gold overrides from DB — DB may be unavailable");
+  })
+  .then(() => pruneOldHistory(90))
+  .then((deleted) => {
+    if (typeof deleted === 'number' && deleted > 0) {
+      logger.info({ deleted }, "Pruned old override history entries (>90 days)");
+    }
+  })
+  .catch((err) => {
+    logger.warn({ err }, "Failed to prune old override history — continuing startup");
   })
   .finally(() => {
     app.listen(port, (err) => {
