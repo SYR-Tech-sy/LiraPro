@@ -8,6 +8,7 @@ import { Search, ChevronLeft, Bell, TrendingUp as TrendingUpIcon } from "lucide-
 import { Link, useLocation } from 'wouter';
 import { useApp } from '@/context/app-context';
 import { LiveBadge } from '@/components/live-badge';
+import { ManualBadge } from '@/components/manual-badge';
 
 const PINNED = ['SYP', 'USD', 'TRY', 'EUR', 'AED', 'SAR'];
 
@@ -138,9 +139,12 @@ export default function CurrenciesPage() {
                     <p className="text-[10px] text-foreground/60 dark:text-white/70 truncate">{CURRENCY_NAMES[code] ?? ''}</p>
                   </div>
                   <div className="flex flex-col items-end gap-0.5">
-                    <span className="font-bold text-sm text-primary dark:text-white" dir="ltr">
-                      {rateSYP > 0 ? formatNum(rateSYP, { decimals: rateSYP >= 1 ? 0 : 4 }) : '-'}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className="font-bold text-sm text-primary dark:text-white" dir="ltr">
+                        {rateSYP > 0 ? formatNum(rateSYP, { decimals: rateSYP >= 1 ? 0 : 4 }) : '-'}
+                      </span>
+                      {data?.is_manual_rate && code === 'USD' && <ManualBadge />}
+                    </div>
                     <span className="text-[9px] text-foreground/60 dark:text-white/60">ل.س</span>
                     {rateSYP > 0 && (
                       <div className="flex gap-1 text-[8px] text-foreground/60 dark:text-white/60">

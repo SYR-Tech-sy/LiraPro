@@ -59,7 +59,8 @@ export const GetGoldPricesResponse = zod.object({
   "pricePerGramUSD": zod.number(),
   "pricePerGramSYP": zod.number()
 })),
-  "timestamp": zod.string()
+  "timestamp": zod.string(),
+  "isManual": zod.boolean()
 })
 
 
@@ -91,7 +92,8 @@ export const GetMetalPricesResponse = zod.object({
   "symbol": zod.string(),
   "priceUSD": zod.number(),
   "priceSYP": zod.number(),
-  "unit": zod.string()
+  "unit": zod.string(),
+  "isManual": zod.boolean()
 })),
   "timestamp": zod.string()
 })

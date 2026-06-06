@@ -13,6 +13,7 @@ import { useUser } from '@/context/auth-context';
 import { AnimatedLogo } from '@/components/animated-logo';
 import { LiveBadge, useMarketOpen } from '@/components/live-badge';
 import { GoldenBadge } from '@/components/golden-badge';
+import { ManualBadge } from '@/components/manual-badge';
 
 const SYRIAN_GOVERNORATES = [
   'إدلب','دمشق','ريف دمشق','حلب','حمص','حماة',
@@ -1054,7 +1055,10 @@ export default function HomePage() {
                               <CurrencyFlag code={cur.code} className="w-7 h-7" />
                               <div>
                                 <p className="text-primary-foreground/80 text-xs">{name} ({cur.code})</p>
-                                <h3 className="text-2xl font-bold">{formatNum(rate, { decimals: 0 })} <span className="text-sm font-normal">ل.س</span></h3>
+                                <div className="flex items-center gap-2">
+                                  <h3 className="text-2xl font-bold">{formatNum(rate, { decimals: 0 })} <span className="text-sm font-normal">ل.س</span></h3>
+                                  {ratesData.is_manual_rate && <ManualBadge />}
+                                </div>
                               </div>
                             </div>
                             <div className="flex flex-col items-end gap-1.5">
@@ -1156,9 +1160,12 @@ export default function HomePage() {
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between mb-1.5">
                             <p className="text-xs font-bold">{language === 'ar' ? 'عيار' : 'Karat'} {karat.karat}</p>
-                            <span className="text-[9px] bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-1.5 rounded font-bold">
-                              {(karat.purity * 100).toFixed(0)}%
-                            </span>
+                            <div className="flex items-center gap-1">
+                              {goldData.isManual && <ManualBadge />}
+                              <span className="text-[9px] bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-1.5 rounded font-bold">
+                                {(karat.purity * 100).toFixed(0)}%
+                              </span>
+                            </div>
                           </div>
                           <h3 className="text-sm font-bold text-primary dark:text-white">
                             {formatNum(karat.pricePerGramSYP, { decimals: 0 })} <span className="text-[10px] font-normal">ل.س</span>

@@ -41,6 +41,7 @@ export interface GoldPricesResponse {
   pricePerGramSYP: number;
   karats: GoldKarat[];
   timestamp: string;
+  isManual: boolean;
 }
 
 export interface MetalPrice {
@@ -50,6 +51,7 @@ export interface MetalPrice {
   priceUSD: number;
   priceSYP: number;
   unit: string;
+  isManual: boolean;
 }
 
 export interface MetalPricesResponse {

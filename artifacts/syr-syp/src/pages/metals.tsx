@@ -8,6 +8,7 @@ import { Link, useLocation } from 'wouter';
 import { useApp } from '@/context/app-context';
 import { MetalIcon } from '@/components/metal-icon';
 import { LiveBadge } from '@/components/live-badge';
+import { ManualBadge } from '@/components/manual-badge';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -78,7 +79,10 @@ export default function MetalsPage() {
                         <div className="flex-1 p-3 flex flex-col justify-between">
                           <div className="flex items-center justify-between mb-1">
                             <div>
-                              <h3 className="font-bold text-sm">{metal.nameAr}</h3>
+                              <div className="flex items-center gap-1.5">
+                                <h3 className="font-bold text-sm">{metal.nameAr}</h3>
+                                {metal.isManual && <ManualBadge />}
+                              </div>
                               <p className="text-[10px] text-foreground/60 dark:text-white/70">{metal.name} · {metal.symbol}</p>
                             </div>
                             <div className="flex items-center gap-1">

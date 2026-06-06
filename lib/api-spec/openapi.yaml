@@ -380,11 +380,14 @@ components:
             $ref: "#/components/schemas/GoldKarat"
         timestamp:
           type: string
+        isManual:
+          type: boolean
       required:
         - pricePerGramUSD
         - pricePerGramSYP
         - karats
         - timestamp
+        - isManual
 
     GoldKarat:
       type: object
@@ -431,6 +434,8 @@ components:
           type: number
         unit:
           type: string
+        isManual:
+          type: boolean
       required:
         - name
         - nameAr
@@ -438,6 +443,7 @@ components:
         - priceUSD
         - priceSYP
         - unit
+        - isManual
 
     NewsItem:
       type: object

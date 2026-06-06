@@ -10,6 +10,7 @@ import { useApp } from '@/context/app-context';
 import { useUser } from '@/context/auth-context';
 import { GuestModal } from '@/components/guest-modal';
 import { LiveBadge } from '@/components/live-badge';
+import { ManualBadge } from '@/components/manual-badge';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 type Period = 'daily' | 'weekly' | 'monthly';
@@ -168,7 +169,10 @@ export default function GoldDetailPage() {
           <CardContent className="p-4">
             <div className="flex justify-between items-start mb-2">
               <div>
-                <p className="text-white/70 text-xs mb-1">سعر الغرام / ليرة سورية</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-white/70 text-xs">سعر الغرام / ليرة سورية</p>
+                  {goldData?.isManual && <ManualBadge />}
+                </div>
                 <div className="text-3xl font-bold">{formatNum(pricePerGram, { decimals: 0 })} <span className="text-lg font-normal">ل.س</span></div>
                 <p className="text-white/70 text-xs mt-1">${formatNum(priceUSD, { decimals: 2 })}</p>
               </div>
