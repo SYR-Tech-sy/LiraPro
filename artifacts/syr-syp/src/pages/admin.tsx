@@ -4764,7 +4764,7 @@ export default function AdminPage() {
                               {sypRateIsManual ? '✏ يدوي' : '⚡ تلقائي'}
                             </span>
                           </div>
-                          {sypRateIsManual && (
+                          {sypRateIsManual ? (
                             <button
                               onClick={() => void saveSypRate(false)}
                               disabled={sypRateSaving}
@@ -4772,20 +4772,26 @@ export default function AdminPage() {
                             >
                               <X className="w-2.5 h-2.5" /> إلغاء
                             </button>
+                          ) : sypRateUpdatedAt && (
+                            <button
+                              onClick={() => void saveSypRate(true)}
+                              disabled={sypRateSaving}
+                              className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex-shrink-0 ml-2"
+                            >
+                              <Save className="w-2.5 h-2.5" /> تفعيل
+                            </button>
                           )}
                         </div>
-                        {sypRateIsManual && (
+                        {sypRateUpdatedAt && (
                           <div className="mt-2 flex items-center justify-between">
                             <div>
-                              <p className="text-[10px] text-muted-foreground">القيمة المُطبَّقة</p>
-                              <p className="text-base font-black text-amber-700 dark:text-amber-300" dir="ltr">{sypRateCurrent.toLocaleString()} ل.س</p>
+                              <p className="text-[10px] text-muted-foreground">{sypRateIsManual ? 'القيمة المُطبَّقة' : 'القيمة المحفوظة'}</p>
+                              <p className={`text-base font-black ${sypRateIsManual ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground'}`} dir="ltr">{sypRateCurrent.toLocaleString()} ل.س</p>
                             </div>
-                            {sypRateUpdatedAt && (
-                              <div className="text-left">
-                                <p className="text-[9px] text-muted-foreground">آخر تعديل</p>
-                                <p className="text-[10px] font-bold">{timeAgo(sypRateUpdatedAt)}</p>
-                              </div>
-                            )}
+                            <div className="text-left">
+                              <p className="text-[9px] text-muted-foreground">آخر تعديل</p>
+                              <p className="text-[10px] font-bold">{timeAgo(sypRateUpdatedAt)}</p>
+                            </div>
                           </div>
                         )}
                       </div>
