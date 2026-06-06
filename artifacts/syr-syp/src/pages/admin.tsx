@@ -1304,7 +1304,7 @@ export default function AdminPage() {
   const [goldOverrideMsg, setGoldOverrideMsg] = useState('');
   const [goldOverrideUpdatedAt, setGoldOverrideUpdatedAt] = useState<string | null>(null);
   const [metalOverrides, setMetalOverrideState] = useState<Record<string, number>>({});
-  const [metalOverridesDetail, setMetalOverridesDetail] = useState<Record<string, { priceSYP: number; updatedAt: string }>>({});
+  const [metalOverridesDetail, setMetalOverridesDetail] = useState<Record<string, { priceSYP: number; updatedAt: string; isManual: boolean }>>({});
   const [editMetal, setEditMetal] = useState<string | null>(null);
   const [editMetalVal, setEditMetalVal] = useState('');
   const [metalMsg, setMetalMsg] = useState('');
@@ -1922,7 +1922,7 @@ export default function AdminPage() {
       if (res.ok) {
         const data = await res.json() as { isManual: boolean; override?: { pricePerGramSYP: number; updatedAt: string } };
         setGoldOverrideActive(data.isManual);
-        if (data.isManual && data.override) {
+        if (data.override) {
           setGoldOverrideInput(data.override.pricePerGramSYP.toString());
           setGoldOverrideUpdatedAt(data.override.updatedAt);
         } else {
@@ -1936,12 +1936,12 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/settings/metal-rates');
       if (res.ok) {
-        const data = await res.json() as Record<string, { priceSYP: number; updatedAt: string }>;
+        const data = await res.json() as Record<string, { priceSYP: number; updatedAt: string; isManual: boolean }>;
         const map: Record<string, number> = {};
-        const detail: Record<string, { priceSYP: number; updatedAt: string }> = {};
+        const detail: Record<string, { priceSYP: number; updatedAt: string; isManual: boolean }> = {};
         Object.entries(data).forEach(([sym, v]) => {
-          map[sym] = v.priceSYP;
-          detail[sym] = { priceSYP: v.priceSYP, updatedAt: v.updatedAt };
+          if (v.isManual) map[sym] = v.priceSYP;
+          detail[sym] = { priceSYP: v.priceSYP, updatedAt: v.updatedAt, isManual: v.isManual };
         });
         setMetalOverrideState(map);
         setMetalOverridesDetail(detail);
@@ -1971,11 +1971,27 @@ export default function AdminPage() {
     try {
       await fetch('/api/settings/gold-rate', { method: 'DELETE', headers: { 'X-Admin-Token': token ?? '' } });
       setGoldOverrideActive(false);
-      setGoldOverrideInput('');
-      setGoldOverrideUpdatedAt(null);
       setGoldOverrideMsg('تم إلغاء التجاوز، سيعود للسعر التلقائي');
+      void fetchGoldOverride();
       refetchGold();
       setTimeout(() => setGoldOverrideMsg(''), 3000);
+    } catch {}
+  };
+
+  const reactivateMetalOvr = async (symbol: string) => {
+    const detail = metalOverridesDetail[symbol];
+    if (!detail) return;
+    try {
+      const res = await fetch(`/api/settings/metal-rates/${symbol}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '' },
+        body: JSON.stringify({ priceSYP: detail.priceSYP }),
+      });
+      if (res.ok) {
+        setMetalMsg('تم تفعيل السعر المحفوظ');
+        fetchMetalOverrides();
+        setTimeout(() => setMetalMsg(''), 3000);
+      }
     } catch {}
   };
 
@@ -4748,7 +4764,7 @@ export default function AdminPage() {
 
               {/* ── Price Overrides Status ── */}
               {(() => {
-                const anyActive = sypRateIsManual || goldOverrideActive || Object.keys(metalOverridesDetail).length > 0;
+                const anyActive = sypRateIsManual || goldOverrideActive || Object.values(metalOverridesDetail).some(d => d.isManual);
                 const METAL_NAMES: Record<string, string> = {
                   XAU: 'الذهب (أوقية)', XAG: 'الفضة', XPT: 'البلاتين', XPD: 'البلاديوم', XCU: 'النحاس',
                 };
@@ -4762,7 +4778,7 @@ export default function AdminPage() {
                       </div>
                       {anyActive ? (
                         <span className="text-[10px] px-2 py-0.5 rounded-full font-black bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 animate-pulse">
-                          {[sypRateIsManual, goldOverrideActive, ...Object.keys(metalOverridesDetail).map(() => true)].filter(Boolean).length} نشط
+                          {[sypRateIsManual, goldOverrideActive, ...Object.values(metalOverridesDetail).map(d => d.isManual)].filter(Boolean).length} نشط
                         </span>
                       ) : (
                         <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
@@ -4827,20 +4843,27 @@ export default function AdminPage() {
                               {goldOverrideActive ? '✏ يدوي' : '⚡ تلقائي'}
                             </span>
                           </div>
-                          {goldOverrideActive && (
+                          {goldOverrideActive ? (
                             <button
                               onClick={() => void clearGoldOvr()}
                               className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors flex-shrink-0 ml-2"
                             >
                               <X className="w-2.5 h-2.5" /> إلغاء
                             </button>
+                          ) : goldOverrideInput && (
+                            <button
+                              onClick={() => void saveGoldOverride()}
+                              className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex-shrink-0 ml-2"
+                            >
+                              <Save className="w-2.5 h-2.5" /> تفعيل
+                            </button>
                           )}
                         </div>
-                        {goldOverrideActive && goldOverrideInput && (
+                        {goldOverrideInput && (
                           <div className="mt-2 flex items-center justify-between">
                             <div>
-                              <p className="text-[10px] text-muted-foreground">سعر الغرام المُطبَّق</p>
-                              <p className="text-base font-black text-amber-700 dark:text-amber-300" dir="ltr">{parseFloat(goldOverrideInput).toLocaleString()} ل.س</p>
+                              <p className="text-[10px] text-muted-foreground">{goldOverrideActive ? 'سعر الغرام المُطبَّق' : 'القيمة المحفوظة'}</p>
+                              <p className={`text-base font-black ${goldOverrideActive ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground'}`} dir="ltr">{parseFloat(goldOverrideInput).toLocaleString()} ل.س</p>
                             </div>
                             {goldOverrideUpdatedAt && (
                               <div className="text-left">
@@ -4852,28 +4875,37 @@ export default function AdminPage() {
                         )}
                       </div>
 
-                      {/* Active Metal Overrides */}
+                      {/* Metal Overrides (active and stored) */}
                       {Object.entries(metalOverridesDetail).map(([sym, detail]) => (
-                        <div key={sym} className="rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/50 dark:bg-purple-900/10 p-3 transition-all">
+                        <div key={sym} className={`rounded-xl border p-3 transition-all ${detail.isManual ? 'border-purple-200 dark:border-purple-800/60 bg-purple-50/50 dark:bg-purple-900/10' : 'border-border bg-secondary/20'}`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <CoinsIcon className="w-3.5 h-3.5 flex-shrink-0 text-purple-600" />
+                              <CoinsIcon className={`w-3.5 h-3.5 flex-shrink-0 ${detail.isManual ? 'text-purple-600' : 'text-muted-foreground'}`} />
                               <span className="text-xs font-bold truncate">{METAL_NAMES[sym] ?? sym}</span>
-                              <span className="text-[9px] px-1.5 py-0.5 rounded-full font-black flex-shrink-0 bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
-                                ✏ يدوي
+                              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-black flex-shrink-0 ${detail.isManual ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}>
+                                {detail.isManual ? '✏ يدوي' : '⚡ تلقائي'}
                               </span>
                             </div>
-                            <button
-                              onClick={() => void clearMetalOvr(sym)}
-                              className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors flex-shrink-0 ml-2"
-                            >
-                              <X className="w-2.5 h-2.5" /> إلغاء
-                            </button>
+                            {detail.isManual ? (
+                              <button
+                                onClick={() => void clearMetalOvr(sym)}
+                                className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors flex-shrink-0 ml-2"
+                              >
+                                <X className="w-2.5 h-2.5" /> إلغاء
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => void reactivateMetalOvr(sym)}
+                                className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex-shrink-0 ml-2"
+                              >
+                                <Save className="w-2.5 h-2.5" /> تفعيل
+                              </button>
+                            )}
                           </div>
                           <div className="mt-2 flex items-center justify-between">
                             <div>
-                              <p className="text-[10px] text-muted-foreground">السعر المُطبَّق</p>
-                              <p className="text-base font-black text-purple-700 dark:text-purple-300" dir="ltr">{detail.priceSYP.toLocaleString()} ل.س</p>
+                              <p className="text-[10px] text-muted-foreground">{detail.isManual ? 'السعر المُطبَّق' : 'القيمة المحفوظة'}</p>
+                              <p className={`text-base font-black ${detail.isManual ? 'text-purple-700 dark:text-purple-300' : 'text-muted-foreground'}`} dir="ltr">{detail.priceSYP.toLocaleString()} ل.س</p>
                             </div>
                             <div className="text-left">
                               <p className="text-[9px] text-muted-foreground">آخر تعديل</p>

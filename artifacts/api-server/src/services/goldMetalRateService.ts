@@ -46,7 +46,11 @@ export async function setGoldOverride(pricePerGramSYP: number, changedBy?: strin
 }
 
 export async function clearGoldOverride(changedBy?: string): Promise<void> {
-  await db.delete(rateOverridesTable).where(eq(rateOverridesTable.key, GOLD_KEY));
+  const now = new Date();
+  await db
+    .update(rateOverridesTable)
+    .set({ isManual: false, updatedAt: now })
+    .where(eq(rateOverridesTable.key, GOLD_KEY));
   await logOverrideHistory("gold", GOLD_KEY, "clear", null, changedBy).catch(() => {});
 }
 
@@ -101,6 +105,10 @@ export async function setMetalOverride(symbol: string, priceSYP: number, changed
 
 export async function clearMetalOverride(symbol: string, changedBy?: string): Promise<void> {
   const key = `metal:${symbol.toUpperCase()}`;
-  await db.delete(rateOverridesTable).where(eq(rateOverridesTable.key, key));
+  const now = new Date();
+  await db
+    .update(rateOverridesTable)
+    .set({ isManual: false, updatedAt: now })
+    .where(eq(rateOverridesTable.key, key));
   await logOverrideHistory("metal", key, "clear", null, changedBy).catch(() => {});
 }
