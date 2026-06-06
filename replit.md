@@ -35,7 +35,8 @@
 - Contract-first API: OpenAPI spec → Orval codegen → React Query hooks + Zod schemas
 - Supabase Auth — session via `useAuth()` context, TOKEN_REFRESHED filtered to prevent tab-refocus reload
 - Admin auth via `ADMIN_TOKEN` env var (default `SYRSYP2026ADMIN` — يجب تغييره)
-- Rate overrides مخزّنة في الذاكرة (تُفقد عند إعادة التشغيل)
+- Rate overrides (SYP، ذهب، معادن) مخزّنة في جدول `rate_overrides` بقاعدة البيانات — تبقى بعد إعادة التشغيل
+- Currency (forex) overrides مخزّنة في ملف JSON محلي (`rate-overrides.json`) — تبقى بعد إعادة التشغيل
 - Metal prices via MetalPriceAPI, cached 8 hours
 
 ## Product
@@ -65,7 +66,6 @@
 
 ## Gotchas
 
-- rate overrides للذهب والمعادن تُخزن في الذاكرة فقط
 - Supabase anon/service keys في secrets: `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY`
 - `SESSION_SECRET` مطلوب للـ Express sessions
 - إصلاح إعادة التحميل عند التبديل بين التبويبات: TOKEN_REFRESHED مُفلتر في auth-context
