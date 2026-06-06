@@ -36,6 +36,7 @@ function timeAgo(dateStr: string): string {
 const READ_KEY = 'syp-notifications-read';
 const LOCAL_KEY = 'syp-local-notifications-v2';
 const WELCOME_KEY = 'syp-welcome-notif-v4';
+const DISMISSED_KEY = 'syp-notifications-dismissed-v1';
 
 function getReadIds(): Set<number> {
   try {
@@ -48,6 +49,20 @@ function markRead(ids: number[]): void {
   const existing = getReadIds();
   ids.forEach(id => existing.add(id));
   localStorage.setItem(READ_KEY, JSON.stringify([...existing]));
+}
+
+function getDismissedIds(): Set<number> {
+  try {
+    const raw = localStorage.getItem(DISMISSED_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch { return new Set(); }
+}
+
+function addDismissedIds(ids: number[]): void {
+  const existing = getDismissedIds();
+  ids.forEach(id => existing.add(id));
+  const arr = [...existing].slice(-300);
+  localStorage.setItem(DISMISSED_KEY, JSON.stringify(arr));
 }
 
 function getLocalNotifications(): Notification[] {
@@ -187,9 +202,10 @@ export function NotificationsPanel() {
         seen.add(w.id);
         return true;
       });
-      const merged = [...extras, ...remote].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      const dismissed = getDismissedIds();
+      const merged = [...extras, ...remote]
+        .filter(n => !dismissed.has(n.id))
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setNotifications(merged.slice(0, 50));
     } catch {
       const welcome = getOrCreateWelcomeNotification();
@@ -267,9 +283,10 @@ export function NotificationsPanel() {
   }
 
   async function handleClearAll() {
-    localStorage.removeItem(LOCAL_KEY);
     const allIds = notifications.map(n => n.id);
+    addDismissedIds(allIds);
     markRead(allIds);
+    localStorage.removeItem(LOCAL_KEY);
     setReadIds(new Set(allIds));
     setNotifications([]);
     const walletId = user?.id ?? localStorage.getItem('syp-wallet-id');

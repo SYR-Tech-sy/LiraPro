@@ -3,6 +3,7 @@ import { eq, and, desc, sql } from "drizzle-orm";
 import { db, vendorProfilesTable, vendorPricesTable, usersTable } from "@workspace/db";
 import { requireSupabaseAuth } from "../middlewares/requireSupabaseAuth.js";
 import { updateVendorPriceSchema } from "@workspace/db";
+import { supabaseAdmin } from "../lib/supabase-admin.js";
 
 const router: IRouter = Router();
 
@@ -31,9 +32,41 @@ async function requireVendor(
 router.get("/vendor/profile", requireSupabaseAuth, requireVendor, async (req, res): Promise<void> => {
   try {
     const userId = req.supabaseUserId!;
+
+    // Primary: Drizzle vendor_profiles table
     const [profile] = await db.select().from(vendorProfilesTable).where(eq(vendorProfilesTable.clerkId, userId));
-    if (!profile) { res.status(404).json({ error: "Vendor profile not found" }); return; }
-    res.json(profile);
+    if (profile) { res.json(profile); return; }
+
+    // Fallback: admin-created vendors stored in Supabase vendors table
+    const { data: vendor } = await supabaseAdmin!
+      .from("vendors")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
+
+    if (vendor) {
+      const v = vendor as Record<string, unknown>;
+      res.json({
+        id: v.id,
+        clerkId: userId,
+        businessName: v.business_name ?? "",
+        fullName: v.owner_name ?? "",
+        email: v.email ?? "",
+        phone: v.phone ?? "",
+        governorate: v.governorate ?? "",
+        city: v.city ?? "",
+        address: v.address ?? "",
+        category: Array.isArray(v.category_ids) && (v.category_ids as string[]).length > 0
+          ? (v.category_ids as string[])[0]
+          : "local_market",
+        trustScore: typeof v.trust_score === "number" ? v.trust_score * 10 : 50,
+        isActive: v.is_active ?? true,
+        logoUrl: v.logo_url ?? null,
+      });
+      return;
+    }
+
+    res.status(404).json({ error: "Vendor profile not found" });
   } catch (err) {
     req.log.error({ err }, "Failed to get vendor profile");
     res.status(500).json({ error: "Internal server error" });

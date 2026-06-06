@@ -176,9 +176,10 @@ router.post("/admin/users/:userId/unban", async (req, res): Promise<void> => {
   if (!verifyAdmin(req, res)) return;
   try {
     const userId = req.params.userId;
-    await supabaseAdmin!.from("bans")
-      .update({ banned: false, ban_reason: "", updated_at: new Date().toISOString() })
-      .eq("user_id", userId);
+    await supabaseAdmin!.from("bans").upsert(
+      { user_id: userId, banned: false, ban_reason: "", updated_at: new Date().toISOString() },
+      { onConflict: "user_id" }
+    );
     res.json({ success: true });
   } catch {
     res.status(500).json({ error: "Failed to unban user" });
