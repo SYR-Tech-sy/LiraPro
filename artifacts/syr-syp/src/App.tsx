@@ -225,6 +225,26 @@ function useVendorInfo() {
         setIsVendor(true);
         setBusinessName(data.businessName ?? '');
         localStorage.setItem('syp-vendor-biz', data.businessName ?? '');
+      } else if (res.status === 404) {
+        // Try to recover via email-based linking (vendor approved by admin but not yet linked)
+        try {
+          const linkRes = await fetch('/api/vendor/link-by-email', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            credentials: 'include',
+          });
+          if (linkRes.ok) {
+            const linked = await linkRes.json() as { businessName?: string };
+            setIsVendor(true);
+            const biz = linked.businessName ?? '';
+            setBusinessName(biz);
+            localStorage.setItem('syp-vendor-biz', biz);
+            return;
+          }
+        } catch { /* link failed — fall through to not-vendor */ }
+        setIsVendor(false);
+        setBusinessName('');
+        localStorage.removeItem('syp-vendor-biz');
       } else {
         setIsVendor(false);
         setBusinessName('');

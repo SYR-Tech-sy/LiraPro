@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { supabaseAdmin } from "../lib/supabase-admin.js";
-import { db, usersTable } from "@workspace/db";
+import { db, usersTable, vendorProfilesTable, type VendorCategory } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { addRequest, getAllRequests, markHandled, cancelRequestByWallet, deleteRequestById } from "../services/deletionService.js";
 import { readFileSync, writeFileSync, existsSync } from "fs";
@@ -103,6 +103,35 @@ router.post("/admin/vendors", async (req, res): Promise<void> => {
         await db.update(usersTable).set({ role: "vendor", updatedAt: new Date() }).where(eq(usersTable.clerkId, body.user_id));
       } else {
         await db.insert(usersTable).values({ clerkId: body.user_id, email: body.email ?? "", role: "vendor", profileCompleted: false }).onConflictDoNothing();
+      }
+
+      // Sync to Drizzle vendor_profiles so link-by-email and profile lookups work
+      try {
+        await db.insert(vendorProfilesTable).values({
+          clerkId: body.user_id,
+          businessName: body.business_name,
+          fullName: body.owner_name ?? body.business_name,
+          email: body.email ?? "",
+          phone: body.phone ?? "",
+          governorate: body.governorate ?? "",
+          city: body.city ?? "",
+          address: body.address ?? "",
+          category: (body.category_ids?.[0] ?? "local_market") as VendorCategory,
+        }).onConflictDoUpdate({
+          target: vendorProfilesTable.clerkId,
+          set: {
+            businessName: body.business_name,
+            fullName: body.owner_name ?? body.business_name,
+            email: body.email ?? "",
+            phone: body.phone ?? "",
+            governorate: body.governorate ?? "",
+            city: body.city ?? "",
+            address: body.address ?? "",
+            updatedAt: new Date(),
+          },
+        });
+      } catch (syncErr) {
+        req.log.warn({ syncErr }, "vendor_profiles sync skipped (non-fatal)");
       }
     }
 

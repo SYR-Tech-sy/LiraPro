@@ -134,23 +134,7 @@ export const GoldenBadge = React.memo(function GoldenBadge({ size = 20, showGlow
             <feComposite in="c" in2="b" operator="in" result="glow" />
             <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
-          <radialGradient id={`ggbg${uid}`} cx="50%" cy="50%" r="50%">
-            <stop offset="30%"  stopColor="#FFD700" stopOpacity="0.18" />
-            <stop offset="60%"  stopColor="#F59E0B" stopOpacity="0.14" />
-            <stop offset="100%" stopColor="#D97706" stopOpacity="0" />
-          </radialGradient>
-          <filter id={`ggbg-blur${uid}`} x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="5" />
-          </filter>
         </defs>
-
-        {/* Soft gold backdrop glow behind rings */}
-        {showGlow && (
-          <motion.circle cx={cx} cy={cy} r={34} fill={`url(#ggbg${uid})`}
-            filter={`url(#ggbg-blur${uid})`}
-            animate={{ opacity: [0.5, 0.85, 0.5] }}
-            transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }} />
-        )}
 
         <AnimatePresence>
           {hovered && (
