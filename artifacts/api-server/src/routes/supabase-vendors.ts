@@ -98,17 +98,17 @@ router.post("/admin/vendors", async (req, res): Promise<void> => {
         .from("profiles")
         .update({ role: "vendor", updated_at: new Date().toISOString() })
         .eq("id", body.user_id);
-      const existing = await db.select({ id: usersTable.clerkId }).from(usersTable).where(eq(usersTable.clerkId, body.user_id)).limit(1);
+      const existing = await db.select({ id: usersTable.supabaseId }).from(usersTable).where(eq(usersTable.supabaseId, body.user_id)).limit(1);
       if (existing.length > 0) {
-        await db.update(usersTable).set({ role: "vendor", updatedAt: new Date() }).where(eq(usersTable.clerkId, body.user_id));
+        await db.update(usersTable).set({ role: "vendor", updatedAt: new Date() }).where(eq(usersTable.supabaseId, body.user_id));
       } else {
-        await db.insert(usersTable).values({ clerkId: body.user_id, email: body.email ?? "", role: "vendor", profileCompleted: false }).onConflictDoNothing();
+        await db.insert(usersTable).values({ supabaseId: body.user_id, email: body.email ?? "", role: "vendor", profileCompleted: false }).onConflictDoNothing();
       }
 
       // Sync to Drizzle vendor_profiles so link-by-email and profile lookups work
       try {
         await db.insert(vendorProfilesTable).values({
-          clerkId: body.user_id,
+          supabaseId: body.user_id,
           businessName: body.business_name,
           fullName: body.owner_name ?? body.business_name,
           email: body.email ?? "",
@@ -118,7 +118,7 @@ router.post("/admin/vendors", async (req, res): Promise<void> => {
           address: body.address ?? "",
           category: (body.category_ids?.[0] ?? "local_market") as VendorCategory,
         }).onConflictDoUpdate({
-          target: vendorProfilesTable.clerkId,
+          target: vendorProfilesTable.supabaseId,
           set: {
             businessName: body.business_name,
             fullName: body.owner_name ?? body.business_name,

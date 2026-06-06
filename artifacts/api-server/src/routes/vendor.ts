@@ -16,7 +16,7 @@ async function requireVendor(
   const userId = req.supabaseUserId;
   if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
   try {
-    const [user] = await db.select({ role: usersTable.role }).from(usersTable).where(eq(usersTable.clerkId, userId));
+    const [user] = await db.select({ role: usersTable.role }).from(usersTable).where(eq(usersTable.supabaseId, userId));
     if (!user || (user.role !== "vendor" && user.role !== "admin")) {
       res.status(403).json({ error: "Forbidden: vendor access only" });
       return;
@@ -34,7 +34,7 @@ router.get("/vendor/profile", requireSupabaseAuth, requireVendor, async (req, re
     const userId = req.supabaseUserId!;
 
     // Primary: Drizzle vendor_profiles table
-    const [profile] = await db.select().from(vendorProfilesTable).where(eq(vendorProfilesTable.clerkId, userId));
+    const [profile] = await db.select().from(vendorProfilesTable).where(eq(vendorProfilesTable.supabaseId, userId));
     if (profile) { res.json(profile); return; }
 
     // Fallback: admin-created vendors stored in Supabase vendors table
@@ -48,7 +48,7 @@ router.get("/vendor/profile", requireSupabaseAuth, requireVendor, async (req, re
       const v = vendor as Record<string, unknown>;
       res.json({
         id: v.id,
-        clerkId: userId,
+        supabaseId: userId,
         businessName: v.business_name ?? "",
         fullName: v.owner_name ?? "",
         email: v.email ?? "",
@@ -92,16 +92,16 @@ router.post("/vendor/link-by-email", requireSupabaseAuth, async (req, res): Prom
     // Link this session's userId to the profile (idempotent)
     const [updated] = await db
       .update(vendorProfilesTable)
-      .set({ clerkId: userId })
+      .set({ supabaseId: userId })
       .where(eq(vendorProfilesTable.id, profile.id))
       .returning();
 
     // Upsert user row with vendor role
-    const [existingUser] = await db.select().from(usersTable).where(eq(usersTable.clerkId, userId));
+    const [existingUser] = await db.select().from(usersTable).where(eq(usersTable.supabaseId, userId));
     if (existingUser) {
-      await db.update(usersTable).set({ role: "vendor", updatedAt: new Date() }).where(eq(usersTable.clerkId, userId));
+      await db.update(usersTable).set({ role: "vendor", updatedAt: new Date() }).where(eq(usersTable.supabaseId, userId));
     } else {
-      await db.insert(usersTable).values({ clerkId: userId, email, role: "vendor", profileCompleted: false });
+      await db.insert(usersTable).values({ supabaseId: userId, email, role: "vendor", profileCompleted: false });
     }
 
     res.json(updated);
@@ -118,7 +118,7 @@ router.get("/vendor/prices", requireSupabaseAuth, requireVendor, async (req, res
     const prices = await db
       .select()
       .from(vendorPricesTable)
-      .where(eq(vendorPricesTable.vendorClerkId, userId))
+      .where(eq(vendorPricesTable.vendorSupabaseId, userId))
       .orderBy(desc(vendorPricesTable.updatedAt));
     res.json(prices);
   } catch (err) {
@@ -132,7 +132,7 @@ router.post("/vendor/prices", requireSupabaseAuth, requireVendor, async (req, re
   try {
     const userId = req.supabaseUserId!;
     const [profile] = await db.select({ category: vendorProfilesTable.category, governorate: vendorProfilesTable.governorate, city: vendorProfilesTable.city })
-      .from(vendorProfilesTable).where(eq(vendorProfilesTable.clerkId, userId));
+      .from(vendorProfilesTable).where(eq(vendorProfilesTable.supabaseId, userId));
     if (!profile) { res.status(404).json({ error: "Vendor profile not found" }); return; }
 
     const body = req.body as Record<string, unknown>;
@@ -142,7 +142,7 @@ router.post("/vendor/prices", requireSupabaseAuth, requireVendor, async (req, re
     }
 
     const [newPrice] = await db.insert(vendorPricesTable).values({
-      vendorClerkId: userId,
+      vendorSupabaseId: userId,
       category: (body.category as string) || profile.category,
       productName: (body.productName as string) || (body.productNameAr as string),
       productNameAr: body.productNameAr as string,
@@ -172,9 +172,9 @@ router.put("/vendor/prices/:id", requireSupabaseAuth, requireVendor, async (req,
     const parsed = updateVendorPriceSchema.safeParse(req.body);
     if (!parsed.success) { res.status(400).json({ error: "Invalid data" }); return; }
 
-    const [existing] = await db.select({ vendorClerkId: vendorPricesTable.vendorClerkId })
+    const [existing] = await db.select({ vendorSupabaseId: vendorPricesTable.vendorSupabaseId })
       .from(vendorPricesTable).where(eq(vendorPricesTable.id, id));
-    if (!existing || existing.vendorClerkId !== userId) {
+    if (!existing || existing.vendorSupabaseId !== userId) {
       res.status(403).json({ error: "Not authorized to edit this price" });
       return;
     }
@@ -196,9 +196,9 @@ router.delete("/vendor/prices/:id", requireSupabaseAuth, requireVendor, async (r
   try {
     const userId = req.supabaseUserId!;
     const id = Number(req.params.id);
-    const [existing] = await db.select({ vendorClerkId: vendorPricesTable.vendorClerkId })
+    const [existing] = await db.select({ vendorSupabaseId: vendorPricesTable.vendorSupabaseId })
       .from(vendorPricesTable).where(eq(vendorPricesTable.id, id));
-    if (!existing || existing.vendorClerkId !== userId) {
+    if (!existing || existing.vendorSupabaseId !== userId) {
       res.status(403).json({ error: "Not authorized" });
       return;
     }
@@ -233,7 +233,7 @@ router.put("/vendor/profile", requireSupabaseAuth, requireVendor, async (req, re
 
     const [updated] = await db.update(vendorProfilesTable)
       .set(patch)
-      .where(eq(vendorProfilesTable.clerkId, userId))
+      .where(eq(vendorProfilesTable.supabaseId, userId))
       .returning();
     if (!updated) { res.status(404).json({ error: "Vendor profile not found" }); return; }
     res.json(updated);
@@ -247,9 +247,9 @@ router.put("/vendor/profile", requireSupabaseAuth, requireVendor, async (req, re
 router.get("/vendor/stats", requireSupabaseAuth, requireVendor, async (req, res): Promise<void> => {
   try {
     const userId = req.supabaseUserId!;
-    const [profile] = await db.select().from(vendorProfilesTable).where(eq(vendorProfilesTable.clerkId, userId));
+    const [profile] = await db.select().from(vendorProfilesTable).where(eq(vendorProfilesTable.supabaseId, userId));
     const prices = await db.select({ views: vendorPricesTable.views, isActive: vendorPricesTable.isActive })
-      .from(vendorPricesTable).where(eq(vendorPricesTable.vendorClerkId, userId));
+      .from(vendorPricesTable).where(eq(vendorPricesTable.vendorSupabaseId, userId));
     const totalViews = prices.reduce((s, p) => s + p.views, 0);
     const activePrices = prices.filter(p => p.isActive).length;
     res.json({

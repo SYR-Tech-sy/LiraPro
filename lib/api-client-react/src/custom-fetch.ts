@@ -360,7 +360,6 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  // Include credentials (cookies) by default so Clerk session cookies are
   // forwarded on same-origin requests. Callers can override by passing
   // { credentials: 'omit' } explicitly.
   const response = await fetch(input, {

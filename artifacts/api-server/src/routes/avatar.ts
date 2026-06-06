@@ -73,7 +73,7 @@ router.post("/profile/avatar", async (req, res): Promise<void> => {
     await db
       .update(usersTable)
       .set({ profilePhoto: publicUrl, updatedAt: new Date() })
-      .where(eq(usersTable.clerkId, user.id));
+      .where(eq(usersTable.supabaseId, user.id));
   } catch { /* not critical — profiles table is the primary */ }
 
   res.json({ url: publicUrl });

@@ -20,18 +20,18 @@ router.get("/admin/verify-requests", (req, res): void => {
 
 // POST /api/admin/verify-requests — any user submits verification request
 router.post("/admin/verify-requests", (req, res): void => {
-  const { clerkId, lphId, fullName, email } = req.body as {
-    clerkId: string;
+  const { supabaseId, lphId, fullName, email } = req.body as {
+    supabaseId: string;
     lphId: string;
     fullName: string;
     email: string;
   };
-  if (!clerkId || !lphId) {
-    res.status(400).json({ error: "clerkId and lphId are required" });
+  if (!supabaseId || !lphId) {
+    res.status(400).json({ error: "supabaseId and lphId are required" });
     return;
   }
   const entry = addVerifyRequest({
-    clerkId,
+    supabaseId,
     lphId: lphId || "",
     fullName: fullName || "",
     email: email || "",

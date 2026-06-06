@@ -67,7 +67,7 @@ export interface NewsItem {
 }
 
 export interface UserProfile {
-  clerkId: string;
+  supabaseId: string;
   email: string;
   /** @nullable */
   firstName?: string | null;
@@ -142,7 +142,7 @@ export const PriceAlertType = {
 
 export interface PriceAlert {
   id: number;
-  clerkId: string;
+  supabaseId: string;
   code: string;
   /** @nullable */
   nameAr?: string | null;

@@ -465,7 +465,7 @@ components:
     UserProfile:
       type: object
       properties:
-        clerkId:
+        supabaseId:
           type: string
         email:
           type: string
@@ -506,7 +506,7 @@ components:
         profileCompleted:
           type: boolean
       required:
-        - clerkId
+        - supabaseId
         - email
         - profileCompleted
         - isBanned
@@ -544,7 +544,7 @@ components:
       properties:
         id:
           type: integer
-        clerkId:
+        supabaseId:
           type: string
         code:
           type: string
@@ -565,7 +565,7 @@ components:
           type: string
       required:
         - id
-        - clerkId
+        - supabaseId
         - code
         - type
         - targetPrice

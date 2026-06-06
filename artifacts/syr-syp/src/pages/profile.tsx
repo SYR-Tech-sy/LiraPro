@@ -165,7 +165,7 @@ export default function ProfilePage() {
   };
 
   interface VerifyReqItem {
-    id: string; clerkId: string; lphId: string;
+    id: string; supabaseId: string; lphId: string;
     fullName: string; email: string;
     requestedAt: string; status: 'pending' | 'approved' | 'rejected';
   }
@@ -346,7 +346,7 @@ export default function ProfilePage() {
     fetch('/api/admin/verify-requests', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clerkId: user.id, lphId: lphId || '', fullName, email }),
+      body: JSON.stringify({ supabaseId: user.id, lphId: lphId || '', fullName, email }),
     }).catch(() => {});
     localStorage.setItem(verifyKey, 'pending');
     setVerifyStatus('pending');

@@ -14,12 +14,12 @@ router.get("/profile", requireAuth, async (req, res): Promise<void> => {
   const userId = req.supabaseUserId!;
   const email = req.supabaseUserEmail ?? "";
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.clerkId, userId));
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.supabaseId, userId));
   if (!user) {
     const [newUser] = await db
       .insert(usersTable)
       .values({
-        clerkId: userId,
+        supabaseId: userId,
         email,
         loginProvider: "supabase",
         lastSeenAt: new Date(),
@@ -33,7 +33,7 @@ router.get("/profile", requireAuth, async (req, res): Promise<void> => {
   await db
     .update(usersTable)
     .set({ lastSeenAt: new Date(), loginProvider: "supabase" })
-    .where(eq(usersTable.clerkId, userId));
+    .where(eq(usersTable.supabaseId, userId));
 
   res.json(GetProfileResponse.parse({ ...user, lastSeenAt: new Date(), loginProvider: "supabase" }));
 });
@@ -51,13 +51,13 @@ router.put("/profile", requireAuth, async (req, res): Promise<void> => {
   const { firstName, lastName, fatherName, phone, birthDate, gender, governorate, city, address, profilePhoto, latitude, longitude } = parsed.data;
   const profileCompleted = !!(firstName && lastName && fatherName && phone && birthDate && gender && governorate && city && address);
 
-  const [existing] = await db.select().from(usersTable).where(eq(usersTable.clerkId, userId));
+  const [existing] = await db.select().from(usersTable).where(eq(usersTable.supabaseId, userId));
 
   if (!existing) {
     const [newUser] = await db
       .insert(usersTable)
       .values({
-        clerkId: userId,
+        supabaseId: userId,
         email,
         firstName: firstName ?? null,
         lastName: lastName ?? null,
@@ -98,7 +98,7 @@ router.put("/profile", requireAuth, async (req, res): Promise<void> => {
       profileCompleted,
       updatedAt: new Date(),
     })
-    .where(eq(usersTable.clerkId, userId))
+    .where(eq(usersTable.supabaseId, userId))
     .returning();
 
   res.json(UpdateProfileResponse.parse(updated));

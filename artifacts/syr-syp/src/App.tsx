@@ -907,7 +907,7 @@ function VendorAwareRedirect() {
 
 function HomeRedirect() {
   const { isLoaded, isSignedIn } = useUser();
-  // Show Welcome immediately while Clerk loads — safe since it only has sign-in/sign-up links.
+  // Show Welcome immediately while Supabase loads — safe since it only has sign-in/sign-up links.
   // This eliminates the blank screen on slow connections.
   if (!isLoaded) return <Welcome />;
   if (isSignedIn) return <VendorAwareRedirect />;

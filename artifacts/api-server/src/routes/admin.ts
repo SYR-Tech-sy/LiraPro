@@ -74,13 +74,13 @@ router.get("/admin/users", async (req, res): Promise<void> => {
   try {
     const dbUsers = await db.select().from(usersTable).orderBy(desc(usersTable.createdAt));
     const jsonUsers = getAllUsers();
-    const jsonByClerkId = new Map(jsonUsers.filter(u => u.clerkId).map(u => [u.clerkId!, u]));
+    const jsonBySupabaseId = new Map(jsonUsers.filter(u => u.supabaseId).map(u => [u.supabaseId!, u]));
     const mapped = dbUsers.map(u => {
-      const jsonUser = jsonByClerkId.get(u.clerkId);
+      const jsonUser = jsonBySupabaseId.get(u.supabaseId);
       return {
-        id: u.clerkId,
-        walletId: u.clerkId,
-        clerkId: u.clerkId,
+        id: u.supabaseId,
+        walletId: u.supabaseId,
+        supabaseId: u.supabaseId,
         accountType: (u.role === "vendor" ? "provider" : "private") as "private" | "provider",
         fullName: [u.firstName, u.lastName].filter(Boolean).join(" ") || undefined,
         fatherName: u.fatherName ?? undefined,
@@ -109,8 +109,8 @@ router.get("/admin/users", async (req, res): Promise<void> => {
       };
     });
     // Also include legacy JSON users not in DB
-    const dbIds = new Set(dbUsers.map(u => u.clerkId));
-    const legacyOnly = jsonUsers.filter(u => !u.clerkId || !dbIds.has(u.clerkId));
+    const dbIds = new Set(dbUsers.map(u => u.supabaseId));
+    const legacyOnly = jsonUsers.filter(u => !u.supabaseId || !dbIds.has(u.supabaseId));
     res.json([...mapped, ...legacyOnly]);
   } catch {
     res.json(getAllUsers());
@@ -134,7 +134,7 @@ router.delete("/admin/users/:walletId", async (req, res): Promise<void> => {
   if (!verifyAdmin(req, res)) return;
   const walletId = req.params.walletId!;
   deleteUser(walletId);
-  try { await db.delete(usersTable).where(eq(usersTable.clerkId, walletId)); } catch {}
+  try { await db.delete(usersTable).where(eq(usersTable.supabaseId, walletId)); } catch {}
   // Also delete from Supabase auth via service key if available
   try {
     const { createClient } = await import("@supabase/supabase-js");
@@ -189,7 +189,7 @@ router.post("/admin/users/:walletId/undelete", (req, res): void => {
 // ── Public account-status check (no admin token required) ────────────────────
 router.get("/users/ban-status/:walletId", (req, res): void => {
   const users = getAllUsers();
-  const user = users.find(u => u.walletId === req.params.walletId || u.clerkId === req.params.walletId);
+  const user = users.find(u => u.walletId === req.params.walletId || u.supabaseId === req.params.walletId);
   if (!user) {
     res.json({ banned: false, restricted: false, softDeleted: false });
     return;

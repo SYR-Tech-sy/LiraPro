@@ -5,7 +5,7 @@ import { z } from "zod/v4";
 export type UserRole = "user" | "vendor" | "admin";
 
 export const usersTable = pgTable("users", {
-  clerkId: text("clerk_id").primaryKey(),
+  supabaseId: text("clerk_id").primaryKey(),
   email: text("email").notNull(),
   firstName: text("first_name"),
   lastName: text("last_name"),

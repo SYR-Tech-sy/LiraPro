@@ -8,7 +8,7 @@ const DATA_FILE = path.resolve(__dirname, "../../verify-requests.json");
 
 export interface VerifyRequest {
   id: string;
-  clerkId: string;
+  supabaseId: string;
   lphId: string;
   fullName: string;
   email: string;
@@ -44,7 +44,7 @@ export function addVerifyRequest(
 ): VerifyRequest {
   const data = readData();
   const existing = data.requests.find(
-    (r) => r.clerkId === req.clerkId && r.status === "pending"
+    (r) => r.supabaseId === req.supabaseId && r.status === "pending"
   );
   if (existing) return existing;
   const entry: VerifyRequest = {

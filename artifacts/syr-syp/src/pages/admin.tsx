@@ -84,7 +84,7 @@ interface AdminStats {
 interface RegisteredUser {
   id: string;
   walletId: string;
-  clerkId?: string;
+  supabaseId?: string;
   accountType: 'private' | 'provider';
   ispType?: string;
   fullName?: string;
@@ -146,7 +146,7 @@ interface SypNotification {
 
 interface VerifyRequest {
   id: string;
-  clerkId: string;
+  supabaseId: string;
   lphId: string;
   fullName: string;
   email: string;
@@ -1272,7 +1272,7 @@ export default function AdminPage() {
 
   // Vendor management state
   interface VendorProfileAdmin {
-    id: number; clerkId: string; businessName: string; fullName: string;
+    id: number; supabaseId: string; businessName: string; fullName: string;
     email: string; phone: string; governorate: string; city: string;
     address?: string; category: string; trustScore: number; isActive: boolean;
     logoUrl?: string; createdAt: string;
@@ -1287,7 +1287,7 @@ export default function AdminPage() {
   const [vendorApplications, setVendorApplications] = useState<VendorApplication[]>([]);
   const [vendorAppFilter, setVendorAppFilter] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
   const [createVendorOpen, setCreateVendorOpen] = useState(false);
-  const [vendorForm, setVendorForm] = useState({ clerkId: '', businessName: '', fullName: '', email: '', phone: '', governorate: '', city: '', address: '', category: '', trustScore: '50', logoUrl: '' });
+  const [vendorForm, setVendorForm] = useState({ supabaseId: '', businessName: '', fullName: '', email: '', phone: '', governorate: '', city: '', address: '', category: '', trustScore: '50', logoUrl: '' });
   const [vendorSaving, setVendorSaving] = useState(false);
   const [vendorMsg, setVendorMsg] = useState('');
   const [notifyApp, setNotifyApp] = useState<VendorApplication | null>(null);
@@ -1455,7 +1455,7 @@ export default function AdminPage() {
 
   // Accept application panel
   const [acceptingApp, setAcceptingApp] = useState<VendorApplication | null>(null);
-  const [acceptClerkId, setAcceptClerkId] = useState('');
+  const [acceptUserId, setAcceptUserId] = useState('');
   const [acceptTrustScore, setAcceptTrustScore] = useState('50');
   const [acceptLphId, setAcceptLphId] = useState('');
   const [acceptNotifTitle, setAcceptNotifTitle] = useState('');
@@ -1467,7 +1467,7 @@ export default function AdminPage() {
   const [rejectingApp, setRejectingApp] = useState<VendorApplication | null>(null);
   const [rejectNotifTitle, setRejectNotifTitle] = useState('');
   const [rejectNotifBody, setRejectNotifBody] = useState('');
-  const [rejectClerkId, setRejectClerkId] = useState('');
+  const [rejectUserId, setRejectUserId] = useState('');
   const [rejectSaving, setRejectSaving] = useState(false);
   const [rejectMsg, setRejectMsg] = useState('');
 
@@ -1568,7 +1568,7 @@ export default function AdminPage() {
 
   const sendDirectMessage = async () => {
     if (!msgSelectedUser || !msgTitle.trim() || !msgBody.trim() || !token) return;
-    const walletId = msgSelectedUser.walletId ?? msgSelectedUser.clerkId ?? (msgSelectedUser as { id?: string }).id;
+    const walletId = msgSelectedUser.walletId ?? msgSelectedUser.supabaseId ?? (msgSelectedUser as { id?: string }).id;
     if (!walletId) { setMsgSent('خطأ: المستخدم لا يملك معرّف صالح'); setTimeout(() => setMsgSent(''), 4000); return; }
     setMsgSending(true);
     try {
@@ -1679,7 +1679,7 @@ export default function AdminPage() {
         const raw = await res.json() as Record<string, unknown>[];
         setVendors(raw.map(v => ({
           id: v.id as number,
-          clerkId: (v.user_id ?? v.clerkId ?? v.id) as string,
+          supabaseId: (v.user_id ?? v.supabaseId ?? v.id) as string,
           businessName: (v.business_name ?? v.businessName) as string,
           fullName: (v.owner_name ?? v.fullName ?? '') as string,
           email: (v.email ?? (v.profiles as Record<string, unknown> | undefined)?.email ?? '') as string,
@@ -1730,7 +1730,7 @@ export default function AdminPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '' },
         body: JSON.stringify({
-          user_id: vendorForm.clerkId || null,
+          user_id: vendorForm.supabaseId || null,
           business_name: vendorForm.businessName,
           owner_name: vendorForm.fullName || '',
           email: vendorForm.email || '',
@@ -1745,7 +1745,7 @@ export default function AdminPage() {
       if (res.ok) {
         setVendorMsg('تم إنشاء حساب التاجر بنجاح');
         setCreateVendorOpen(false);
-        setVendorForm({ clerkId: '', businessName: '', fullName: '', email: '', phone: '', governorate: '', city: '', address: '', category: '', trustScore: '50', logoUrl: '' });
+        setVendorForm({ supabaseId: '', businessName: '', fullName: '', email: '', phone: '', governorate: '', city: '', address: '', category: '', trustScore: '50', logoUrl: '' });
         fetchVendors();
         setTimeout(() => setVendorMsg(''), 4000);
       } else { const d = await res.json() as { error?: string }; setVendorMsg(`${d.error ?? 'فشل الإنشاء'}`); }
@@ -1758,7 +1758,7 @@ export default function AdminPage() {
       const app = vendorApplications.find(a => a.id === id);
       if (app) {
         setAcceptingApp(app);
-        setAcceptClerkId('');
+        setAcceptUserId('');
         setAcceptTrustScore('50');
         setAcceptLphId('');
         setAcceptNotifTitle('تم قبول طلبك');
@@ -1777,7 +1777,7 @@ export default function AdminPage() {
 
   const confirmAcceptApp = async () => {
     if (!acceptingApp) return;
-    if (!acceptClerkId.trim()) { setAcceptMsg('يرجى إدخال Supabase ID'); return; }
+    if (!acceptUserId.trim()) { setAcceptMsg('يرجى إدخال Supabase ID'); return; }
     setAcceptSaving(true);
     try {
       await fetch(`/api/admin/vendor-applications/${acceptingApp.id}`, {
@@ -1789,7 +1789,7 @@ export default function AdminPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '' },
         body: JSON.stringify({
-          user_id: acceptClerkId.trim() || null,
+          user_id: acceptUserId.trim() || null,
           business_name: acceptingApp.businessName,
           owner_name: acceptingApp.fullName,
           email: acceptingApp.email,
@@ -1802,7 +1802,7 @@ export default function AdminPage() {
         }),
       });
       if (acceptNotifTitle && acceptNotifBody) {
-        const targetUser = users.find(u => u.clerkId === acceptClerkId.trim());
+        const targetUser = users.find(u => u.supabaseId === acceptUserId.trim());
         const targetWalletId = targetUser?.walletId;
         if (targetWalletId) {
           await fetch('/api/notifications/user', {
@@ -1837,7 +1837,7 @@ export default function AdminPage() {
       });
       if (rejectNotifTitle) {
         const targetUser = users.find(u =>
-          u.clerkId === rejectClerkId.trim() ||
+          u.supabaseId === rejectUserId.trim() ||
           u.email?.toLowerCase() === rejectingApp.email?.toLowerCase()
         );
         const targetWalletId = targetUser?.walletId;
@@ -2084,26 +2084,26 @@ export default function AdminPage() {
   }, [token, fetchUsers, fetchStats, fetchVendorApplications, fetchVendors, fetchDeletionRequests]);
 
   useEffect(() => {
-    if (!vendorDetail?.clerkId || !token) { setVendorDetailPrices([]); return; }
+    if (!vendorDetail?.supabaseId || !token) { setVendorDetailPrices([]); return; }
     setVendorPricesLoading(true);
-    fetch(`/api/admin/vendors/${vendorDetail.clerkId}/prices`, {
+    fetch(`/api/admin/vendors/${vendorDetail.supabaseId}/prices`, {
       headers: { 'X-Admin-Token': token },
     })
       .then(r => r.ok ? r.json() : [])
       .then((d: unknown) => setVendorDetailPrices(Array.isArray(d) ? d : []))
       .catch(() => setVendorDetailPrices([]))
       .finally(() => setVendorPricesLoading(false));
-  }, [vendorDetail?.clerkId, token]);
+  }, [vendorDetail?.supabaseId, token]);
 
   useEffect(() => {
     const lphMap: Record<string, string> = {};
     const verifyMap: Record<string, string> = {};
     users.forEach(u => {
-      if (u.clerkId) {
-        const lph = localStorage.getItem(`syp-lph-${u.clerkId}`);
-        if (lph) lphMap[u.clerkId] = lph;
-        const vstatus = localStorage.getItem(`syp-verify-status-${u.clerkId}`);
-        if (vstatus) verifyMap[u.clerkId] = vstatus;
+      if (u.supabaseId) {
+        const lph = localStorage.getItem(`syp-lph-${u.supabaseId}`);
+        if (lph) lphMap[u.supabaseId] = lph;
+        const vstatus = localStorage.getItem(`syp-verify-status-${u.supabaseId}`);
+        if (vstatus) verifyMap[u.supabaseId] = vstatus;
       }
     });
     setUserLphIds(lphMap);
@@ -2458,7 +2458,7 @@ export default function AdminPage() {
         setVendorDetailEdit(updated);
         setVendors(v => v.map(x => x.id === updated.id ? updated : x));
         if (!newIsActive) {
-          const walletId = users.find(u => u.clerkId === updated.clerkId)?.walletId;
+          const walletId = users.find(u => u.supabaseId === updated.supabaseId)?.walletId;
           setActionNotif({
             visible: true, walletId, targetName: updated.businessName,
             title: 'تم إيقاف حسابك مؤقتاً',
@@ -2483,7 +2483,7 @@ export default function AdminPage() {
       await fetch(`/api/admin/vendors/${vendorDetail.id}`, {
         method: 'DELETE', headers: { 'X-Admin-Token': token },
       });
-      const walletId = users.find(u => u.clerkId === vendorDetail.clerkId)?.walletId;
+      const walletId = users.find(u => u.supabaseId === vendorDetail.supabaseId)?.walletId;
       setVendors(v => v.filter(x => x.id !== vendorDetail.id));
       setVendorDetail(null);
       setVendorDetailEdit(null);
@@ -2552,19 +2552,19 @@ export default function AdminPage() {
     } catch {}
   };
 
-  const toggleUserVerify = (clerkId: string) => {
-    const current = userVerifyStatus[clerkId];
+  const toggleUserVerify = (userId: string) => {
+    const current = userVerifyStatus[userId];
     const next = current === 'approved' ? 'rejected' : 'approved';
-    localStorage.setItem(`syp-verify-status-${clerkId}`, next);
-    setUserVerifyStatus(prev => ({ ...prev, [clerkId]: next }));
+    localStorage.setItem(`syp-verify-status-${userId}`, next);
+    setUserVerifyStatus(prev => ({ ...prev, [userId]: next }));
     if (next === 'approved') {
-      localStorage.setItem(`syp-user-badge-${clerkId}`, 'golden');
+      localStorage.setItem(`syp-user-badge-${userId}`, 'golden');
     } else {
-      localStorage.removeItem(`syp-user-badge-${clerkId}`);
+      localStorage.removeItem(`syp-user-badge-${userId}`);
     }
-    const u = users.find(u => u.clerkId === clerkId);
+    const u = users.find(u => u.supabaseId === userId);
     setActionNotif({
-      visible: true, walletId: u?.walletId, targetName: u?.fullName || u?.businessName || clerkId,
+      visible: true, walletId: u?.walletId, targetName: u?.fullName || u?.businessName || userId,
       title: next === 'approved' ? 'تم توثيق حسابك ✓' : 'تم إلغاء توثيق حسابك',
       body: next === 'approved'
         ? `تهانينا! تم توثيق حسابك. ستظهر علامة التوثيق بجانب اسمك الآن.`
@@ -2616,9 +2616,9 @@ export default function AdminPage() {
         headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '' },
         body: JSON.stringify({ action: 'approved' }),
       }).then(() => void loadVerifyRequests()).catch(() => {});
-      localStorage.setItem(`syp-verify-status-${req.clerkId}`, 'approved');
+      localStorage.setItem(`syp-verify-status-${req.supabaseId}`, 'approved');
       void loadVerifyRequests();
-      const walletId = users.find(u => u.clerkId === req.clerkId)?.walletId;
+      const walletId = users.find(u => u.supabaseId === req.supabaseId)?.walletId;
       setActionNotif({
         visible: true, walletId, targetName: req.fullName,
         title: 'تم قبول طلب التوثيق ✓',
@@ -2636,9 +2636,9 @@ export default function AdminPage() {
         headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '' },
         body: JSON.stringify({ action: 'rejected' }),
       }).then(() => void loadVerifyRequests()).catch(() => {});
-      localStorage.setItem(`syp-verify-status-${req.clerkId}`, 'rejected');
+      localStorage.setItem(`syp-verify-status-${req.supabaseId}`, 'rejected');
       void loadVerifyRequests();
-      const walletId = users.find(u => u.clerkId === req.clerkId)?.walletId;
+      const walletId = users.find(u => u.supabaseId === req.supabaseId)?.walletId;
       setActionNotif({
         visible: true, walletId, targetName: req.fullName,
         title: 'تم رفض طلب التوثيق',
@@ -2653,10 +2653,9 @@ export default function AdminPage() {
     if (!actionNotif || !actionNotif.title || !actionNotif.body || !token) return;
     setActionNotif(s => s ? { ...s, sending: true } : s);
     try {
-      // Frontend stores user.id (Supabase UID = clerkId) as syp-wallet-id for notification targeting
-      // So we must send to clerkId, not the DB walletId field
+      // walletId maps to supabaseId for notification targeting
       const targetUser = actionNotif.walletId ? users.find(u => u.walletId === actionNotif.walletId) : null;
-      const targetId = targetUser?.clerkId ?? actionNotif.walletId;
+      const targetId = targetUser?.supabaseId ?? actionNotif.walletId;
       const endpoint = targetId ? '/api/notifications/user' : '/api/notifications';
       const body = targetId
         ? { walletId: targetId, title: actionNotif.title, body: actionNotif.body, type: actionNotif.type, ...(actionNotif.sender ? { sender: actionNotif.sender } : {}) }
@@ -3110,7 +3109,7 @@ export default function AdminPage() {
                               <p className="text-sm font-bold truncate">
                                 {u.fullName || u.businessName || 'مجهول'}
                               </p>
-                              {u.clerkId && userVerifyStatus[u.clerkId] === 'approved' && (
+                              {u.supabaseId && userVerifyStatus[u.supabaseId] === 'approved' && (
                                 isProvider ? <GoldenBadge size={16} /> : <BlueBadge size={16} />
                               )}
                               {/* Clickable status badge — filters list by this status */}
@@ -3126,9 +3125,9 @@ export default function AdminPage() {
                                 {u.softDeleted ? 'محذوف' : u.banned ? 'محظور' : isProvider ? 'مزود' : 'شخصي'}
                               </button>
                             </div>
-                            {u.clerkId && userLphIds[u.clerkId] && (
+                            {u.supabaseId && userLphIds[u.supabaseId] && (
                               <p className="text-[9px] font-mono text-muted-foreground/70" dir="ltr">
-                                {userLphIds[u.clerkId]}
+                                {userLphIds[u.supabaseId]}
                               </p>
                             )}
                             <p className="text-[10px] text-muted-foreground font-mono" dir="ltr">{u.walletId}</p>
@@ -3298,12 +3297,12 @@ export default function AdminPage() {
                                       </div>
                                     </div>
                                   )}
-                                  {u.clerkId && (
+                                  {u.supabaseId && (
                                     <div className="flex items-center gap-2 bg-secondary/50 rounded-xl p-2 col-span-2">
                                       <Hash className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                                       <div className="min-w-0">
                                         <p className="text-[9px] text-muted-foreground">Supabase ID</p>
-                                        <p className="text-[10px] font-mono truncate" dir="ltr">{u.clerkId}</p>
+                                        <p className="text-[10px] font-mono truncate" dir="ltr">{u.supabaseId}</p>
                                       </div>
                                     </div>
                                   )}
@@ -3392,16 +3391,16 @@ export default function AdminPage() {
                                 {banningUser !== u.id && editingUser !== u.id && (
                                   <div className="flex flex-col gap-2">
                                     <div className="flex gap-2">
-                                      {u.clerkId && (
+                                      {u.supabaseId && (
                                         <Button size="sm" variant="outline"
                                           className={`flex-1 gap-1 h-8 text-xs ${
-                                            userVerifyStatus[u.clerkId] === 'approved'
+                                            userVerifyStatus[u.supabaseId] === 'approved'
                                               ? 'border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400'
                                               : 'border-green-300 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400'
                                           }`}
-                                          onClick={() => u.clerkId && toggleUserVerify(u.clerkId)}>
+                                          onClick={() => u.supabaseId && toggleUserVerify(u.supabaseId)}>
                                           <BadgeCheck className="w-3 h-3" />
-                                          {userVerifyStatus[u.clerkId] === 'approved' ? 'إلغاء التوثيق' : 'توثيق'}
+                                          {userVerifyStatus[u.supabaseId] === 'approved' ? 'إلغاء التوثيق' : 'توثيق'}
                                         </Button>
                                       )}
                                       <Button size="sm" variant="outline"
@@ -3505,10 +3504,10 @@ export default function AdminPage() {
                                   <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
                                     className="flex flex-col gap-2 bg-secondary/40 rounded-xl p-3">
                                     <p className="text-[10px] font-bold text-foreground/60">تعديل البيانات</p>
-                                    {u.clerkId && (
+                                    {u.supabaseId && (
                                       <div className="bg-secondary/60 rounded-lg px-2 py-1.5 flex items-center gap-1.5">
                                         <span className="text-[9px] text-muted-foreground font-bold">Supabase ID:</span>
-                                        <span className="text-[9px] font-mono text-foreground/70 truncate" dir="ltr">{u.clerkId}</span>
+                                        <span className="text-[9px] font-mono text-foreground/70 truncate" dir="ltr">{u.supabaseId}</span>
                                       </div>
                                     )}
                                     {[
@@ -4220,12 +4219,12 @@ export default function AdminPage() {
                                 <Mail className="w-3 h-3 flex-shrink-0" />{req.email}
                               </p>
                             )}
-                            {(() => { const u = users.find(u => u.clerkId === req.clerkId); return u?.phone ? (
+                            {(() => { const u = users.find(u => u.supabaseId === req.supabaseId); return u?.phone ? (
                               <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                                 <Phone className="w-3 h-3 flex-shrink-0" /><span dir="ltr">{u.phone}</span>
                               </p>
                             ) : null; })()}
-                            {(() => { const u = users.find(u => u.clerkId === req.clerkId); return (u?.province || u?.city) ? (
+                            {(() => { const u = users.find(u => u.supabaseId === req.supabaseId); return (u?.province || u?.city) ? (
                               <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                                 <MapPin className="w-3 h-3 flex-shrink-0" />{u.province}{u.city ? ` — ${u.city}` : ''}
                               </p>
@@ -4997,7 +4996,7 @@ export default function AdminPage() {
                           <strong>مهم:</strong> أدخل Supabase ID للمستخدم المسجل مسبقاً. يمكن الحصول عليه من تبويب المستخدمين.
                         </div>
                         {[
-                          { label: 'Supabase ID للمستخدم *', key: 'clerkId', ph: 'user_2xxx...', dir: 'ltr' as const },
+                          { label: 'Supabase ID للمستخدم *', key: 'supabaseId', ph: 'user_2xxx...', dir: 'ltr' as const },
                           { label: 'اسم النشاط التجاري أو الشركة *', key: 'businessName', ph: 'مثال: صرافة النور' },
                           { label: 'الاسم الثلاثي', key: 'fullName', ph: 'الاسم الكامل' },
                           { label: 'البريد الإلكتروني', key: 'email', ph: 'email@example.com', dir: 'ltr' as const },
@@ -5375,7 +5374,7 @@ export default function AdminPage() {
                         <label className="text-xs font-bold text-foreground/70 block mb-1">
                           Supabase ID للمستخدم <span className="text-destructive">*</span>
                         </label>
-                        <input value={acceptClerkId} onChange={e => setAcceptClerkId(e.target.value)}
+                        <input value={acceptUserId} onChange={e => setAcceptUserId(e.target.value)}
                           placeholder="user_2xxx..."
                           dir="ltr"
                           className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-mono bg-background focus:outline-none focus:ring-2 focus:ring-primary/30" />
@@ -5456,8 +5455,8 @@ export default function AdminPage() {
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-bold text-muted-foreground">Supabase ID للإشعار (اختياري)</label>
                       <input
-                        value={rejectClerkId}
-                        onChange={e => setRejectClerkId(e.target.value)}
+                        value={rejectUserId}
+                        onChange={e => setRejectUserId(e.target.value)}
                         placeholder="user_xxxxxxxx"
                         dir="ltr"
                         className="border border-border rounded-xl px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-destructive/30"
@@ -5665,7 +5664,7 @@ export default function AdminPage() {
                                       <Button size="sm" variant="outline"
                                         onClick={() => {
                                           setRejectingApp(app);
-                                          setRejectClerkId('');
+                                          setRejectUserId('');
                                           setRejectNotifTitle('بشأن طلب عضويتك في LiraPro');
                                           setRejectNotifBody(`نأسف لإعلامك بأن طلب عضوية "${app.businessName}" لم يتم قبوله في الوقت الحالي. يمكنك التواصل معنا لمزيد من المعلومات أو إعادة تقديم الطلب لاحقاً.`);
                                           setRejectMsg('');
@@ -6343,7 +6342,7 @@ export default function AdminPage() {
 
                 {/* Super ID / Full Account Info */}
                 {(() => {
-                  const vUser = users.find(u => u.clerkId === vendorDetail.clerkId);
+                  const vUser = users.find(u => u.supabaseId === vendorDetail.supabaseId);
                   const Row = ({ label, value, mono }: { label: string; value?: string | null; mono?: boolean }) =>
                     value ? (
                       <div className="flex items-start justify-between gap-2">
@@ -6362,7 +6361,7 @@ export default function AdminPage() {
                         {/* Super ID value */}
                         <div className="flex items-start justify-between gap-2 pb-1.5 border-b border-border/40">
                           <span className="text-[10px] text-muted-foreground">Super ID</span>
-                          <span className="text-[9px] font-mono font-bold text-primary break-all text-right" dir="ltr">{vUser?.walletId ?? vendorDetail.clerkId ?? '—'}</span>
+                          <span className="text-[9px] font-mono font-bold text-primary break-all text-right" dir="ltr">{vUser?.walletId ?? vendorDetail.supabaseId ?? '—'}</span>
                         </div>
                         {/* Vendor / business info */}
                         <Row label="اسم النشاط" value={vendorDetail.businessName} />
@@ -6624,8 +6623,8 @@ export default function AdminPage() {
                   <label className="text-[10px] font-bold text-muted-foreground">Supabase ID</label>
                   <input
                     type="text" dir="ltr"
-                    value={vendorDetailEdit.clerkId ?? ''}
-                    onChange={e => setVendorDetailEdit(v => v ? { ...v, clerkId: e.target.value } : v)}
+                    value={vendorDetailEdit.supabaseId ?? ''}
+                    onChange={e => setVendorDetailEdit(v => v ? {...v, supabaseId: e.target.value } : v)}
                     className="border border-border rounded-xl px-3 py-2 text-xs font-mono bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
                     placeholder="user_..."
                   />
@@ -6651,7 +6650,7 @@ export default function AdminPage() {
                   />
                   <button
                     onClick={async () => {
-                      const walletId = users.find(u => u.clerkId === vendorDetailEdit?.clerkId)?.walletId;
+                      const walletId = users.find(u => u.supabaseId === vendorDetailEdit?.supabaseId)?.walletId;
                       const days = parseInt(vendorRestrictDays);
                       if (walletId && days > 0) {
                         await fetch(`/api/admin/users/${walletId}/restrict`, {
@@ -6679,7 +6678,7 @@ export default function AdminPage() {
                 {/* Send custom notification */}
                 <button
                   onClick={() => {
-                    const walletId = users.find(u => u.clerkId === vendorDetailEdit?.clerkId)?.walletId;
+                    const walletId = users.find(u => u.supabaseId === vendorDetailEdit?.supabaseId)?.walletId;
                     setActionNotif({
                       visible: true, walletId, targetName: vendorDetailEdit?.businessName,
                       title: '', body: '', type: 'info',

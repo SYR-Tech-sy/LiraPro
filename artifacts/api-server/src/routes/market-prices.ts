@@ -42,7 +42,7 @@ router.get("/market/prices", async (req, res): Promise<void> => {
   const rows = await db
     .select({
       priceId: vendorPricesTable.id,
-      vendorClerkId: vendorPricesTable.vendorClerkId,
+      vendorSupabaseId: vendorPricesTable.vendorSupabaseId,
       category: vendorPricesTable.category,
       productName: vendorPricesTable.productName,
       productNameAr: vendorPricesTable.productNameAr,
@@ -64,7 +64,7 @@ router.get("/market/prices", async (req, res): Promise<void> => {
       isVendorActive: vendorProfilesTable.isActive,
     })
     .from(vendorPricesTable)
-    .innerJoin(vendorProfilesTable, eq(vendorPricesTable.vendorClerkId, vendorProfilesTable.clerkId))
+    .innerJoin(vendorProfilesTable, eq(vendorPricesTable.vendorSupabaseId, vendorProfilesTable.supabaseId))
     .where(
       and(
         eq(vendorPricesTable.isActive, true),

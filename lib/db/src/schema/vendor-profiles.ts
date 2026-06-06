@@ -46,7 +46,7 @@ export const SYRIAN_GOVERNORATES = [
 
 export const vendorProfilesTable = pgTable("vendor_profiles", {
   id: serial("id").primaryKey(),
-  clerkId: text("clerk_id").notNull().unique(),
+  supabaseId: text("clerk_id").notNull().unique(),
   businessName: text("business_name").notNull(),
   fullName: text("full_name").notNull(),
   email: text("email").notNull(),

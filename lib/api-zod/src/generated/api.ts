@@ -102,7 +102,7 @@ export const GetMetalPricesResponse = zod.object({
  */
 export const GetAlertsResponseItem = zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
+  "supabaseId": zod.string(),
   "code": zod.string(),
   "nameAr": zod.string().nullish(),
   "type": zod.enum(['buy', 'sell']),
@@ -141,7 +141,7 @@ export const UpdateAlertBody = zod.object({
 
 export const UpdateAlertResponse = zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
+  "supabaseId": zod.string(),
   "code": zod.string(),
   "nameAr": zod.string().nullish(),
   "type": zod.enum(['buy', 'sell']),
@@ -174,7 +174,7 @@ export const CheckAlertsBody = zod.object({
 
 export const CheckAlertsResponseItem = zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
+  "supabaseId": zod.string(),
   "code": zod.string(),
   "nameAr": zod.string().nullish(),
   "type": zod.enum(['buy', 'sell']),
@@ -191,7 +191,7 @@ export const CheckAlertsResponse = zod.array(CheckAlertsResponseItem)
  * @summary Get user profile
  */
 export const GetProfileResponse = zod.object({
-  "clerkId": zod.string(),
+  "supabaseId": zod.string(),
   "email": zod.string(),
   "firstName": zod.string().nullish(),
   "lastName": zod.string().nullish(),
@@ -233,7 +233,7 @@ export const UpdateProfileBody = zod.object({
 })
 
 export const UpdateProfileResponse = zod.object({
-  "clerkId": zod.string(),
+  "supabaseId": zod.string(),
   "email": zod.string(),
   "firstName": zod.string().nullish(),
   "lastName": zod.string().nullish(),

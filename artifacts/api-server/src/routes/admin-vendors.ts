@@ -12,11 +12,11 @@ function checkAdmin(req: import("express").Request, res: import("express").Respo
 }
 
 // ── Get vendor prices (admin view) ───────────────────────────────────────────
-router.get("/admin/vendors/:clerkId/prices", async (req, res): Promise<void> => {
+router.get("/admin/vendors/:vendorId/prices", async (req, res): Promise<void> => {
   if (!checkAdmin(req, res)) return;
   try {
     const prices = await db.select().from(vendorPricesTable)
-      .where(eq(vendorPricesTable.vendorClerkId, req.params.clerkId))
+      .where(eq(vendorPricesTable.vendorSupabaseId, req.params.vendorId))
       .orderBy(desc(vendorPricesTable.updatedAt));
     res.json(prices);
   } catch (err) {

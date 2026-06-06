@@ -8,7 +8,7 @@ const DATA_FILE = path.resolve(__dirname, "../../users-data.json");
 
 export interface RegisteredUser {
   id: string;
-  clerkId?: string;
+  supabaseId?: string;
   walletId: string;
   accountType: "private" | "provider";
   ispType?: string;
@@ -59,7 +59,7 @@ export function getAllUsers(): RegisteredUser[] {
 export function upsertUser(user: Omit<RegisteredUser, "id"> & { id?: string }): RegisteredUser {
   const data = readData();
   const existing = data.users.findIndex(
-    (u) => u.walletId === user.walletId || (user.clerkId && u.clerkId === user.clerkId)
+    (u) => u.walletId === user.walletId || (user.supabaseId && u.supabaseId === user.supabaseId)
   );
 
   const entry: RegisteredUser = {
@@ -90,12 +90,12 @@ export function updateUser(walletId: string, updates: Partial<RegisteredUser>): 
 }
 
 function findOrCreate(data: UsersData, walletId: string): RegisteredUser {
-  let u = data.users.find((u) => u.walletId === walletId || u.clerkId === walletId);
+  let u = data.users.find((u) => u.walletId === walletId || u.supabaseId === walletId);
   if (!u) {
     u = {
       id: `user_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       walletId,
-      clerkId: walletId,
+      supabaseId: walletId,
       accountType: "private",
       registeredAt: new Date().toISOString(),
       hasPIN: false,
@@ -117,7 +117,7 @@ export function banUser(walletId: string, reason: string): boolean {
 
 export function unbanUser(walletId: string): boolean {
   const data = readData();
-  const u = data.users.find((u) => u.walletId === walletId || u.clerkId === walletId);
+  const u = data.users.find((u) => u.walletId === walletId || u.supabaseId === walletId);
   if (!u) return false;
   u.banned = false;
   u.banReason = undefined;
@@ -140,7 +140,7 @@ export function restrictUser(walletId: string, reason: string, days: number): bo
 
 export function unrestrictUser(walletId: string): boolean {
   const data = readData();
-  const u = data.users.find((u) => u.walletId === walletId || u.clerkId === walletId);
+  const u = data.users.find((u) => u.walletId === walletId || u.supabaseId === walletId);
   if (!u) return false;
   u.restricted = false;
   u.restrictReason = undefined;
@@ -161,7 +161,7 @@ export function softDeleteUser(walletId: string, reason: string): boolean {
 
 export function undeleteUser(walletId: string): boolean {
   const data = readData();
-  const u = data.users.find((u) => u.walletId === walletId || u.clerkId === walletId);
+  const u = data.users.find((u) => u.walletId === walletId || u.supabaseId === walletId);
   if (!u) return false;
   u.softDeleted = false;
   u.deletedAt = undefined;
@@ -173,7 +173,7 @@ export function undeleteUser(walletId: string): boolean {
 export function deleteUser(walletId: string): boolean {
   const data = readData();
   const before = data.users.length;
-  data.users = data.users.filter((u) => u.walletId !== walletId && u.clerkId !== walletId);
+  data.users = data.users.filter((u) => u.walletId !== walletId && u.supabaseId !== walletId);
   if (data.users.length !== before) {
     writeData(data);
     return true;

@@ -13,7 +13,7 @@ router.get("/alerts", requireSupabaseAuth, async (req, res): Promise<void> => {
     const alerts = await db
       .select()
       .from(priceAlertsTable)
-      .where(eq(priceAlertsTable.clerkId, userId))
+      .where(eq(priceAlertsTable.supabaseId, userId))
       .orderBy(priceAlertsTable.createdAt);
     res.json(alerts.reverse());
   } catch (err) {
@@ -41,7 +41,7 @@ router.post("/alerts", requireSupabaseAuth, async (req, res): Promise<void> => {
     const [created] = await db
       .insert(priceAlertsTable)
       .values({
-        clerkId: userId,
+        supabaseId: userId,
         code,
         nameAr: nameAr ?? null,
         type,
@@ -71,7 +71,7 @@ router.put("/alerts/:id", requireSupabaseAuth, async (req, res): Promise<void> =
     const existing = await db
       .select()
       .from(priceAlertsTable)
-      .where(and(eq(priceAlertsTable.id, id), eq(priceAlertsTable.clerkId, userId)))
+      .where(and(eq(priceAlertsTable.id, id), eq(priceAlertsTable.supabaseId, userId)))
       .limit(1);
 
     if (!existing.length) {
@@ -91,7 +91,7 @@ router.put("/alerts/:id", requireSupabaseAuth, async (req, res): Promise<void> =
     const [updated] = await db
       .update(priceAlertsTable)
       .set(updates)
-      .where(and(eq(priceAlertsTable.id, id), eq(priceAlertsTable.clerkId, userId)))
+      .where(and(eq(priceAlertsTable.id, id), eq(priceAlertsTable.supabaseId, userId)))
       .returning();
 
     res.json(updated);
@@ -110,7 +110,7 @@ router.delete("/alerts/:id", requireSupabaseAuth, async (req, res): Promise<void
     const existing = await db
       .select()
       .from(priceAlertsTable)
-      .where(and(eq(priceAlertsTable.id, id), eq(priceAlertsTable.clerkId, userId)))
+      .where(and(eq(priceAlertsTable.id, id), eq(priceAlertsTable.supabaseId, userId)))
       .limit(1);
 
     if (!existing.length) {
@@ -120,7 +120,7 @@ router.delete("/alerts/:id", requireSupabaseAuth, async (req, res): Promise<void
 
     await db
       .delete(priceAlertsTable)
-      .where(and(eq(priceAlertsTable.id, id), eq(priceAlertsTable.clerkId, userId)));
+      .where(and(eq(priceAlertsTable.id, id), eq(priceAlertsTable.supabaseId, userId)));
 
     req.log.info({ id }, "Alert deleted");
     res.json({ success: true });
@@ -144,7 +144,7 @@ router.post("/alerts/check", requireSupabaseAuth, async (req, res): Promise<void
       .select()
       .from(priceAlertsTable)
       .where(and(
-        eq(priceAlertsTable.clerkId, userId),
+        eq(priceAlertsTable.supabaseId, userId),
         eq(priceAlertsTable.isTriggered, false),
       ));
 

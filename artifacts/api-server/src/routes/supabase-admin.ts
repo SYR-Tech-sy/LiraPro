@@ -69,8 +69,7 @@ router.get("/admin/users", async (req, res): Promise<void> => {
       return {
         id: p.id,
         walletId: p.id,
-        // clerkId = Supabase user ID (legacy field name kept for UI compat)
-        clerkId: p.id,
+        supabaseId: p.id,
         email: p.email,
         fullName: [p.first_name, p.last_name].filter(Boolean).join(" ") || undefined,
         firstName: p.first_name ?? null,
