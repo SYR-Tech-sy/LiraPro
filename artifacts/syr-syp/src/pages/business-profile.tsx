@@ -150,7 +150,7 @@ export default function BusinessProfilePage() {
           <div className="absolute -top-10 right-4">
             <div className="relative">
               {(editData.logoUrl || profile?.logoUrl) ? (
-                <img src={editData.logoUrl || profile?.logoUrl!} alt="Logo"
+                <img src={editData.logoUrl || profile?.logoUrl} alt="Logo"
                   className="w-20 h-20 rounded-2xl object-cover border-4 border-card shadow-lg" />
               ) : (
                 <div className="w-20 h-20 rounded-2xl bg-primary/10 border-4 border-card shadow-lg flex items-center justify-center">

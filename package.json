@@ -8,11 +8,16 @@
     "check:codegen": "pnpm --filter @workspace/api-spec run codegen:gen && git diff --exit-code lib/api-zod/src/generated lib/api-client-react/src/generated",
     "build": "pnpm --filter @workspace/api-spec run codegen:gen && pnpm run typecheck && pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
+    "lint": "eslint ."
   },
   "private": true,
   "devDependencies": {
+    "eslint": "^10.4.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.6.0",
     "prettier": "^3.8.3",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.60.1"
   }
 }
