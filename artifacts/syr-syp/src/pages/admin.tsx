@@ -1953,9 +1953,10 @@ export default function AdminPage() {
     const price = parseFloat(goldOverrideInput.replace(/,/g, ''));
     if (isNaN(price) || price <= 0) { setGoldOverrideMsg('يرجى إدخال رقم صحيح'); return; }
     try {
+      const sbToken = await getSupabaseToken();
       const res = await fetch('/api/settings/gold-rate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '' },
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '', ...(sbToken ? { Authorization: `Bearer ${sbToken}` } : {}) },
         body: JSON.stringify({ pricePerGramSYP: price }),
       });
       if (res.ok) {
@@ -1969,7 +1970,8 @@ export default function AdminPage() {
 
   const clearGoldOvr = async () => {
     try {
-      await fetch('/api/settings/gold-rate', { method: 'DELETE', headers: { 'X-Admin-Token': token ?? '' } });
+      const sbToken = await getSupabaseToken();
+      await fetch('/api/settings/gold-rate', { method: 'DELETE', headers: { 'X-Admin-Token': token ?? '', ...(sbToken ? { Authorization: `Bearer ${sbToken}` } : {}) } });
       setGoldOverrideActive(false);
       setGoldOverrideMsg('تم إلغاء التجاوز، سيعود للسعر التلقائي');
       void fetchGoldOverride();
@@ -1982,9 +1984,10 @@ export default function AdminPage() {
     const detail = metalOverridesDetail[symbol];
     if (!detail) return;
     try {
+      const sbToken = await getSupabaseToken();
       const res = await fetch(`/api/settings/metal-rates/${symbol}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '' },
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '', ...(sbToken ? { Authorization: `Bearer ${sbToken}` } : {}) },
         body: JSON.stringify({ priceSYP: detail.priceSYP }),
       });
       if (res.ok) {
@@ -1999,9 +2002,10 @@ export default function AdminPage() {
     const price = parseFloat(editMetalVal.replace(/,/g, ''));
     if (isNaN(price) || price <= 0) { setMetalMsg('يرجى إدخال رقم صحيح'); return; }
     try {
+      const sbToken = await getSupabaseToken();
       const res = await fetch(`/api/settings/metal-rates/${symbol}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '' },
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '', ...(sbToken ? { Authorization: `Bearer ${sbToken}` } : {}) },
         body: JSON.stringify({ priceSYP: price }),
       });
       if (res.ok) {
@@ -2016,7 +2020,8 @@ export default function AdminPage() {
 
   const clearMetalOvr = async (symbol: string) => {
     try {
-      await fetch(`/api/settings/metal-rates/${symbol}`, { method: 'DELETE', headers: { 'X-Admin-Token': token ?? '' } });
+      const sbToken = await getSupabaseToken();
+      await fetch(`/api/settings/metal-rates/${symbol}`, { method: 'DELETE', headers: { 'X-Admin-Token': token ?? '', ...(sbToken ? { Authorization: `Bearer ${sbToken}` } : {}) } });
       fetchMetalOverrides();
     } catch {}
   };
@@ -2044,6 +2049,16 @@ export default function AdminPage() {
   useEffect(() => {
     if (token) { refreshAll(); }
   }, [token, refreshAll]);
+
+  /** Returns the current Supabase access token to send as Authorization header. */
+  const getSupabaseToken = useCallback(async (): Promise<string> => {
+    try {
+      const { data } = await supabase.auth.getSession();
+      return data.session?.access_token ?? '';
+    } catch {
+      return '';
+    }
+  }, []);
 
   // Poll for new user registrations and vendor applications every 30s
   useEffect(() => {
@@ -2363,9 +2378,10 @@ export default function AdminPage() {
     const buyPrice = editBuyVal ? parseFloat(editBuyVal) : undefined;
     const sellPrice = editSellVal ? parseFloat(editSellVal) : undefined;
     try {
+      const sbToken = await getSupabaseToken();
       const res = await fetch('/api/admin/rate-overrides', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '' },
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '', ...(sbToken ? { Authorization: `Bearer ${sbToken}` } : {}) },
         body: JSON.stringify({ code, buyPrice, sellPrice }),
       });
       if (res.ok) {
@@ -2381,9 +2397,10 @@ export default function AdminPage() {
 
   const deleteBuySellOverride = async (code: string) => {
     try {
+      const sbToken = await getSupabaseToken();
       await fetch(`/api/admin/rate-overrides/${code}`, {
         method: 'DELETE',
-        headers: { 'X-Admin-Token': token ?? '' },
+        headers: { 'X-Admin-Token': token ?? '', ...(sbToken ? { Authorization: `Bearer ${sbToken}` } : {}) },
       });
       await fetchBuySellOverrides();
     } catch {}
@@ -2395,9 +2412,10 @@ export default function AdminPage() {
     const rate = parseFloat(sypRateInput.replace(/,/g, ''));
     if (isNaN(rate) || rate <= 0) { setSypRateMsg('يرجى إدخال رقم صحيح'); setSypRateSaving(false); return; }
     try {
+      const sbToken = await getSupabaseToken();
       const res = await fetch('/api/settings/syp-rate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token, ...(sbToken ? { Authorization: `Bearer ${sbToken}` } : {}) },
         body: JSON.stringify({ rate, isManual: newIsManual }),
       });
       if (res.ok) {
@@ -2578,9 +2596,10 @@ export default function AdminPage() {
     const price = parseFloat(editKaratVal.replace(/,/g, ''));
     if (isNaN(price) || price <= 0) { setKaratMsg('يرجى إدخال رقم صحيح'); return; }
     try {
+      const sbToken = await getSupabaseToken();
       const res = await fetch(`/api/settings/metal-rates/${karatKey}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '' },
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '', ...(sbToken ? { Authorization: `Bearer ${sbToken}` } : {}) },
         body: JSON.stringify({ priceSYP: price }),
       });
       if (res.ok) {
@@ -2595,7 +2614,8 @@ export default function AdminPage() {
 
   const clearKaratOvr = async (karatKey: string) => {
     try {
-      await fetch(`/api/settings/metal-rates/${karatKey}`, { method: 'DELETE', headers: { 'X-Admin-Token': token ?? '' } });
+      const sbToken = await getSupabaseToken();
+      await fetch(`/api/settings/metal-rates/${karatKey}`, { method: 'DELETE', headers: { 'X-Admin-Token': token ?? '', ...(sbToken ? { Authorization: `Bearer ${sbToken}` } : {}) } });
       fetchKaratOverrides();
     } catch {}
   };
@@ -5119,7 +5139,8 @@ export default function AdminPage() {
                       destructive: true,
                       confirmLabel: 'مسح الكل',
                       onConfirm: async () => {
-                        await fetch('/api/admin/rate-overrides', { method: 'DELETE', headers: { 'X-Admin-Token': token ?? '' } });
+                        const sbToken = await getSupabaseToken();
+                        await fetch('/api/admin/rate-overrides', { method: 'DELETE', headers: { 'X-Admin-Token': token ?? '', ...(sbToken ? { Authorization: `Bearer ${sbToken}` } : {}) } });
                         await fetchBuySellOverrides();
                       },
                     })}>

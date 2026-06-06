@@ -6,6 +6,7 @@ import { getAllRequests, addRequest, markHandled, cancelRequestByWallet, deleteR
 import { getAllOverrides, setOverride, deleteOverride, clearAllOverrides } from "../services/rateOverridesService.js";
 import { incrementVisit, getVisitStats } from "../services/visitService.js";
 import { getOverrideHistory } from "../services/overrideHistoryService.js";
+import { resolveAdminActor } from "../lib/resolveAdminActor.js";
 
 const router = Router();
 
@@ -247,23 +248,26 @@ router.get("/admin/rate-overrides", (_req, res): void => {
   res.json(getAllOverrides());
 });
 
-router.post("/admin/rate-overrides", (req, res): void => {
+router.post("/admin/rate-overrides", async (req, res): Promise<void> => {
   if (!verifyAdmin(req, res)) return;
   const { code, buyPrice, sellPrice } = req.body as { code: string; buyPrice?: number; sellPrice?: number };
   if (!code) { res.status(400).json({ error: "code required" }); return; }
-  const entry = setOverride(code, buyPrice, sellPrice, "admin");
+  const actor = await resolveAdminActor(req);
+  const entry = setOverride(code, buyPrice, sellPrice, actor);
   res.json(entry);
 });
 
-router.delete("/admin/rate-overrides/:code", (req, res): void => {
+router.delete("/admin/rate-overrides/:code", async (req, res): Promise<void> => {
   if (!verifyAdmin(req, res)) return;
-  const ok = deleteOverride(req.params.code, "admin");
+  const actor = await resolveAdminActor(req);
+  const ok = deleteOverride(req.params.code, actor);
   res.json({ success: ok });
 });
 
-router.delete("/admin/rate-overrides", (req, res): void => {
+router.delete("/admin/rate-overrides", async (req, res): Promise<void> => {
   if (!verifyAdmin(req, res)) return;
-  clearAllOverrides("admin");
+  const actor = await resolveAdminActor(req);
+  clearAllOverrides(actor);
   res.json({ success: true });
 });
 

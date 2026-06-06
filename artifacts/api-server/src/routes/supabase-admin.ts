@@ -4,6 +4,7 @@ import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { supabaseAdmin } from "../lib/supabase-admin.js";
 import { getAllOverrides, setOverride, deleteOverride, clearAllOverrides } from "../services/rateOverridesService.js";
+import { resolveAdminActor } from "../lib/resolveAdminActor.js";
 import { incrementVisit, getVisitStats } from "../services/visitService.js";
 import { getAllSessions } from "../services/sessionService.js";
 
@@ -275,23 +276,26 @@ router.get("/admin/rate-overrides", (_req, res): void => {
   res.json(getAllOverrides());
 });
 
-router.post("/admin/rate-overrides", (req, res): void => {
+router.post("/admin/rate-overrides", async (req, res): Promise<void> => {
   if (!verifyAdmin(req, res)) return;
   const { code, buyPrice, sellPrice } = req.body as { code: string; buyPrice?: number; sellPrice?: number };
   if (!code) { res.status(400).json({ error: "code required" }); return; }
-  const entry = setOverride(code, buyPrice, sellPrice);
+  const actor = await resolveAdminActor(req);
+  const entry = setOverride(code, buyPrice, sellPrice, actor);
   res.json(entry);
 });
 
-router.delete("/admin/rate-overrides/:code", (req, res): void => {
+router.delete("/admin/rate-overrides/:code", async (req, res): Promise<void> => {
   if (!verifyAdmin(req, res)) return;
-  deleteOverride(req.params.code);
+  const actor = await resolveAdminActor(req);
+  deleteOverride(req.params.code, actor);
   res.json({ success: true });
 });
 
-router.delete("/admin/rate-overrides", (req, res): void => {
+router.delete("/admin/rate-overrides", async (req, res): Promise<void> => {
   if (!verifyAdmin(req, res)) return;
-  clearAllOverrides();
+  const actor = await resolveAdminActor(req);
+  clearAllOverrides(actor);
   res.json({ success: true });
 });
 
