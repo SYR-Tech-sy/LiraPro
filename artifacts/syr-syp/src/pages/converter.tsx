@@ -452,7 +452,7 @@ export default function ConverterPage() {
                   <span className="text-lg ml-1 font-medium" dir="ltr">{toCurrency}</span>
                   <p className="text-xs text-foreground/60 dark:text-white/70 mt-1 flex items-center justify-center gap-1.5" dir="ltr">
                     1 {fromCurrency} = {formatNum(displayRate, { decimals: toCurrency === 'SYP' ? 0 : 4 })} {toCurrency}
-                    {isManualRate && <ManualBadge />}
+                    {isManualRate && <ManualBadge updatedAt={ratesData?.manual_updated_at ?? undefined} />}
                   </p>
                   <p className="text-[10px] text-accent font-semibold mt-0.5">
                     {language === 'ar' ? `سعر ${buySellMode === 'buy' ? t('buy') : t('sell')}` : `${buySellMode === 'buy' ? t('buy') : t('sell')} rate`}

@@ -1057,7 +1057,7 @@ export default function HomePage() {
                                 <p className="text-primary-foreground/80 text-xs">{name} ({cur.code})</p>
                                 <div className="flex items-center gap-2">
                                   <h3 className="text-2xl font-bold">{formatNum(rate, { decimals: 0 })} <span className="text-sm font-normal">ل.س</span></h3>
-                                  {ratesData.is_manual_rate && <ManualBadge />}
+                                  {ratesData.is_manual_rate && <ManualBadge updatedAt={ratesData.manual_updated_at ?? undefined} />}
                                 </div>
                               </div>
                             </div>
@@ -1161,7 +1161,7 @@ export default function HomePage() {
                           <div className="flex items-center justify-between mb-1.5">
                             <p className="text-xs font-bold">{language === 'ar' ? 'عيار' : 'Karat'} {karat.karat}</p>
                             <div className="flex items-center gap-1">
-                              {goldData.isManual && <ManualBadge />}
+                              {goldData.isManual && <ManualBadge updatedAt={goldData.updatedAt ?? undefined} />}
                               <span className="text-[9px] bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-1.5 rounded font-bold">
                                 {(karat.purity * 100).toFixed(0)}%
                               </span>

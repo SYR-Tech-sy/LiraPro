@@ -143,7 +143,7 @@ export default function CurrenciesPage() {
                       <span className="font-bold text-sm text-primary dark:text-white" dir="ltr">
                         {rateSYP > 0 ? formatNum(rateSYP, { decimals: rateSYP >= 1 ? 0 : 4 }) : '-'}
                       </span>
-                      {data?.is_manual_rate && code === 'USD' && <ManualBadge />}
+                      {data?.is_manual_rate && code === 'USD' && <ManualBadge updatedAt={data?.manual_updated_at ?? undefined} />}
                     </div>
                     <span className="text-[9px] text-foreground/60 dark:text-white/60">ل.س</span>
                     {rateSYP > 0 && (

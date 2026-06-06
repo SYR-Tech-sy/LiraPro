@@ -81,7 +81,7 @@ export default function MetalsPage() {
                             <div>
                               <div className="flex items-center gap-1.5">
                                 <h3 className="font-bold text-sm">{metal.nameAr}</h3>
-                                {metal.isManual && <ManualBadge />}
+                                {metal.isManual && <ManualBadge updatedAt={metal.updatedAt ?? undefined} />}
                               </div>
                               <p className="text-[10px] text-foreground/60 dark:text-white/70">{metal.name} · {metal.symbol}</p>
                             </div>

@@ -40,6 +40,7 @@ router.get("/gold/prices", async (req, res): Promise<void> => {
       karats,
       timestamp: new Date().toISOString(),
       isManual: goldOvr?.isManual ?? false,
+      updatedAt: goldOvr?.isManual ? goldOvr.updatedAt : undefined,
     });
     res.json(response);
   } catch (err) {
@@ -60,6 +61,7 @@ router.get("/gold/prices", async (req, res): Promise<void> => {
       karats,
       timestamp: new Date().toISOString(),
       isManual: goldOvr?.isManual ?? false,
+      updatedAt: goldOvr?.isManual ? goldOvr.updatedAt : undefined,
     });
     res.json(response);
   }

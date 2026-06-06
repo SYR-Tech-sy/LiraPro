@@ -2,9 +2,34 @@ import React, { useState, useRef, useEffect } from 'react';
 
 interface ManualBadgeProps {
   className?: string;
+  updatedAt?: string;
 }
 
-export function ManualBadge({ className = '' }: ManualBadgeProps) {
+function relativeTimeAr(isoDate: string): string {
+  const diff = Date.now() - new Date(isoDate).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'منذ أقل من دقيقة';
+  if (minutes < 60) {
+    if (minutes === 1) return 'منذ دقيقة واحدة';
+    if (minutes === 2) return 'منذ دقيقتين';
+    if (minutes <= 10) return `منذ ${minutes} دقائق`;
+    return `منذ ${minutes} دقيقة`;
+  }
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    if (hours === 1) return 'منذ ساعة واحدة';
+    if (hours === 2) return 'منذ ساعتين';
+    if (hours <= 10) return `منذ ${hours} ساعات`;
+    return `منذ ${hours} ساعة`;
+  }
+  const days = Math.floor(hours / 24);
+  if (days === 1) return 'منذ يوم واحد';
+  if (days === 2) return 'منذ يومين';
+  if (days <= 10) return `منذ ${days} أيام`;
+  return `منذ ${days} يوماً`;
+}
+
+export function ManualBadge({ className = '', updatedAt }: ManualBadgeProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
 
@@ -45,10 +70,15 @@ export function ManualBadge({ className = '' }: ManualBadgeProps) {
       {open && (
         <span
           role="tooltip"
-          className="absolute z-50 bottom-full mb-1.5 right-0 w-44 bg-popover border border-border rounded-xl shadow-xl p-2.5 text-[10px] text-foreground/80 dark:text-white/80 leading-relaxed pointer-events-none"
+          className="absolute z-50 bottom-full mb-1.5 right-0 w-48 bg-popover border border-border rounded-xl shadow-xl p-2.5 text-[10px] text-foreground/80 dark:text-white/80 leading-relaxed pointer-events-none"
           style={{ whiteSpace: 'normal' }}
         >
           هذا السعر مُعيَّن يدوياً من قِبَل الإدارة وليس سعراً مباشراً من السوق.
+          {updatedAt && (
+            <span className="block mt-1 text-amber-600 dark:text-amber-400 font-semibold">
+              {relativeTimeAr(updatedAt)}
+            </span>
+          )}
         </span>
       )}
     </span>

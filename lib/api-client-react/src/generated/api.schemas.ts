@@ -17,6 +17,8 @@ export interface ExchangeRatesResponse {
   usd_to_syp: number;
   try_to_syp: number;
   is_manual_rate: boolean;
+  /** ISO timestamp of when the manual SYP rate was last set (only present when is_manual_rate is true) */
+  manual_updated_at?: string;
   timestamp: string;
 }
 
@@ -42,6 +44,8 @@ export interface GoldPricesResponse {
   karats: GoldKarat[];
   timestamp: string;
   isManual: boolean;
+  /** ISO timestamp of when the manual gold rate was last set (only present when isManual is true) */
+  updatedAt?: string;
 }
 
 export interface MetalPrice {
@@ -52,6 +56,8 @@ export interface MetalPrice {
   priceSYP: number;
   unit: string;
   isManual: boolean;
+  /** ISO timestamp of when the manual metal rate was last set (only present when isManual is true) */
+  updatedAt?: string;
 }
 
 export interface MetalPricesResponse {

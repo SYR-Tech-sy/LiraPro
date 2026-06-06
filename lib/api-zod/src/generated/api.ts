@@ -24,6 +24,7 @@ export const GetExchangeRatesResponse = zod.object({
   "usd_to_syp": zod.number(),
   "try_to_syp": zod.number(),
   "is_manual_rate": zod.boolean(),
+  "manual_updated_at": zod.string().optional().describe('ISO timestamp of when the manual SYP rate was last set (only present when is_manual_rate is true)'),
   "timestamp": zod.string()
 })
 
@@ -60,7 +61,8 @@ export const GetGoldPricesResponse = zod.object({
   "pricePerGramSYP": zod.number()
 })),
   "timestamp": zod.string(),
-  "isManual": zod.boolean()
+  "isManual": zod.boolean(),
+  "updatedAt": zod.string().optional().describe('ISO timestamp of when the manual gold rate was last set (only present when isManual is true)')
 })
 
 
@@ -93,7 +95,8 @@ export const GetMetalPricesResponse = zod.object({
   "priceUSD": zod.number(),
   "priceSYP": zod.number(),
   "unit": zod.string(),
-  "isManual": zod.boolean()
+  "isManual": zod.boolean(),
+  "updatedAt": zod.string().optional().describe('ISO timestamp of when the manual metal rate was last set (only present when isManual is true)')
 })),
   "timestamp": zod.string()
 })

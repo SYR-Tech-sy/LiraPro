@@ -33,7 +33,7 @@ router.get("/metals", async (req, res): Promise<void> => {
       if (!priceUSD || priceUSD <= 0) priceUSD = FALLBACK_PRICES_USD[symbol] ?? 100;
       const ovr = metalOverrides[i];
       const priceSYP = ovr?.isManual ? ovr.priceSYP : priceUSD * sypRate;
-      return { name, nameAr, symbol, unit, priceUSD, priceSYP, isManual: ovr?.isManual ?? false };
+      return { name, nameAr, symbol, unit, priceUSD, priceSYP, isManual: ovr?.isManual ?? false, updatedAt: ovr?.isManual ? ovr.updatedAt : undefined };
     });
 
     const response = GetMetalPricesResponse.parse({
@@ -53,7 +53,7 @@ router.get("/metals", async (req, res): Promise<void> => {
         const ovr = metalOverrides[i];
         const priceUSD = FALLBACK_PRICES_USD[symbol] ?? 100;
         const priceSYP = ovr?.isManual ? ovr.priceSYP : priceUSD * sypRate;
-        return { name, nameAr, symbol, unit, priceUSD, priceSYP, isManual: ovr?.isManual ?? false };
+        return { name, nameAr, symbol, unit, priceUSD, priceSYP, isManual: ovr?.isManual ?? false, updatedAt: ovr?.isManual ? ovr.updatedAt : undefined };
       }),
       timestamp: new Date().toISOString(),
     };

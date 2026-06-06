@@ -171,7 +171,7 @@ export default function GoldDetailPage() {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <p className="text-white/70 text-xs">سعر الغرام / ليرة سورية</p>
-                  {goldData?.isManual && <ManualBadge />}
+                  {goldData?.isManual && <ManualBadge updatedAt={goldData?.updatedAt ?? undefined} />}
                 </div>
                 <div className="text-3xl font-bold">{formatNum(pricePerGram, { decimals: 0 })} <span className="text-lg font-normal">ل.س</span></div>
                 <p className="text-white/70 text-xs mt-1">${formatNum(priceUSD, { decimals: 2 })}</p>

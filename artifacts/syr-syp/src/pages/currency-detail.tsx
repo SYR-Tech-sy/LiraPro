@@ -227,7 +227,7 @@ export default function CurrencyDetailPage() {
                 <p className="text-primary-foreground/70 text-xs mb-1">مقابل الليرة السورية</p>
                 <div className="text-3xl font-bold flex items-center gap-2 flex-wrap">
                   {formatNum(rateVsSyp, { decimals: 0 })} <span className="text-lg font-normal">ل.س</span>
-                  {isManualRate && <ManualBadge />}
+                  {isManualRate && <ManualBadge updatedAt={ratesData?.manual_updated_at ?? undefined} />}
                 </div>
               </div>
               <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${isUp ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>

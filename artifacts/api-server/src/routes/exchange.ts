@@ -38,6 +38,7 @@ router.get("/exchange/rates", async (req, res): Promise<void> => {
       usd_to_syp,
       try_to_syp,
       is_manual_rate: settings.isManual,
+      manual_updated_at: settings.isManual ? settings.updatedAt : undefined,
       timestamp: new Date().toISOString(),
     });
     res.json({ ...response, global_usd_to_syp: rawSypRate });
@@ -51,6 +52,7 @@ router.get("/exchange/rates", async (req, res): Promise<void> => {
       usd_to_syp,
       try_to_syp,
       is_manual_rate: settings.isManual,
+      manual_updated_at: settings.isManual ? settings.updatedAt : undefined,
       timestamp: new Date().toISOString(),
     });
     res.json({ ...response, global_usd_to_syp: MARKET_USD_TO_SYP });

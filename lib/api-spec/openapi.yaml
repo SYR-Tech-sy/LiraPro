@@ -334,6 +334,9 @@ components:
           type: number
         is_manual_rate:
           type: boolean
+        manual_updated_at:
+          type: string
+          description: ISO timestamp of when the manual SYP rate was last set (only present when is_manual_rate is true)
         timestamp:
           type: string
       required:
@@ -382,6 +385,9 @@ components:
           type: string
         isManual:
           type: boolean
+        updatedAt:
+          type: string
+          description: ISO timestamp of when the manual gold rate was last set (only present when isManual is true)
       required:
         - pricePerGramUSD
         - pricePerGramSYP
@@ -436,6 +442,9 @@ components:
           type: string
         isManual:
           type: boolean
+        updatedAt:
+          type: string
+          description: ISO timestamp of when the manual metal rate was last set (only present when isManual is true)
       required:
         - name
         - nameAr
