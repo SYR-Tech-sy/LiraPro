@@ -24,6 +24,10 @@ args = "Start application"
 task = "workflow.run"
 args = "codegen-in-sync"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "typecheck"
+
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
@@ -43,6 +47,17 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "pnpm run check:codegen"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "typecheck"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm run typecheck"
 
 [workflows.workflow.metadata]
 isValidation = true
