@@ -1484,6 +1484,7 @@ export default function AdminPage() {
 
   // Karat gold overrides (stored as GOLD_18, GOLD_21, etc.)
   const [karatOverrides, setKaratOverrides] = useState<Record<string, number>>({});
+  const [karatOverridesDetail, setKaratOverridesDetail] = useState<Record<string, { priceSYP: number; updatedAt: string; isManual: boolean }>>({});
   const [editKarat, setEditKarat] = useState<string | null>(null);
   const [editKaratVal, setEditKaratVal] = useState('');
   const [karatMsg, setKaratMsg] = useState('');
@@ -2053,10 +2054,16 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/settings/metal-rates');
       if (res.ok) {
-        const data = await res.json() as Record<string, { priceSYP: number }>;
+        const data = await res.json() as Record<string, { priceSYP: number; updatedAt: string; isManual: boolean }>;
         const map: Record<string, number> = {};
-        Object.entries(data).forEach(([sym, v]) => { if (sym.startsWith('GOLD_')) map[sym] = v.priceSYP; });
+        const detail: Record<string, { priceSYP: number; updatedAt: string; isManual: boolean }> = {};
+        Object.entries(data).forEach(([sym, v]) => {
+          if (!sym.startsWith('GOLD_')) return;
+          if (v.isManual) map[sym] = v.priceSYP;
+          detail[sym] = { priceSYP: v.priceSYP, updatedAt: v.updatedAt, isManual: v.isManual };
+        });
         setKaratOverrides(map);
+        setKaratOverridesDetail(detail);
       }
     } catch {}
   }, []);
@@ -2640,6 +2647,24 @@ export default function AdminPage() {
       const sbToken = await getSupabaseToken();
       await fetch(`/api/settings/metal-rates/${karatKey}`, { method: 'DELETE', headers: { 'X-Admin-Token': token ?? '', ...(sbToken ? { Authorization: `Bearer ${sbToken}` } : {}) } });
       fetchKaratOverrides();
+    } catch {}
+  };
+
+  const reactivateKaratOvr = async (karatKey: string) => {
+    const detail = karatOverridesDetail[karatKey];
+    if (!detail) return;
+    try {
+      const sbToken = await getSupabaseToken();
+      const res = await fetch(`/api/settings/metal-rates/${karatKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '', ...(sbToken ? { Authorization: `Bearer ${sbToken}` } : {}) },
+        body: JSON.stringify({ priceSYP: detail.priceSYP }),
+      });
+      if (res.ok) {
+        setKaratMsg('تم تفعيل السعر المحفوظ');
+        fetchKaratOverrides();
+        setTimeout(() => setKaratMsg(''), 3000);
+      }
     } catch {}
   };
 
@@ -3933,19 +3958,29 @@ export default function AdminPage() {
                     const karatKey = `GOLD_${k}`;
                     const isEditing = editKarat === karatKey;
                     const hasOvr = !!karatOverrides[karatKey];
+                    const stored = karatOverridesDetail[karatKey];
+                    const hasStored = !!stored;
+                    const isInactive = hasStored && !stored.isManual;
                     const autoPrice = goldKarat24 ? Math.round(goldKarat24.pricePerGramSYP * k / 24) : null;
                     return (
-                      <div key={k} className={`rounded-xl border p-3 transition-all ${hasOvr ? 'border-amber-200 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-900/10' : 'border-border'}`}>
+                      <div key={k} className={`rounded-xl border p-3 transition-all ${hasOvr ? 'border-amber-200 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-900/10' : isInactive ? 'border-dashed border-amber-200/60 dark:border-amber-900/30' : 'border-border'}`}>
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <span className="font-black text-sm text-amber-700 dark:text-amber-400">{k}K</span>
                             <span className="text-[9px] text-muted-foreground">{k} قيراط</span>
                             {hasOvr && <span className="text-[8px] bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 px-1.5 py-0.5 rounded-full font-bold">مخصص</span>}
+                            {isInactive && <span className="text-[8px] bg-secondary text-muted-foreground px-1.5 py-0.5 rounded-full font-bold">محفوظ</span>}
                           </div>
                           <div className="flex items-center gap-1">
                             {!isEditing ? (
                               <>
-                                <button onClick={() => { setEditKarat(karatKey); setEditKaratVal(karatOverrides[karatKey]?.toString() ?? ''); }}
+                                {isInactive && (
+                                  <button onClick={() => reactivateKaratOvr(karatKey)}
+                                    className="text-[9px] font-bold px-2 py-1 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors">
+                                    تفعيل
+                                  </button>
+                                )}
+                                <button onClick={() => { setEditKarat(karatKey); setEditKaratVal((stored?.priceSYP ?? karatOverrides[karatKey])?.toString() ?? ''); }}
                                   className="p-1.5 hover:bg-primary/10 rounded-lg transition-colors">
                                   <Edit3 className="w-3.5 h-3.5 text-primary" />
                                 </button>
@@ -3977,10 +4012,16 @@ export default function AdminPage() {
                             dir="ltr" autoFocus />
                         ) : (
                           <div className="flex gap-2">
-                            <div className="flex-1 bg-secondary/60 rounded-lg py-1.5 text-center">
-                              <p className="text-[8px] text-muted-foreground mb-0.5">السعر (ل.س/غ)</p>
-                              <p className="text-xs font-black" dir="ltr">
-                                {hasOvr ? karatOverrides[karatKey].toLocaleString() : autoPrice ? autoPrice.toLocaleString() : '—'}
+                            <div className={`flex-1 rounded-lg py-1.5 text-center ${hasOvr ? 'bg-amber-50 dark:bg-amber-900/20' : isInactive ? 'bg-secondary/40' : 'bg-secondary/60'}`}>
+                              <p className="text-[8px] text-muted-foreground mb-0.5">
+                                {hasOvr ? 'السعر اليدوي (ل.س/غ)' : isInactive ? 'آخر سعر محفوظ (ل.س/غ)' : 'السعر (ل.س/غ)'}
+                              </p>
+                              <p className={`text-xs font-black ${isInactive ? 'text-muted-foreground' : ''}`} dir="ltr">
+                                {hasOvr
+                                  ? karatOverrides[karatKey].toLocaleString()
+                                  : hasStored
+                                    ? stored.priceSYP.toLocaleString()
+                                    : autoPrice ? autoPrice.toLocaleString() : '—'}
                               </p>
                             </div>
                           </div>
