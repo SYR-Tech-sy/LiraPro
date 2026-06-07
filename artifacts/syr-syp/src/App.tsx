@@ -28,7 +28,7 @@ const cachedEntries = loadCachedQueries();
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 2 * 60 * 1000,
+      staleTime: 30 * 1000,
       gcTime: 10 * 60 * 1000,
       // On slow/offline connections: show cached data, retry in background
       retry: (failureCount, _error) => {
@@ -249,7 +249,7 @@ function useVendorInfo() {
     },
     enabled: !!isSignedIn,
     refetchInterval: 30_000,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
     placeholderData: (prev: { isVendor: boolean; businessName: string } | undefined) => prev,
   });
 
@@ -622,7 +622,7 @@ function CurrencyTickerBoard() {
 
       <div className="px-4 py-2 flex items-center gap-1.5" style={{ background: '#f9fafb' }}>
         <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-        <span className="text-[10px] text-gray-400 font-medium">أسعار حقيقية محدّثة · LiraPro</span>
+        <span className="text-[10px] text-gray-400 font-medium">محاكاة العرض الفعلي</span>
       </div>
     </motion.div>
   );

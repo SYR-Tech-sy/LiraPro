@@ -444,7 +444,7 @@ function LocalMarketSection() {
                     <CategoryIcon category={cat} className="w-4 h-4" color={conf.color} />
                   </div>
                   <span className="font-black text-sm">{conf.label}</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold text-muted-foreground bg-secondary">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold tracking-wide tabular-nums text-muted-foreground bg-secondary" style={{ fontVariantNumeric: 'tabular-nums', letterSpacing: '0.02em' }}>
                     {catPrices.length} سعر
                   </span>
                   {governorate && (
@@ -1012,6 +1012,9 @@ export default function HomePage() {
 
       {/* Exchange Rates */}
       <section>
+        <div className="flex items-center gap-3 mb-4" style={{ marginBottom: '0.5rem' }}>
+          <div className="flex-1 h-[2.5px] rounded-full" style={{ background: 'linear-gradient(90deg, #D20073 0%, #ff3d8f 60%, transparent 100%)' }} />
+        </div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-bold flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-primary" /> أسعار الصرف المتداولة عالمياً

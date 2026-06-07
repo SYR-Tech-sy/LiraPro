@@ -62,7 +62,15 @@ export default function SettingsPage() {
     const { error } = await resetPassword(userEmail);
     if (error) {
       setPwSent(false);
-      setPwMsg(ar ? 'حدث خطأ: ' + error.message : 'Error: ' + error.message);
+      const errMsg = error.message.toLowerCase();
+      const arabicMsg = errMsg.includes('rate limit') || errMsg.includes('email rate')
+        ? 'تم تجاوز الحد المسموح لإرسال البريد الإلكتروني، يرجى الانتظار قليلاً والمحاولة مجدداً'
+        : errMsg.includes('user not found')
+        ? 'البريد الإلكتروني غير مسجّل'
+        : errMsg.includes('invalid email')
+        ? 'البريد الإلكتروني غير صحيح'
+        : 'حدث خطأ، يرجى المحاولة مجدداً';
+      setPwMsg(ar ? arabicMsg : error.message);
     } else {
       setPwMsg(ar
         ? 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني ✓'
@@ -269,21 +277,15 @@ export default function SettingsPage() {
                   <h3 className="font-bold text-foreground text-base">{ar ? 'تغيير كلمة المرور' : 'Change Password'}</h3>
                   <div className="w-7" />
                 </div>
-                <div className="flex gap-1 mb-1">
-                  {(['request', 'verify', 'change'] as const).map((s, i) => (
-                    <div key={s} className={`h-1 flex-1 rounded-full transition-colors ${['request', 'verify', 'change'].indexOf(pwStep) >= i ? 'bg-primary' : 'bg-border'}`} />
-                  ))}
-                </div>
-
                 {pwStep === 'request' && (
                   <>
                     <p className="text-sm text-foreground/70 text-center">
-                      {ar ? 'سيتم إرسال رمز التحقق إلى:' : 'A verification code will be sent to:'}
+                      {ar ? 'سيتم إرسال رابط إعادة تعيين كلمة المرور إلى:' : 'A password reset link will be sent to:'}
                     </p>
                     <p className="text-sm font-bold text-center text-foreground bg-secondary rounded-xl py-2 px-3" dir="ltr">{userEmail}</p>
                     {pwMsg && <p className="text-xs text-center text-green-600 dark:text-green-400 font-medium">{pwMsg}</p>}
                     <Button onClick={handleSendPwCode} disabled={pwSent} className="h-12 font-bold">
-                      {ar ? 'إرسال رمز التحقق' : 'Send Verification Code'}
+                      {ar ? 'إرسال الرابط' : 'Send Link'}
                     </Button>
                   </>
                 )}

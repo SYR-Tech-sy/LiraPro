@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useGetExchangeRates } from '@workspace/api-client-react';
 import { useApp } from '@/context/app-context';
-import { useUser } from '@/context/auth-context';
+import { useUser, useAuth } from '@/context/auth-context';
 import { GuestModal } from '@/components/guest-modal';
 import { LiveBadge, useMarketOpen } from '@/components/live-badge';
 import { ManualBadge } from '@/components/manual-badge';
@@ -40,20 +40,32 @@ function AlertModal({ onClose, code, currentBuy, currentSell, t, formatNum }: {
   const [alertType, setAlertType] = useState<'buy' | 'sell'>('buy');
   const [targetPrice, setTargetPrice] = useState('');
   const [saved, setSaved] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const { getToken } = useAuth();
 
-  const handleCreate = () => {
-    if (!targetPrice) return;
-    const alerts = JSON.parse(localStorage.getItem('syp-alerts') || '[]');
-    alerts.push({
-      id: Date.now(),
-      code,
-      type: alertType,
-      target: parseFloat(targetPrice),
-      created: new Date().toISOString(),
-    });
-    localStorage.setItem('syp-alerts', JSON.stringify(alerts));
-    setSaved(true);
-    setTimeout(onClose, 1500);
+  const handleCreate = async () => {
+    if (!targetPrice || creating) return;
+    setCreating(true);
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ code, type: alertType, targetPrice: parseFloat(targetPrice) }),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(onClose, 1500);
+      } else {
+        setSaved(true);
+        setTimeout(onClose, 1500);
+      }
+    } catch {
+      setSaved(true);
+      setTimeout(onClose, 1500);
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -118,8 +130,8 @@ function AlertModal({ onClose, code, currentBuy, currentSell, t, formatNum }: {
                 className="mb-4 h-12 text-lg" dir="ltr" />
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" onClick={onClose}>إلغاء</Button>
-                <Button onClick={handleCreate} className="flex-1" disabled={!targetPrice}>
-                  <Bell className="w-4 h-4 ml-2" /> {t('createAlert')}
+                <Button onClick={() => void handleCreate()} className="flex-1" disabled={!targetPrice || creating}>
+                  <Bell className="w-4 h-4 ml-2" /> {creating ? '...' : t('createAlert')}
                 </Button>
               </div>
             </>

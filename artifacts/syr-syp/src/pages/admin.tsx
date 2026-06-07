@@ -1356,7 +1356,7 @@ export default function AdminPage() {
   const queryClient = useQueryClient();
   const { data: stats } = useQuery({ queryKey: ['admin-stats', token], queryFn: () => adminFetchStats(token!), enabled: !!token });
   const { data: users = [] } = useQuery({ queryKey: ['admin-users', token], queryFn: () => adminFetchUsers(token!), enabled: !!token });
-  const { data: deletionRequests = [] } = useQuery({ queryKey: ['admin-deletion-reqs', token], queryFn: () => adminFetchDeletionRequests(token!), enabled: !!token });
+  const { data: deletionRequests = [] } = useQuery({ queryKey: ['admin-deletion-reqs', token], queryFn: () => adminFetchDeletionRequests(token!), enabled: !!token, refetchInterval: 15000, staleTime: 0, refetchOnMount: true });
   const { data: buySellOverrides = {} } = useQuery({ queryKey: ['admin-buy-sell-overrides'], queryFn: adminFetchBuySellOverrides, enabled: !!token });
   const { data: notifications = [] } = useQuery({ queryKey: ['admin-notifications'], queryFn: adminFetchNotifications, enabled: !!token });
   const { data: broadcastData } = useQuery({ queryKey: ['admin-broadcast'], queryFn: adminFetchBroadcast, enabled: !!token, refetchInterval: 60_000 });
@@ -1383,7 +1383,7 @@ export default function AdminPage() {
   const { data: vendorApplications = [] } = useQuery({ queryKey: ['admin-vendor-apps', token], queryFn: () => adminFetchVendorApplications(token!), enabled: !!token, refetchInterval: 10000, refetchOnMount: true, staleTime: 0 });
   // adminFetchAdminMessages kept for future use; messages now stored in localStorage via localSentMsgs
   void adminFetchAdminMessages;
-  const { data: verifyRequests = [] } = useQuery({ queryKey: ['admin-verify-reqs', token], queryFn: () => adminFetchVerifyRequests(token!), enabled: !!token });
+  const { data: verifyRequests = [] } = useQuery({ queryKey: ['admin-verify-reqs', token], queryFn: () => adminFetchVerifyRequests(token!), enabled: !!token, refetchInterval: 15000, staleTime: 0, refetchOnMount: true });
   const [vendorAppFilter, setVendorAppFilter] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
   const [createVendorOpen, setCreateVendorOpen] = useState(false);
   const [vendorForm, setVendorForm] = useState({ supabaseId: '', businessName: '', fullName: '', email: '', phone: '', governorate: '', city: '', address: '', category: '', trustScore: '50', logoUrl: '' });

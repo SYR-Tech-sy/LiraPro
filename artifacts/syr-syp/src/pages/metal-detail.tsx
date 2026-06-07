@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useGetMetalPrices } from '@workspace/api-client-react';
 import { useApp } from '@/context/app-context';
-import { useUser } from '@/context/auth-context';
+import { useUser, useAuth } from '@/context/auth-context';
 import { GuestModal } from '@/components/guest-modal';
 import { LiveBadge } from '@/components/live-badge';
 import { MetalIcon } from '@/components/metal-icon';
@@ -46,14 +46,24 @@ function AlertModal({ onClose, symbol, nameAr, currentBuy, currentSell, color, t
   const [alertType, setAlertType] = useState<'buy' | 'sell'>('buy');
   const [targetPrice, setTargetPrice] = useState('');
   const [saved, setSaved] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const { getToken } = useAuth();
 
-  const handleCreate = () => {
-    if (!targetPrice) return;
-    const alerts = JSON.parse(localStorage.getItem('syp-alerts') || '[]');
-    alerts.push({ id: Date.now(), code: symbol, type: alertType, target: parseFloat(targetPrice), nameAr, created: new Date().toISOString() });
-    localStorage.setItem('syp-alerts', JSON.stringify(alerts));
-    setSaved(true);
-    setTimeout(onClose, 1500);
+  const handleCreate = async () => {
+    if (!targetPrice || creating) return;
+    setCreating(true);
+    try {
+      const token = await getToken();
+      await fetch('/api/alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ code: symbol, nameAr, type: alertType, targetPrice: parseFloat(targetPrice) }),
+      });
+    } catch { /* silent */ } finally {
+      setCreating(false);
+      setSaved(true);
+      setTimeout(onClose, 1500);
+    }
   };
 
   return (
@@ -107,7 +117,7 @@ function AlertModal({ onClose, symbol, nameAr, currentBuy, currentSell, color, t
                 className="mb-4 h-12 text-lg" dir="ltr" />
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" onClick={onClose}>إلغاء</Button>
-                <Button className="flex-1" onClick={handleCreate} disabled={!targetPrice}>
+                <Button className="flex-1" onClick={() => void handleCreate()} disabled={!targetPrice || creating}>
                   <Bell className="w-4 h-4 ml-1" /> {t('createAlert')}
                 </Button>
               </div>

@@ -26,8 +26,8 @@ router.post("/admin/verify-requests", (req, res): void => {
     fullName: string;
     email: string;
   };
-  if (!supabaseId || !lphId) {
-    res.status(400).json({ error: "supabaseId and lphId are required" });
+  if (!supabaseId) {
+    res.status(400).json({ error: "supabaseId is required" });
     return;
   }
   const entry = addVerifyRequest({
