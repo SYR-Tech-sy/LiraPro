@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo, useLayoutEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useGetExchangeRates, useGetGoldPrices, useGetNews, useGetProfile } from "@workspace/api-client-react";
 import { useAlertChecker } from '@/components/notifications-panel';
 import { motion, AnimatePresence } from "framer-motion";
@@ -213,8 +214,7 @@ function CatFilterRow({ cats, category, setCategory, searchStr }: {
 
 function LocalMarketSection() {
   const searchStr = useSearch();
-  const [prices, setPrices] = useState<MarketPrice[]>([]);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
   const [governorate, setGovernorate] = useState('');
   const [detectedCity, setDetectedCity] = useState('');
   const [showGovPicker, setShowGovPicker] = useState(false);
@@ -278,22 +278,23 @@ function LocalMarketSection() {
     );
   };
 
-  const fetchPrices = useCallback(async () => {
-    setLoading(true);
-    try {
+  const { data: prices = [], isFetching: loading } = useQuery<MarketPrice[]>({
+    queryKey: ['market-prices', governorate, detectedCity, category],
+    queryFn: async () => {
       const params = new URLSearchParams();
       if (governorate) params.set('governorate', governorate);
       if (detectedCity) params.set('city', detectedCity);
       if (category) params.set('category', category);
       const res = await fetch(`/api/market/prices?${params}`);
-      if (res.ok) setPrices(await res.json());
-      else setPrices([]);
-    } catch { setPrices([]); }
-    setLoading(false);
-  }, [governorate, detectedCity, category]);
+      if (res.ok) return res.json() as Promise<MarketPrice[]>;
+      return [];
+    },
+    staleTime: 30_000,
+  });
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { fetchPrices(); }, [fetchPrices]);
+  const fetchPrices = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: ['market-prices', governorate, detectedCity, category] });
+  }, [queryClient, governorate, detectedCity, category]);
 
   const grouped = React.useMemo(() => {
     const map = new Map<string, MarketPrice[]>();

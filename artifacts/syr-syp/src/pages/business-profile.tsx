@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/auth-context';
 import { useLocation } from 'wouter';
@@ -56,10 +57,7 @@ export default function BusinessProfilePage() {
   const [, navigate] = useLocation();
   const { formatNum } = useApp();
 
-  const [profile, setProfile] = useState<VendorProfile | null>(null);
-  const [stats, setStats] = useState<VendorStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notVendor, setNotVendor] = useState(false);
+  const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editData, setEditData] = useState({ businessName: '', phone: '', address: '', description: '', governorate: '', city: '', logoUrl: '' });
@@ -76,43 +74,49 @@ export default function BusinessProfilePage() {
     return id;
   });
 
-  const authFetch = useCallback(async (url: string, opts?: RequestInit) => {
-    const token = await getToken();
-    return fetch(url, { ...opts, headers: { ...(opts?.headers as Record<string, string>), Authorization: `Bearer ${token}` } });
-  }, [getToken]);
-
-  const loadData = useCallback(async () => {
-    try {
+  const { data: vendorData, isLoading: loading, refetch: loadData } = useQuery({
+    queryKey: ['vendor-profile'],
+    queryFn: async () => {
+      const token = await getToken();
+      const h = { Authorization: `Bearer ${token}` };
       const [profileRes, statsRes] = await Promise.all([
-        authFetch('/api/vendor/profile'),
-        authFetch('/api/vendor/stats'),
+        fetch('/api/vendor/profile', { headers: h }),
+        fetch('/api/vendor/stats', { headers: h }),
       ]);
-      if (profileRes.status === 403) { setNotVendor(true); setLoading(false); return; }
-      if (profileRes.ok) {
-        const p = await profileRes.json() as VendorProfile;
-        setProfile(p);
-        setEditData({ businessName: p.businessName || '', phone: p.phone || '', address: p.address || '', description: p.description || '', governorate: p.governorate || '', city: p.city || '', logoUrl: p.logoUrl || '' });
-      }
-      if (statsRes.ok) setStats(await statsRes.json() as VendorStats);
-    } catch { toast.error('فشل تحميل البيانات'); }
-    finally { setLoading(false); }
-  }, [authFetch]);
+      if (profileRes.status === 403) return { notVendor: true as const, profile: null as VendorProfile | null, stats: null as VendorStats | null };
+      const profile = profileRes.ok ? await profileRes.json() as VendorProfile : null;
+      const stats   = statsRes.ok   ? await statsRes.json() as VendorStats   : null;
+      return { notVendor: false as const, profile, stats };
+    },
+    staleTime: 30_000,
+  });
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { loadData(); }, [loadData]);
+  const profile  = vendorData?.profile  ?? null;
+  const stats    = vendorData?.stats    ?? null;
+  const notVendor = vendorData?.notVendor ?? false;
+
+  // Sync editData when profile first loads (adjust-state-during-render pattern)
+  const [prevEditProfile, setPrevEditProfile] = useState<VendorProfile | null>(null);
+  if (profile !== prevEditProfile) {
+    setPrevEditProfile(profile);
+    if (profile && !editing) {
+      setEditData({ businessName: profile.businessName || '', phone: profile.phone || '', address: profile.address || '', description: profile.description || '', governorate: profile.governorate || '', city: profile.city || '', logoUrl: profile.logoUrl || '' });
+    }
+  }
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await authFetch('/api/vendor/profile', {
+      const token = await getToken();
+      const res = await fetch('/api/vendor/profile', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(editData),
       });
       if (res.ok) {
         toast.success('تم تحديث الملف الشخصي');
         setEditing(false);
-        loadData();
+        void loadData();
       } else toast.error('فشل الحفظ');
     } catch { toast.error('خطأ في الاتصال'); }
     setSaving(false);

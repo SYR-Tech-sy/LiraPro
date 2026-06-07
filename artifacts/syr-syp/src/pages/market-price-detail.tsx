@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRoute, useLocation } from 'wouter';
 import {
@@ -511,10 +512,7 @@ export default function MarketPriceDetailPage() {
   const { isSignedIn } = useUser();
   const isMarketOpen = useMarketOpen();
 
-  const [price, setPrice] = useState<MarketPrice | null>(null);
-  const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
-  const [notFound, setNotFound] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState<PriceSource | null>(null);
   const [period, setPeriod] = useState<Period>('daily');
   const [showAlert, setShowAlert] = useState(false);
@@ -523,24 +521,18 @@ export default function MarketPriceDetailPage() {
   const catColor = CAT_COLORS[category] ?? '#003C32';
   const catLabel = CAT_LABELS[category] ?? category;
 
-  const fetchDetail = useCallback(async () => {
-    setLoading(true);
-    setNotFound(false);
-    try {
+  const { data: price = null, isLoading: loading, isError } = useQuery<MarketPrice | null>({
+    queryKey: ['market-price-detail', category, productNameAr],
+    queryFn: async () => {
       const res = await fetch(`/api/market/prices?category=${encodeURIComponent(category)}`);
       if (!res.ok) throw new Error('fetch failed');
       const data: MarketPrice[] = await res.json();
-      const found = data.find(p => p.productNameAr === productNameAr);
-      if (found) setPrice(found);
-      else setNotFound(true);
-    } catch {
-      setNotFound(true);
-    }
-    setLoading(false);
-  }, [category, productNameAr]);
+      return data.find(p => p.productNameAr === productNameAr) ?? null;
+    },
+    staleTime: 60_000,
+  });
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { fetchDetail(); }, [fetchDetail]);
+  const notFound = !loading && (isError || price === null);
 
   const mainPrice = price ? Math.round(price.weightedAvg || price.avgPrice) : 0;
 

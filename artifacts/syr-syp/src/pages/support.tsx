@@ -275,10 +275,18 @@ const WELCOME_MSG: SupportMsg = {
 function ImageLightbox({ src, onClose }: { src: string | null; onClose: () => void }) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
   const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
   const dragging = useRef(false);
   const dragStart = useRef({ mx: 0, my: 0, px: 0, py: 0 });
   const clamp = (z: number) => Math.min(4, Math.max(1, z));
+
+  // Reset zoom/pan when src changes to null (adjust-state-during-render)
+  const [prevSrc, setPrevSrc] = useState<string | null>(src);
+  if (src !== prevSrc) {
+    setPrevSrc(src);
+    if (!src) { setZoom(1); setPan({ x: 0, y: 0 }); }
+  }
 
   useEffect(() => {
     if (!src) return;
@@ -292,8 +300,6 @@ function ImageLightbox({ src, onClose }: { src: string | null; onClose: () => vo
     return () => window.removeEventListener('keydown', onKey);
   }, [src, onClose]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { if (!src) { setZoom(1); setPan({ x: 0, y: 0 }); } }, [src]);
 
   if (!src) return null;
 
@@ -301,13 +307,14 @@ function ImageLightbox({ src, onClose }: { src: string | null; onClose: () => vo
   const onMouseDown = (e: React.MouseEvent) => {
     if (zoom <= 1) return;
     dragging.current = true;
+    setIsDragging(true);
     dragStart.current = { mx: e.clientX, my: e.clientY, px: pan.x, py: pan.y };
   };
   const onMouseMove = (e: React.MouseEvent) => {
     if (!dragging.current) return;
     setPan({ x: dragStart.current.px + e.clientX - dragStart.current.mx, y: dragStart.current.py + e.clientY - dragStart.current.my });
   };
-  const onMouseUp = () => { dragging.current = false; };
+  const onMouseUp = () => { dragging.current = false; setIsDragging(false); };
   const onTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
       const dx = e.touches[0].clientX - e.touches[1].clientX;
@@ -345,8 +352,7 @@ function ImageLightbox({ src, onClose }: { src: string | null; onClose: () => vo
         {/* Image viewport */}
         <div
           className="overflow-hidden rounded-2xl shadow-2xl"
-          // eslint-disable-next-line react-hooks/refs
-          style={{ maxWidth: '88vw', maxHeight: '78vh', cursor: zoom > 1 ? (dragging.current ? 'grabbing' : 'grab') : 'zoom-in' }}
+          style={{ maxWidth: '88vw', maxHeight: '78vh', cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
           onWheel={onWheel}
           onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
           onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
@@ -357,8 +363,7 @@ function ImageLightbox({ src, onClose }: { src: string | null; onClose: () => vo
             style={{
               maxWidth: '88vw', maxHeight: '78vh',
               transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
-              // eslint-disable-next-line react-hooks/refs
-              transition: dragging.current ? 'none' : 'transform 0.12s ease',
+              transition: isDragging ? 'none' : 'transform 0.12s ease',
               userSelect: 'none', WebkitUserSelect: 'none',
             }}
           />

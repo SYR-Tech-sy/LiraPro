@@ -520,40 +520,38 @@ interface TickerRow { code: string; flag: string; rate: number; change: number }
 
 function CurrencyTickerBoard() {
   const { data: ratesData } = useGetExchangeRates();
-  const [rows, setRows] = useState<TickerRow[]>(TICKER_FALLBACK.map(r => ({ ...r })));
-  const [flash, setFlash] = useState<{ idx: number; dir: 'up' | 'down' } | null>(null);
 
-  useEffect(() => {
-    const api = ratesData as unknown as {
-      rates?: Record<string, number>;
-      usd_to_syp?: number;
-      try_to_syp?: number;
-    } | undefined;
+  const baseRows = useMemo<TickerRow[]>(() => {
+    const api = ratesData as unknown as { rates?: Record<string, number>; usd_to_syp?: number; try_to_syp?: number } | undefined;
     const usd = api?.usd_to_syp;
     const fx  = api?.rates;
-    if (!usd || !fx) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setRows([
+    if (!usd || !fx) return TICKER_FALLBACK.map(r => ({ ...r }));
+    return [
       { code: 'USD', flag: '🇺🇸', rate: Math.round(usd),                                                    change: 0 },
       { code: 'EUR', flag: '🇪🇺', rate: Math.round(fx['EUR'] ? usd / fx['EUR'] : 14800),                    change: 0 },
       { code: 'TRY', flag: '🇹🇷', rate: Math.round(api?.try_to_syp ?? (fx['TRY'] ? usd / fx['TRY'] : 355)), change: 0 },
       { code: 'GBP', flag: '🇬🇧', rate: Math.round(fx['GBP'] ? usd / fx['GBP'] : 17100),                    change: 0 },
       { code: 'AED', flag: '🇦🇪', rate: Math.round(fx['AED'] ? usd / fx['AED'] : 3675),                     change: 0 },
-    ]);
+    ];
   }, [(ratesData as unknown as { usd_to_syp?: number } | undefined)?.usd_to_syp]);
+
+  const [perturbations, setPerturbations] = useState<number[]>(() => TICKER_FALLBACK.map(() => 0));
+  const [flash, setFlash] = useState<{ idx: number; dir: 'up' | 'down' } | null>(null);
+
+  const rows = useMemo<TickerRow[]>(() =>
+    baseRows.map((row, i) => ({
+      ...row,
+      rate: Math.round(row.rate * (1 + (perturbations[i] ?? 0))),
+      change: parseFloat((row.change + (perturbations[i] ?? 0) * 100).toFixed(2)),
+    })),
+    [baseRows, perturbations]
+  );
 
   useEffect(() => {
     const iv = setInterval(() => {
       const i = Math.floor(Math.random() * TICKER_FALLBACK.length);
       const factor = (Math.random() - 0.47) * 0.003;
-      setRows(prev => prev.map((row, idx) => {
-        if (idx !== i) return row;
-        return {
-          ...row,
-          rate: Math.round(row.rate * (1 + factor)),
-          change: parseFloat((row.change + factor * 100).toFixed(2)),
-        };
-      }));
+      setPerturbations(prev => prev.map((p, idx) => idx !== i ? p : p + factor));
       setFlash({ idx: i, dir: factor >= 0 ? 'up' : 'down' });
       setTimeout(() => setFlash(null), 650);
     }, 1800);

@@ -113,6 +113,20 @@ const profileSchema = z.object({
 });
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
+function getOrCreateLphId(userId: string): string {
+  const key = `syp-lph-${userId}`;
+  let id = localStorage.getItem(key);
+  if (!id) {
+    const digits = Array.from({ length: 10 }, () => Math.floor(Math.random() * 10)).join('');
+    id = `LP${digits}`;
+    localStorage.setItem(key, id);
+  } else if (id.startsWith('LPH')) {
+    id = 'LP' + id.slice(3);
+    localStorage.setItem(key, id);
+  }
+  return id;
+}
+
 export default function ProfilePage() {
   const { isSignedIn, user, isLoaded } = useUser();
   const { signOut, getToken } = useAuth();
@@ -128,23 +142,21 @@ export default function ProfilePage() {
   const [showDeleteDetails, setShowDeleteDetails] = useState(false);
 
   const [deleteRequest, setDeleteRequest] = useState<{ timestamp: string } | null>(null);
+  const [prevDeleteUserId, setPrevDeleteUserId] = useState<string | undefined>(undefined);
+  if (user?.id !== prevDeleteUserId) {
+    setPrevDeleteUserId(user?.id);
+    if (user?.id) {
+      try {
+        const s = localStorage.getItem(`syp-delete-request-${user.id}`);
+        setDeleteRequest(s ? JSON.parse(s) as { timestamp: string } : null);
+      } catch { setDeleteRequest(null); }
+    }
+  }
 
   interface AdminMsg { id: number; user_id: string; title: string; body: string; type: string; read: boolean; created_at: string; }
   const [adminMessages, setAdminMessages] = useState<AdminMsg[]>([]);
   const [adminMsgLoading, setAdminMsgLoading] = useState(false);
   const [showInbox, setShowInbox] = useState(false);
-
-  useEffect(() => {
-    if (!user?.id) return;
-    try {
-      const key = `syp-delete-request-${user.id}`;
-      const s = localStorage.getItem(key);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setDeleteRequest(s ? JSON.parse(s) as { timestamp: string } : null);
-    } catch {
-      setDeleteRequest(null);
-    }
-  }, [user?.id]);
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -173,21 +185,7 @@ export default function ProfilePage() {
     requestedAt: string; status: 'pending' | 'approved' | 'rejected';
   }
 
-  const lphId = useMemo(() => {
-    if (!user?.id) return '';
-    const key = `syp-lph-${user.id}`;
-    let id = localStorage.getItem(key);
-    if (!id) {
-      // eslint-disable-next-line react-hooks/purity
-      const digits = Array.from({ length: 10 }, () => Math.floor(Math.random() * 10)).join('');
-      id = `LP${digits}`;
-      localStorage.setItem(key, id);
-    } else if (id && id.startsWith('LPH')) {
-      id = 'LP' + id.slice(3);
-      localStorage.setItem(key, id);
-    }
-    return id;
-  }, [user?.id]);
+  const lphId = useMemo(() => user?.id ? getOrCreateLphId(user.id) : '', [user?.id]);
 
   const verifyKey = user?.id ? `syp-verify-status-${user.id}` : '';
   const [verifyStatus, setVerifyStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>(() => {

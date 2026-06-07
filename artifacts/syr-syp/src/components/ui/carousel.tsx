@@ -65,6 +65,7 @@ const Carousel = React.forwardRef<
     )
     const [canScrollPrev, setCanScrollPrev] = React.useState(false)
     const [canScrollNext, setCanScrollNext] = React.useState(false)
+    const [prevApi, setPrevApi] = React.useState<CarouselApi | null>(null)
 
     const onSelect = React.useCallback((api: CarouselApi) => {
       if (!api) {
@@ -74,6 +75,13 @@ const Carousel = React.forwardRef<
       setCanScrollPrev(api.canScrollPrev())
       setCanScrollNext(api.canScrollNext())
     }, [])
+
+    // Compute initial scroll state when api becomes available (adjust-state-during-render)
+    if (api != null && api !== prevApi) {
+      setPrevApi(api)
+      setCanScrollPrev(api.canScrollPrev())
+      setCanScrollNext(api.canScrollNext())
+    }
 
     const scrollPrev = React.useCallback(() => {
       api?.scrollPrev()
@@ -109,8 +117,6 @@ const Carousel = React.forwardRef<
         return
       }
 
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      onSelect(api)
       api.on("reInit", onSelect)
       api.on("select", onSelect)
 

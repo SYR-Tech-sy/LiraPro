@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'wouter';
 import {
@@ -333,11 +334,6 @@ export default function VendorDashboard() {
   const userId = user?.id;
   const { formatNum } = useApp();
   const [, navigate] = useLocation();
-  const [profile, setProfile] = useState<VendorProfile | null>(null);
-  const [stats, setStats] = useState<VendorStats | null>(null);
-  const [prices, setPrices] = useState<VendorPrice[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [notVendor, setNotVendor] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editPrice, setEditPrice] = useState<VendorPrice | null>(null);
   const [activeTab, setActiveTab] = useState<'prices' | 'stats'>('prices');
@@ -347,27 +343,29 @@ export default function VendorDashboard() {
     return fetch(url, { ...opts, headers: { ...(opts?.headers as Record<string, string>), Authorization: `Bearer ${token}` } });
   }, [getToken]);
 
-  const loadAll = useCallback(async () => {
-    try {
+  const { data: dashData, isLoading: loading, refetch: loadAll } = useQuery({
+    queryKey: ['vendor-dashboard', userId],
+    queryFn: async () => {
       const [profileRes, statsRes, pricesRes] = await Promise.all([
         authFetch('/api/vendor/profile'),
         authFetch('/api/vendor/stats'),
         authFetch('/api/vendor/prices'),
       ]);
-      if (profileRes.status === 403) { setNotVendor(true); setLoading(false); return; }
-      if (profileRes.ok) {
-        const p = await profileRes.json();
-        setProfile(p);
-        try { localStorage.setItem('syp-is-vendor', '1'); } catch { /**/ }
-      }
-      if (statsRes.ok) setStats(await statsRes.json());
-      if (pricesRes.ok) setPrices(await pricesRes.json());
-    } catch { toast.error('فشل تحميل البيانات'); }
-    finally { setLoading(false); }
-  }, [authFetch]);
+      if (profileRes.status === 403) return { notVendor: true as const, profile: null as VendorProfile | null, stats: null as VendorStats | null, prices: [] as VendorPrice[] };
+      const profile = profileRes.ok ? await profileRes.json() as VendorProfile : null;
+      if (profile) { try { localStorage.setItem('syp-is-vendor', '1'); } catch { /**/ } }
+      const stats  = statsRes.ok  ? await statsRes.json() as VendorStats  : null;
+      const prices = pricesRes.ok ? await pricesRes.json() as VendorPrice[] : [];
+      return { notVendor: false as const, profile, stats, prices };
+    },
+    enabled: !!userId,
+    staleTime: 30_000,
+  });
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { loadAll(); }, [loadAll]);
+  const profile  = dashData?.profile  ?? null;
+  const stats    = dashData?.stats    ?? null;
+  const prices   = dashData?.prices   ?? [];
+  const notVendor = dashData?.notVendor ?? false;
 
   const handleSavePrice = async (data: Record<string, string>) => {
     try {
@@ -440,7 +438,7 @@ export default function VendorDashboard() {
             <span className="font-black text-sm">{profile?.businessName ?? 'لوحة التاجر'}</span>
           </div>
         </div>
-        <button onClick={loadAll} className="p-2 hover:bg-secondary rounded-xl transition-colors">
+        <button onClick={() => void loadAll()} className="p-2 hover:bg-secondary rounded-xl transition-colors">
           <RefreshCw className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>

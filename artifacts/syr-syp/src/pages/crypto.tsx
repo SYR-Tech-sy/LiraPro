@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, TrendingDown, RefreshCw, Search, Bell, X, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -252,36 +253,26 @@ function CryptoDetailModal({
 }
 
 export default function CryptoPage() {
-  const [cryptos, setCryptos] = useState<CryptoData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [search, setSearch] = useState('');
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [selectedCoin, setSelectedCoin] = useState<CryptoData | null>(null);
   const { formatNum, t, language } = useApp();
   const { data: ratesData } = useGetExchangeRates();
   const usdToSyp = ratesData?.usd_to_syp ?? 13500;
 
-  const fetchCryptos = async () => {
-    setLoading(true);
-    setError('');
-    try {
+  const { data: cryptos = [], isFetching: loading, isError, dataUpdatedAt, refetch } = useQuery<CryptoData[]>({
+    queryKey: ['cryptos'],
+    queryFn: async () => {
       const res = await fetch(
         `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${CRYPTO_IDS}&order=market_cap_desc&per_page=20&page=1&sparkline=true&price_change_percentage=24h`
       );
       if (!res.ok) throw new Error('API error');
-      const data: CryptoData[] = await res.json();
-      setCryptos(data);
-      setLastUpdated(new Date());
-    } catch {
-      setError(language === 'ar' ? 'تعذّر تحميل البيانات. يرجى المحاولة لاحقاً.' : 'Failed to load data. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+      return res.json() as Promise<CryptoData[]>;
+    },
+    staleTime: 60_000,
+  });
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { fetchCryptos(); }, []);
+  const error = isError ? (language === 'ar' ? 'تعذّر تحميل البيانات. يرجى المحاولة لاحقاً.' : 'Failed to load data. Please try again.') : '';
+  const lastUpdated = dataUpdatedAt ? new Date(dataUpdatedAt) : null;
 
   const filtered = cryptos.filter(c =>
     !search ||
@@ -303,7 +294,7 @@ export default function CryptoPage() {
         </div>
         <div className="flex items-center gap-2">
           <LiveBadge variant="crypto" />
-          <button onClick={fetchCryptos} disabled={loading}
+          <button onClick={() => void refetch()} disabled={loading}
             className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
