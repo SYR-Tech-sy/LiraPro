@@ -11,7 +11,7 @@ import {
   ShieldCheck, MessageCircle, AlertOctagon, Coins as CoinsIcon, Tag, Timer, Mic,
   Image as ImageIcon, Paperclip, LifeBuoy, TicketCheck, Flag,
   ThumbsUp, ThumbsDown, Sparkles, UserX, Smartphone,
-  PersonStanding, Store, Inbox, ClipboardList, ClipboardCheck, CheckCheck,
+  PersonStanding, Store, Inbox, ClipboardList, ClipboardCheck,
   Megaphone, Radio,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
