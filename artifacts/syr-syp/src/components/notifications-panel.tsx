@@ -214,11 +214,13 @@ export function NotificationsPanel() {
     }
   }, []);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 8 * 1000);
     return () => clearInterval(interval);
   }, [fetchNotifications]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     const interval = setInterval(() => {

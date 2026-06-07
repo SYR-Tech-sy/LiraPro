@@ -155,6 +155,7 @@ function CatFilterRow({ cats, category, setCategory, searchStr }: {
   const [highlight, setHighlight] = useState(false);
   const rowRef = useRef<HTMLDivElement>(null);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
@@ -167,6 +168,7 @@ function CatFilterRow({ cats, category, setCategory, searchStr }: {
     } catch { /* ignore */ }
     return () => { if (timer) clearTimeout(timer); };
   }, [searchStr]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return (
     <div ref={rowRef} className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
@@ -299,6 +301,7 @@ function LocalMarketSection() {
     setLoading(false);
   }, [governorate, detectedCity, category]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchPrices(); }, [fetchPrices]);
 
   const grouped = React.useMemo(() => {

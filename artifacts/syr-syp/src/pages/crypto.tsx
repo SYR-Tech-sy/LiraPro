@@ -280,6 +280,7 @@ export default function CryptoPage() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchCryptos(); }, []);
 
   const filtered = cryptos.filter(c =>

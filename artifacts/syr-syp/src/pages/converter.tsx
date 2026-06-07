@@ -176,7 +176,6 @@ export default function ConverterPage() {
   const [localCurrencyPrices, setLocalCurrencyPrices] = useState<Array<{
     productNameAr: string; avgPrice: number; weightedAvg: number; unit: string; sourceCount: number;
   }>>([]);
-  const [localRateSourceCount, setLocalRateSourceCount] = useState(0);
 
   useEffect(() => {
     if (rateMode === 'local') {
@@ -209,9 +208,7 @@ export default function ConverterPage() {
     return null;
   }, [localCurrencyPrices]);
 
-  useEffect(() => {
-    setLocalRateSourceCount(localMarketEntry?.sourceCount ?? 0);
-  }, [localMarketEntry]);
+  const localRateSourceCount = localMarketEntry?.sourceCount ?? 0;
 
   const localMarketSypRate = localMarketEntry
     ? (localMarketEntry.weightedAvg > 0 ? localMarketEntry.weightedAvg : localMarketEntry.avgPrice)

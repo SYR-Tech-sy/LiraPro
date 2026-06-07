@@ -539,6 +539,7 @@ export default function MarketPriceDetailPage() {
     setLoading(false);
   }, [category, productNameAr]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchDetail(); }, [fetchDetail]);
 
   const mainPrice = price ? Math.round(price.weightedAvg || price.avgPrice) : 0;

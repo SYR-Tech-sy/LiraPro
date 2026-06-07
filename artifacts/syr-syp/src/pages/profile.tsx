@@ -139,8 +139,11 @@ export default function ProfilePage() {
     try {
       const key = `syp-delete-request-${user.id}`;
       const s = localStorage.getItem(key);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDeleteRequest(s ? JSON.parse(s) as { timestamp: string } : null);
-    } catch { setDeleteRequest(null); }
+    } catch {
+      setDeleteRequest(null);
+    }
   }, [user?.id]);
 
   useEffect(() => {
@@ -175,6 +178,7 @@ export default function ProfilePage() {
     const key = `syp-lph-${user.id}`;
     let id = localStorage.getItem(key);
     if (!id) {
+      // eslint-disable-next-line react-hooks/purity
       const digits = Array.from({ length: 10 }, () => Math.floor(Math.random() * 10)).join('');
       id = `LP${digits}`;
       localStorage.setItem(key, id);
@@ -209,14 +213,17 @@ export default function ProfilePage() {
 
   const qrData = useMemo(() => {
     if (!user?.id) return '';
+    // eslint-disable-next-line react-hooks/purity
     const token = `lph-qrlogin:${user.id}:${Date.now()}`;
     return encodeURIComponent(token);
   }, [user?.id]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!user?.id) return;
     setSessions(ensureCurrentSession(user.id));
   }, [user?.id]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const removeSession = useCallback((sessionId: string) => {
     if (!user?.id) return;
@@ -416,6 +423,7 @@ export default function ProfilePage() {
   }, [profile, user, form]);
 
   /* Force completion modal if profile is incomplete (cannot be dismissed) */
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!loadingProfile && isSignedIn && profile && !profile.profileCompleted) {
       setForceComplete(true);
@@ -423,6 +431,7 @@ export default function ProfilePage() {
       setForceComplete(false);
     }
   }, [profile, loadingProfile, isSignedIn]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const onSubmit = (data: ProfileFormValues) => {
     updateProfile.mutate({ data }, {

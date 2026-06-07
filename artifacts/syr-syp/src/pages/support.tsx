@@ -35,6 +35,7 @@ function VoicePlayer({ src, duration, isUser }: { src: string; duration?: number
   const [playing, setPlaying] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
   const [currentTime, setCurrentTime] = React.useState(0);
+  const [audioDuration, setAudioDuration] = React.useState(0);
 
   const fmtSecs = (s: number) => {
     const m = Math.floor(s / 60);
@@ -54,7 +55,7 @@ function VoicePlayer({ src, duration, isUser }: { src: string; duration?: number
     const onPlay = () => setPlaying(true);
     const onPause = () => setPlaying(false);
     const onEnded = () => { setPlaying(false); setProgress(0); setCurrentTime(0); if (a) a.currentTime = 0; };
-    const onTime = () => { setCurrentTime(a.currentTime); setProgress(a.duration ? a.currentTime / a.duration : 0); };
+    const onTime = () => { setCurrentTime(a.currentTime); setAudioDuration(a.duration ?? 0); setProgress(a.duration ? a.currentTime / a.duration : 0); };
     a.addEventListener('play', onPlay);
     a.addEventListener('pause', onPause);
     a.addEventListener('ended', onEnded);
@@ -62,7 +63,7 @@ function VoicePlayer({ src, duration, isUser }: { src: string; duration?: number
     return () => { a.removeEventListener('play', onPlay); a.removeEventListener('pause', onPause); a.removeEventListener('ended', onEnded); a.removeEventListener('timeupdate', onTime); };
   }, []);
 
-  const totalDur = audioRef.current?.duration || duration || 0;
+  const totalDur = audioDuration || duration || 0;
   const BARS = 22;
   const barHeights = React.useMemo(
     () => Array.from({ length: BARS }, (_, i) => 4 + Math.abs(Math.sin(i * 1.3 + 0.5)) * 18 + Math.abs(Math.cos(i * 0.8)) * 8),
@@ -291,6 +292,7 @@ function ImageLightbox({ src, onClose }: { src: string | null; onClose: () => vo
     return () => window.removeEventListener('keydown', onKey);
   }, [src, onClose]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (!src) { setZoom(1); setPan({ x: 0, y: 0 }); } }, [src]);
 
   if (!src) return null;
@@ -343,6 +345,7 @@ function ImageLightbox({ src, onClose }: { src: string | null; onClose: () => vo
         {/* Image viewport */}
         <div
           className="overflow-hidden rounded-2xl shadow-2xl"
+          // eslint-disable-next-line react-hooks/refs
           style={{ maxWidth: '88vw', maxHeight: '78vh', cursor: zoom > 1 ? (dragging.current ? 'grabbing' : 'grab') : 'zoom-in' }}
           onWheel={onWheel}
           onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
@@ -354,6 +357,7 @@ function ImageLightbox({ src, onClose }: { src: string | null; onClose: () => vo
             style={{
               maxWidth: '88vw', maxHeight: '78vh',
               transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
+              // eslint-disable-next-line react-hooks/refs
               transition: dragging.current ? 'none' : 'transform 0.12s ease',
               userSelect: 'none', WebkitUserSelect: 'none',
             }}
@@ -408,9 +412,10 @@ export default function SupportPage() {
   // Voice recording
   const [isRecording, setIsRecording] = useState(false);
   const [recordSecs, setRecordSecs] = useState(0);
+  const [recordingBarHeights] = useState(() => [1, 2, 3, 4, 5, 6, 7, 8].map(() => Math.random() * 16 + 4));
   const [micError, setMicError] = useState('');
   const mediaRecRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
+  const chunksRef = useRef<Blob[]>([]); // eslint-disable-line react-hooks/purity
   const recTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Voice-to-text (Speech Recognition)
@@ -1208,7 +1213,7 @@ export default function SupportPage() {
                 <motion.div
                   key={i}
                   className="w-0.5 rounded-full bg-red-500"
-                  animate={{ height: [4, Math.random() * 16 + 4, 4] }}
+                  animate={{ height: [4, recordingBarHeights[i - 1], 4] }}
                   transition={{ duration: 0.4, repeat: Infinity, delay: i * 0.05, ease: 'easeInOut' }}
                 />
               ))}

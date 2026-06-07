@@ -144,6 +144,7 @@ function GreetingBar() {
   const h = new Date().getHours();
   const [profileFirstName, setProfileFirstName] = useState('');
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!isSignedIn) { setProfileFirstName(''); return; }
     let cancelled = false;
@@ -160,6 +161,7 @@ function GreetingBar() {
     })();
     return () => { cancelled = true; };
   }, [isSignedIn, getToken]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const greeting = (() => {
     if (ar) {
@@ -253,6 +255,7 @@ function useVendorInfo() {
     } catch { /* keep cached */ }
   }, []);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!isSignedIn) {
       setIsVendor(false);
@@ -289,6 +292,7 @@ function useVendorInfo() {
       document.removeEventListener('syp-vendor-approved', onFocus as EventListener);
     };
   }, [isSignedIn, getToken, checkVendorStatus]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return { isVendor, businessName };
 }
@@ -555,6 +559,7 @@ function CurrencyTickerBoard() {
     const usd = api?.usd_to_syp;
     const fx  = api?.rates;
     if (!usd || !fx) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRows([
       { code: 'USD', flag: '🇺🇸', rate: Math.round(usd),                                                    change: 0 },
       { code: 'EUR', flag: '🇪🇺', rate: Math.round(fx['EUR'] ? usd / fx['EUR'] : 14800),                    change: 0 },
@@ -1073,6 +1078,14 @@ function BanGuard({ children }: { children: React.ReactNode }) {
     signedOutRef.current = false;
   }, []);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
+  React.useEffect(() => {
+    if (status?.restricted && status.restrictedUntil && new Date(status.restrictedUntil) <= new Date()) {
+      clearBlockedStatus();
+    }
+  }, [status?.restricted, status?.restrictedUntil, clearBlockedStatus]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
   // Only block rendering if we have a confirmed bad status from cache
   // This prevents a blank spinner on every page load for normal users
   const hasCachedBadStatus = status && (status.banned || status.restricted || status.softDeleted);
@@ -1094,7 +1107,6 @@ function BanGuard({ children }: { children: React.ReactNode }) {
   }
   if (status?.restricted && !onSupportPage) {
     if (status.restrictedUntil && new Date(status.restrictedUntil) <= new Date()) {
-      clearBlockedStatus();
       return <>{children}</>;
     }
     return <AccountBlockedScreen type="restrict" reason={status.restrictReason} until={status.restrictedUntil} onClear={clearBlockedStatus} />;

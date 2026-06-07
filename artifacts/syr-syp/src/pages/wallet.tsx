@@ -314,7 +314,12 @@ export default function WalletPage() {
   const { formatNum, t } = useApp();
   const { data: ratesData } = useGetExchangeRates();
   const { data: goldData } = useGetGoldPrices();
-  const [holdings, setHoldings] = useState<Holding[]>([]);
+  const [holdings, setHoldings] = useState<Holding[]>(() => {
+    try {
+      const saved = localStorage.getItem('syp-holdings');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [pricingType, setPricingType] = useState<PricingType>('global');
@@ -322,11 +327,6 @@ export default function WalletPage() {
   const [displayCurrency, setDisplayCurrency] = useState<'SYP' | 'USD'>('SYP');
   const [showGuestModal, setShowGuestModal] = useState(false);
   const { isSignedIn } = useUser();
-
-  useEffect(() => {
-    const saved = localStorage.getItem('syp-holdings');
-    if (saved) setHoldings(JSON.parse(saved));
-  }, []);
 
   useEffect(() => {
     fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether,binancecoin,solana,ripple,usd-coin,cardano,dogecoin,tron&vs_currencies=usd')

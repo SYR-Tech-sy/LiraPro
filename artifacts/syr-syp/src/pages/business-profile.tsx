@@ -68,13 +68,13 @@ export default function BusinessProfilePage() {
   const GOVERNORATES = ['إدلب','دمشق','ريف دمشق','حلب','حمص','حماة','اللاذقية','طرطوس','دير الزور','الرقة','الحسكة','درعا','السويداء','القنيطرة'];
   const [govOpen, setGovOpen] = useState(false);
 
-  const lphId = React.useMemo(() => {
+  const [lphId] = React.useState<string>(() => {
     const stored = localStorage.getItem('lph-id');
     if (stored) return stored;
     const id = 'LPH-' + Math.random().toString(36).substring(2, 7).toUpperCase();
     localStorage.setItem('lph-id', id);
     return id;
-  }, []);
+  });
 
   const authFetch = useCallback(async (url: string, opts?: RequestInit) => {
     const token = await getToken();
@@ -98,6 +98,7 @@ export default function BusinessProfilePage() {
     finally { setLoading(false); }
   }, [authFetch]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadData(); }, [loadData]);
 
   const handleSave = async () => {

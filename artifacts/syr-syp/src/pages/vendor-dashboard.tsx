@@ -366,6 +366,7 @@ export default function VendorDashboard() {
     finally { setLoading(false); }
   }, [authFetch]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadAll(); }, [loadAll]);
 
   const handleSavePrice = async (data: Record<string, string>) => {

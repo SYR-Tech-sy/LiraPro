@@ -29,6 +29,7 @@ export function FloatingAiButton() {
   const containerRef = useRef<HTMLDivElement>(null);
   const blinkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gazeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const isDraggingRef = useRef(false);
   const didMoveRef = useRef(false);
   const dragStartRef = useRef({ mx: 0, my: 0, ex: 0, ey: 0 });
@@ -91,6 +92,7 @@ export function FloatingAiButton() {
     if ((e.target as HTMLElement).closest('[data-arrow]')) return;
     e.stopPropagation();
     isDraggingRef.current = false;
+    setIsDragging(false);
     didMoveRef.current = false;
     dragStartRef.current = { mx: e.clientX, my: e.clientY, ex: posRef.current.x, ey: posRef.current.y };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -101,6 +103,7 @@ export function FloatingAiButton() {
     const dy = e.clientY - dragStartRef.current.my;
     if (!isDraggingRef.current && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
       isDraggingRef.current = true;
+      setIsDragging(true);
       didMoveRef.current = true;
     }
     if (!isDraggingRef.current) return;
@@ -112,6 +115,7 @@ export function FloatingAiButton() {
   const handlePointerUp = useCallback(() => {
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
+    setIsDragging(false);
     const p = posRef.current;
     const rightDist = window.innerWidth - p.x - BTN;
     const leftDist = p.x;
@@ -184,7 +188,7 @@ export function FloatingAiButton() {
         touchAction: 'none',
         userSelect: 'none',
         transition: isEdged ? 'left 0.38s cubic-bezier(0.4, 0, 0.2, 1), top 0.38s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
-        cursor: isDraggingRef.current ? 'grabbing' : 'grab',
+        cursor: isDragging ? 'grabbing' : 'grab',
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
