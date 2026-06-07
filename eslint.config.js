@@ -34,10 +34,10 @@ export default tseslint.config(
     },
     rules: {
       "@typescript-eslint/no-unused-vars": [
-        "warn",
+        "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" },
       ],
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-empty-object-type": "warn",
       "@typescript-eslint/prefer-as-const": "warn",
       "@typescript-eslint/no-namespace": "warn",
@@ -51,7 +51,7 @@ export default tseslint.config(
     },
     rules: {
       "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/exhaustive-deps": "error",
       "react-hooks/set-state-in-effect": "error",
       "react-hooks/purity": "error",
       "react-hooks/refs": "error",

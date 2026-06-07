@@ -123,12 +123,12 @@ interface AddHoldingModalProps {
   onClose: () => void;
   onAdd: (h: Omit<Holding, 'id' | 'addedAt'>) => void;
   rates: Record<string, number>;
-  goldData: any;
+  goldData: unknown;
   t: (k: string) => string;
   pricingType: PricingType;
 }
 
-function AddHoldingModal({ onClose, onAdd, rates, goldData, t, pricingType }: AddHoldingModalProps) {
+function AddHoldingModal({ onClose, onAdd, rates, goldData: _goldData, t, pricingType }: AddHoldingModalProps) {
   const [type, setType] = useState<HoldingType>('currency');
   const [selectedCode, setSelectedCode] = useState('');
   const [selectedCat, setSelectedCat] = useState('');
@@ -139,9 +139,9 @@ function AddHoldingModal({ onClose, onAdd, rates, goldData, t, pricingType }: Ad
   useEffect(() => {
     fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether,binancecoin,solana,ripple,usd-coin,cardano,dogecoin,tron&vs_currencies=usd')
       .then(r => r.json())
-      .then((data: any) => {
+      .then((data: Record<string, { usd?: number }>) => {
         const prices: Record<string, number> = {};
-        CRYPTO_LIST.forEach(c => { if (data[c.id]) prices[c.symbol] = data[c.id].usd; });
+        CRYPTO_LIST.forEach(c => { if (data[c.id]) prices[c.symbol] = data[c.id].usd ?? 0; });
         setCryptoPrices(prices);
       })
       .catch(() => {});
@@ -331,9 +331,9 @@ export default function WalletPage() {
   useEffect(() => {
     fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether,binancecoin,solana,ripple,usd-coin,cardano,dogecoin,tron&vs_currencies=usd')
       .then(r => r.json())
-      .then((data: any) => {
+      .then((data: Record<string, { usd?: number }>) => {
         const prices: Record<string, number> = {};
-        CRYPTO_LIST.forEach(c => { if (data[c.id]) prices[c.symbol] = data[c.id].usd; });
+        CRYPTO_LIST.forEach(c => { if (data[c.id]) prices[c.symbol] = data[c.id].usd ?? 0; });
         setCryptoPrices(prices);
       })
       .catch(() => {});
@@ -352,7 +352,7 @@ export default function WalletPage() {
     }
     if (h.type === 'gold') {
       const karat = parseInt(h.code);
-      const karatData = goldData?.karats.find((k: any) => k.karat === karat);
+      const karatData = goldData?.karats.find((k: { karat: number; pricePerGramSYP?: number }) => k.karat === karat);
       return (karatData?.pricePerGramSYP ?? 0) * h.amount;
     }
     if (h.type === 'crypto') {

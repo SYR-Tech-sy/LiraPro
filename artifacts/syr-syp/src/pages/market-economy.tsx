@@ -363,7 +363,7 @@ function DetailModal({ commodity, category, onClose, onAddAlert }: DetailModalPr
 
 export default function MarketEconomyPage() {
   const { language } = useApp();
-  const ar = language === 'ar';
+  const _ar = language === 'ar';
   const [, navigate] = useLocation();
   const [activeCat, setActiveCat] = useState('agriculture');
   const [search, setSearch] = useState('');

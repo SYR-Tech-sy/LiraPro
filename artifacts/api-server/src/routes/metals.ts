@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { GetMetalPricesResponse } from "@workspace/api-zod";
-import { fetchMetalPriceApi, getMetalPriceUSD, MARKET_USD_TO_SYP } from "../services/metalpriceapi.js";
+import { fetchMetalPriceApi, getMetalPriceUSD } from "../services/metalpriceapi.js";
 import { getActiveSypRate } from "../services/sypRateService.js";
 import { getMetalOverride } from "../services/goldMetalRateService.js";
 

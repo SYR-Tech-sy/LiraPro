@@ -166,9 +166,9 @@ export default function ConverterPage() {
 
   const { data: ratesData, isLoading: loadingRates } = useGetExchangeRates();
   const { data: goldData, isLoading: loadingGold } = useGetGoldPrices();
-  const { formatNum, getBuyRate, getSellRate, t, language } = useApp();
+  const { formatNum, t, language } = useApp();
 
-  const rates = ratesData?.rates ?? {};
+  const rates = useMemo(() => ratesData?.rates ?? {}, [ratesData]);
   const isManualRate = ratesData?.is_manual_rate ?? false;
   const localUsdToSyp = ratesData?.usd_to_syp ?? 0;
   const globalUsdToSyp = (ratesData as unknown as { global_usd_to_syp?: number } | undefined)?.global_usd_to_syp ?? localUsdToSyp;

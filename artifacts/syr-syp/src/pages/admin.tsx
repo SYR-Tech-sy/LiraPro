@@ -10,7 +10,7 @@ import {
   ChevronUp, Unlock, CalendarDays, Hash, Info, Wifi, BadgeCheck,
   ShieldCheck, MessageCircle, AlertOctagon, Coins as CoinsIcon, Tag, Timer, Mic,
   Image as ImageIcon, Paperclip, LifeBuoy, TicketCheck, Flag,
-  ThumbsUp, ThumbsDown, Sparkles, ShieldOff, UserX, Smartphone, Crown,
+  ThumbsUp, ThumbsDown, Sparkles, UserX, Smartphone,
   PersonStanding, Store, Inbox, ClipboardList, ClipboardCheck, CheckCheck,
   Megaphone, Radio,
 } from 'lucide-react';
@@ -157,16 +157,6 @@ interface VerifyRequest {
 }
 
 const GOVERNORATES = ['إدلب','دمشق','ريف دمشق','حلب','حمص','حماة','اللاذقية','طرطوس','دير الزور','الرقة','الحسكة','درعا','السويداء','القنيطرة'];
-
-function generateLphId(): string {
-  const registry: string[] = JSON.parse(localStorage.getItem('syp-lph-registry') ?? '[]');
-  let id = '';
-  do {
-    const digits = Array.from({ length: 10 }, () => Math.floor(Math.random() * 10)).join('');
-    id = 'LPH' + digits + 'EP';
-  } while (registry.includes(id));
-  return id;
-}
 
 // ─── AdminSelect ──────────────────────────────────────────────────────────────
 
@@ -421,7 +411,7 @@ function AdminTicketsPanel({ onOpenConv }: { onOpenConv?: (userId: string) => vo
   const [selectedTicketIds, setSelectedTicketIds] = React.useState<Set<string>>(new Set());
   const [ticketSelectMode, setTicketSelectMode] = React.useState(false);
 
-  const selTicket = selId ? tickets.find(t => t.id === selId) ?? null : null;
+  const _selTicket = selId ? tickets.find(t => t.id === selId) ?? null : null;
 
   const filtered = tickets.filter(t => {
     if (filter === 'all') return true;
@@ -817,8 +807,8 @@ function AdminSupportPanel({ initUserId, onImageClick, openConfirm }: { initUser
       mr.onstop = () => {
         stream.getTracks().forEach(t => t.stop());
         const secs = adminRecSecs;
-        const mm = Math.floor(secs / 60).toString().padStart(2, '0');
-        const ss = (secs % 60).toString().padStart(2, '0');
+        const _mm = Math.floor(secs / 60).toString().padStart(2, '0');
+        const _ss = (secs % 60).toString().padStart(2, '0');
         sendReply('', { type: 'voice', name: `voice_${Date.now()}.webm`, duration: secs });
         setAdminRecSecs(0);
       };
@@ -1401,9 +1391,8 @@ export default function AdminPage() {
   const [sendingAppNotif, setSendingAppNotif] = useState(false);
 
   // Badge assignments: LiraPro → Legendary (rainbow), فريق LiraPro → Cyberpunk (admin)
-  const badgeLira: 'rainbow' = 'rainbow';
-  const badgeTeam: 'admin' = 'admin';
-  const adminBadgeType = badgeLira; // legacy alias
+  const badgeLira = 'rainbow' as const;
+  const badgeTeam = 'admin' as const;
 
   // Gold/Metals override state (React Query)
   const [goldOverrideEdit, setGoldOverrideEdit] = useState<string | null>(null);
@@ -1568,7 +1557,7 @@ export default function AdminPage() {
   const [badgeAssignedSender, setBadgeAssignedSender] = useState<string>(() => {
     try { return localStorage.getItem('admin-badge-sender') ?? 'LiraPro'; } catch { return 'LiraPro'; }
   });
-  const changeBadgeSender = (name: string) => {
+  const _changeBadgeSender = (name: string) => {
     setBadgeAssignedSender(name);
     try { localStorage.setItem('admin-badge-sender', name); } catch { /**/ }
   };
@@ -1582,7 +1571,7 @@ export default function AdminPage() {
   const [acceptingApp, setAcceptingApp] = useState<VendorApplication | null>(null);
   const [acceptUserId, setAcceptUserId] = useState('');
   const [acceptTrustScore, setAcceptTrustScore] = useState('50');
-  const [acceptLphId, setAcceptLphId] = useState('');
+  const [_acceptLphId, setAcceptLphId] = useState('');
   const [acceptNotifTitle, setAcceptNotifTitle] = useState('');
   const [acceptNotifBody, setAcceptNotifBody] = useState('');
   const [acceptSaving, setAcceptSaving] = useState(false);
@@ -1897,7 +1886,7 @@ export default function AdminPage() {
     setSendingAppNotif(false);
   };
 
-  const deleteVendor = (id: number) => {
+  const _deleteVendor = (id: number) => {
     openConfirm({
       title: 'حذف التاجر',
       body: 'هل أنت متأكد من حذف هذا التاجر؟ سيتم إعادة دوره لمستخدم عادي.',
@@ -2072,7 +2061,7 @@ export default function AdminPage() {
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [broadcastActive]);
+  }, [broadcastActive, queryClient]);
 
   // Compute AI rating stats from all stored conversations
   const aiRatingStats = useMemo(() => {

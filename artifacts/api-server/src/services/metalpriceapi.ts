@@ -48,7 +48,7 @@ export async function fetchMetalPriceApi(): Promise<MetalPriceApiResponse> {
 
   const data = await res.json() as MetalPriceApiResponse;
   if (!data.success) {
-    const errMsg = (data as any).error?.message ?? "unknown error";
+    const errMsg = (data as unknown as { error?: { message?: string } }).error?.message ?? "unknown error";
     throw new Error(`MetalPriceAPI returned success=false: ${errMsg}`);
   }
 

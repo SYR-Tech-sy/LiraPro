@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { useApp } from '@/context/app-context';
 import { Link } from 'wouter';
 import { useUser } from '@/context/auth-context';
-import { GuestModal } from '@/components/guest-modal';
 import {
   useGetAlerts,
   useDeleteAlert,
@@ -50,7 +49,7 @@ interface EditModalProps {
   loading: boolean;
 }
 
-function EditAlertModal({ alert, onSave, onClose, formatNum, t, loading }: EditModalProps) {
+function EditAlertModal({ alert, onSave, onClose, formatNum: _formatNum, t, loading }: EditModalProps) {
   const [target, setTarget] = useState(alert.targetPrice.toString());
   const [type, setType] = useState<'buy' | 'sell'>(alert.type as 'buy' | 'sell');
 

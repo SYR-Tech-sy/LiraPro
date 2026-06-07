@@ -20,13 +20,13 @@ type ISpeechRecognitionCtor = new () => ISpeechRecognition;
 import {
   Send, Mic, Image as ImageIcon, Paperclip, Bot, User,
   CheckCheck, Trash2, X, Square, PhoneOff, Play, Pause, TicketCheck,
-  LogIn, UserPlus, ArrowLeft, Info, ChevronRight, ThumbsUp, ThumbsDown,
+  LogIn, UserPlus, Info, ChevronRight, ThumbsUp, ThumbsDown,
 } from 'lucide-react';
-import { Link, useLocation } from 'wouter';
+import { Link } from 'wouter';
 import { useUser } from '@/context/auth-context';
 import { useGetProfile } from '@workspace/api-client-react';
 import { addLocalNotification } from '@/components/notifications-panel';
-import { AdminBadge, RainbowBadge, BlueBadge, ChatBadge } from '@/components/golden-badge';
+import { BlueBadge, ChatBadge } from '@/components/golden-badge';
 
 // ─── Voice Player ─────────────────────────────────────────────────────────────
 
@@ -128,7 +128,7 @@ interface SupportConv {
 
 // ─── Ticket types ─────────────────────────────────────────────────────────────
 
-interface SupportTicket {
+interface _SupportTicket {
   id: string;
   userId: string;
   userName: string;
@@ -402,14 +402,13 @@ export default function SupportPage() {
     const existing = loadConv(userId);
     return existing?.msgs.some(m => m.isTicketNotice) ?? false;
   });
-  const [, navigate] = useLocation();
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [botEnabled, setBotEnabled] = useState(true);
   const [showAIBanner, setShowAIBanner] = useState(() => {
     try { return localStorage.getItem('syp-ai-banner-dismissed') !== 'true'; } catch { return true; }
   });
-  const [guestMsgCount, setGuestMsgCount] = useState(() => {
+  const [_guestMsgCount, setGuestMsgCount] = useState(() => {
     if (isSignedIn) return 0;
     try { return parseInt(localStorage.getItem('syp-guest-msg-count') ?? '0', 10); } catch { return 0; }
   });
@@ -690,7 +689,7 @@ export default function SupportPage() {
     } else {
       setSending(false);
     }
-  }, [ticketClosed, botEnabled, userId, userName, msgs, ticketCreated, isSignedIn, guestMsgCount]);
+  }, [ticketClosed, botEnabled, userId, userName, msgs, ticketCreated, isSignedIn, user?.email]);
 
   const handleSend = () => { if (input.trim()) sendMessage(input); };
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -781,7 +780,7 @@ export default function SupportPage() {
       })();
     };
     reader.readAsDataURL(file);
-  }, [msgs, isSignedIn, guestMsgCount]);
+  }, [msgs, isSignedIn]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>, isImage: boolean) => {
     const file = e.target.files?.[0];
@@ -796,7 +795,7 @@ export default function SupportPage() {
 
   // ─── Voice-to-text (STT) ─────────────────────────────────────────────────
 
-  const startVoiceInput = () => {
+  const _startVoiceInput = () => {
     setMicError('');
     const w = window as Window & {
       SpeechRecognition?: ISpeechRecognitionCtor;
@@ -843,8 +842,8 @@ export default function SupportPage() {
       mr.onstop = () => {
         stream.getTracks().forEach(t => t.stop());
         const secs = recordSecs;
-        const mm = Math.floor(secs / 60).toString().padStart(2, '0');
-        const ss = (secs % 60).toString().padStart(2, '0');
+        const _mm = Math.floor(secs / 60).toString().padStart(2, '0');
+        const _ss = (secs % 60).toString().padStart(2, '0');
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         const reader = new FileReader();
         reader.onload = () => {

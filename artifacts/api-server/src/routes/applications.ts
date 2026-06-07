@@ -27,7 +27,7 @@ function readNotifications(): Notification[] {
   }
 }
 
-function pushNotification(n: Omit<Notification, "id" | "createdAt">): void {
+function _pushNotification(n: Omit<Notification, "id" | "createdAt">): void {
   const all = readNotifications();
   all.push({ ...n, id: Date.now(), createdAt: new Date().toISOString() });
   writeFileSync(NOTIFICATIONS_FILE, JSON.stringify(all, null, 2), "utf-8");

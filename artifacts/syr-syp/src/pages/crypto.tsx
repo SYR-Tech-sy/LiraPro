@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, TrendingDown, RefreshCw, Search, Bell, X, ChevronRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, RefreshCw, Search, Bell, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useApp } from '@/context/app-context';
@@ -81,7 +81,6 @@ function CryptoDetailModal({
   const [alertTarget, setAlertTarget] = useState('');
   const [alertType, setAlertType] = useState<'buy' | 'sell'>('buy');
   const [alertSaved, setAlertSaved] = useState(false);
-  const { isSignedIn } = { isSignedIn: false };
 
   const chartData = generateSimulatedHistory(
     coin.current_price,
@@ -187,7 +186,7 @@ function CryptoDetailModal({
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
                   <XAxis dataKey="label" tick={{ fontSize: 8 }} tickLine={false} />
                   <Tooltip
-                    formatter={(v: any) => [`$${Number(v).toFixed(4)}`, language === 'ar' ? 'السعر' : 'Price']}
+                    formatter={(v: number) => [`$${Number(v).toFixed(4)}`, language === 'ar' ? 'السعر' : 'Price']}
                     contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 10 }}
                   />
                   <Line type="monotone" dataKey="price" stroke={isUp ? '#22c55e' : '#ef4444'} strokeWidth={2} dot={false} />

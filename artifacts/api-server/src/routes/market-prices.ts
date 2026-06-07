@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and, desc, gte } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { db, vendorPricesTable, vendorProfilesTable, type VendorCategory } from "@workspace/db";
 
 const router: IRouter = Router();

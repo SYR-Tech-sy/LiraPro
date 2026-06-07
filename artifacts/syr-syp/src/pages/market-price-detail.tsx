@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRoute, useLocation } from 'wouter';
 import {
   ChevronLeft, MapPin, Phone, Building2, TrendingUp, TrendingDown,
-  RefreshCw, Bell, ChevronDown, ChevronUp, AlertCircle, X,
+  Bell, ChevronDown, ChevronUp, AlertCircle, X,
   Gem, Zap, ShoppingBag, ShoppingCart, Leaf, Sprout, Wrench, Truck, Smartphone, Bitcoin, Store,
   ThumbsUp, ThumbsDown, Flag, CheckCircle
 } from 'lucide-react';
@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GoldenBadge } from '@/components/golden-badge';
-import { LiveBadge, useMarketOpen } from '@/components/live-badge';
+import { useMarketOpen } from '@/components/live-badge';
 import { GuestModal } from '@/components/guest-modal';
 import { useApp } from '@/context/app-context';
 import { useUser } from '@/context/auth-context';
@@ -281,7 +281,7 @@ function AlertModal({ onClose, productName, currentPrice, currentBuy, currentSel
   );
 }
 
-function VendorPopup({ source, onClose, formatNum }: { source: PriceSource; onClose: () => void; formatNum: (v: number, o?: { decimals?: number }) => string }) {
+function VendorPopup({ source, onClose, formatNum: _formatNum }: { source: PriceSource; onClose: () => void; formatNum: (v: number, o?: { decimals?: number }) => string }) {
   return (
     <AnimatePresence>
       <motion.div

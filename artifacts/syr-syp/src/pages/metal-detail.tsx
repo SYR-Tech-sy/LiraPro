@@ -41,7 +41,7 @@ function generateHistory(baseRate: number, period: Period) {
 function AlertModal({ onClose, symbol, nameAr, currentBuy, currentSell, color, t, formatNum }: {
   onClose: () => void; symbol: string; nameAr: string;
   currentBuy: number; currentSell: number; color: string;
-  t: (k: string) => string; formatNum: (v: number, o?: any) => string;
+  t: (k: string) => string; formatNum: (v: number, o?: { decimals?: number }) => string;
 }) {
   const [alertType, setAlertType] = useState<'buy' | 'sell'>('buy');
   const [targetPrice, setTargetPrice] = useState('');
@@ -222,7 +222,7 @@ export default function MetalDetailPage() {
                 <YAxis tick={{ fontSize: 9 }} domain={['auto', 'auto']} width={65} />
                 <Tooltip
                   contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 11 }}
-                  formatter={(v: any) => [`${formatNum(v, { decimals: 0 })} ل.س`, 'السعر']}
+                  formatter={(v: number) => [`${formatNum(v, { decimals: 0 })} ل.س`, 'السعر']}
                 />
                 <Line type="monotone" dataKey="rate" stroke={info.color} strokeWidth={2} dot={false} />
               </LineChart>

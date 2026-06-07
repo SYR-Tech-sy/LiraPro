@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/auth-context';
 import { useLocation } from 'wouter';
@@ -57,7 +57,6 @@ export default function BusinessProfilePage() {
   const [, navigate] = useLocation();
   const { formatNum } = useApp();
 
-  const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editData, setEditData] = useState({ businessName: '', phone: '', address: '', description: '', governorate: '', city: '', logoUrl: '' });

@@ -47,7 +47,7 @@ router.get("/admin/stats", async (req, res): Promise<void> => {
       todayVisits: visits.today,
       lastUpdated: new Date().toISOString(),
     });
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ error: "Failed to load stats" });
   }
 });

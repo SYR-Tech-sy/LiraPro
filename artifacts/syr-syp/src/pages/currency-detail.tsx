@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useRoute, useLocation } from 'wouter';
+import { useRoute } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, TrendingDown, Bell, X, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,7 +35,7 @@ function AlertModal({ onClose, code, currentBuy, currentSell, t, formatNum }: {
   currentBuy: number;
   currentSell: number;
   t: (k: string) => string;
-  formatNum: (v: number, o?: any) => string;
+  formatNum: (v: number, o?: { decimals?: number }) => string;
 }) {
   const [alertType, setAlertType] = useState<'buy' | 'sell'>('buy');
   const [targetPrice, setTargetPrice] = useState('');
@@ -153,7 +153,6 @@ const CURRENCY_NAMES: Record<string, string> = {
 
 export default function CurrencyDetailPage() {
   const [, params] = useRoute('/app/currency/:code');
-  const [, navigate] = useLocation();
   const code = params?.code ?? 'USD';
   const [period, setPeriod] = useState<Period>('daily');
   const [showAlert, setShowAlert] = useState(false);
@@ -272,7 +271,7 @@ export default function CurrencyDetailPage() {
                 <YAxis tick={{ fontSize: 9 }} domain={['auto', 'auto']} width={60} />
                 <Tooltip
                   contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 11 }}
-                  formatter={(v: any) => [`${formatNum(v, { decimals: 0 })} ل.س`, 'السعر']}
+                  formatter={(v: number) => [`${formatNum(v, { decimals: 0 })} ل.س`, 'السعر']}
                 />
                 <Line type="monotone" dataKey="rate" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
               </LineChart>

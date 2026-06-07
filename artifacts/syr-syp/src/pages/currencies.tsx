@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, ChevronLeft, Bell, TrendingUp as TrendingUpIcon } from "lucide-react";
+import { Search, ChevronLeft, TrendingUp as TrendingUpIcon } from "lucide-react";
 import { Link, useLocation } from 'wouter';
 import { useApp } from '@/context/app-context';
 import { LiveBadge } from '@/components/live-badge';

@@ -30,7 +30,7 @@ const METAL_COLORS: Record<string, { bg: string; darkBg: string }> = {
 
 export default function MetalsPage() {
   const { data, isLoading } = useGetMetalPrices();
-  const { formatNum, getBuyRate, getSellRate, t } = useApp();
+  const { formatNum, getBuyRate, getSellRate } = useApp();
   const [, navigate] = useLocation();
 
   return (

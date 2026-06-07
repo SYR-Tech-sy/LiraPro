@@ -5,7 +5,7 @@ import { useAlertChecker } from '@/components/notifications-panel';
 import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp, Newspaper, Search, ExternalLink, Gem, CreditCard, Clock, Stethoscope, ShoppingCart, Zap, Smartphone, MapPin, Building2, ChevronDown, ChevronRight, X, RefreshCw, Store, Navigation, Loader2, Phone, ShoppingBag, Leaf, Sprout, Wrench, Truck, Bitcoin, Droplets, Car } from "lucide-react";
+import { TrendingUp, Newspaper, Search, ExternalLink, Gem, CreditCard, Clock, Stethoscope, ShoppingCart, Zap, Smartphone, MapPin, Building2, ChevronDown, X, RefreshCw, Store, Navigation, Loader2, Phone, ShoppingBag, Leaf, Sprout, Wrench, Truck, Bitcoin, Car } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Link, useLocation, useSearch } from 'wouter';
@@ -75,7 +75,7 @@ interface VendorPopupData {
   governorate: string | null; city: string | null; logoUrl: string | null;
 }
 
-function formatRelativeAr(dateStr: string): string {
+function _formatRelativeAr(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const m = Math.floor(diff / 60000);
   if (m < 1) return 'الآن';
@@ -792,7 +792,7 @@ export default function HomePage() {
   const { formatNum, getBuyRate, getSellRate, getCustomBuyRate, getCustomSellRate, t, language } = useApp();
   const isMarketOpen = useMarketOpen();
   const [, navigate] = useLocation();
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn } = useUser();
 
   // Live broadcast
   const [broadcast, setBroadcast] = useState<BroadcastData | null>(null);
@@ -826,14 +826,14 @@ export default function HomePage() {
     return () => clearInterval(tick);
   }, [broadcast?.endsAt]);
   const { data: profileData } = useGetProfile();
-  const firstName = isSignedIn
+  const _firstName = isSignedIn
     ? (profileData?.firstName
         || (profileData as Record<string, string> | undefined)?.first_name
         || ((profileData as Record<string, string> | undefined)?.fullName ?? '').split(' ')[0]
         || '')
     : '';
 
-  const getTimeGreeting = () => {
+  const _getTimeGreeting = () => {
     const h = new Date().getHours();
     if (h >= 5 && h < 12) return 'صباح الخير';
     if (h >= 12 && h < 17) return 'مساء الخير';
@@ -857,10 +857,9 @@ export default function HomePage() {
     debounceRef.current = setTimeout(() => setDebouncedSearch(val), 600);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: newsData, isLoading: loadingNews } = useGetNews(
     debouncedSearch ? { q: debouncedSearch } : {},
-    { query: { staleTime: 5 * 60 * 1000 } as any }
+    { query: { staleTime: 5 * 60 * 1000, queryKey: ['news', debouncedSearch] as readonly unknown[] } }
   );
 
   /* ── Persist price changes to sessionStorage ── */
@@ -1036,7 +1035,7 @@ export default function HomePage() {
               const name = language === 'ar' ? cur.nameAr : cur.nameEn;
               const change = priceChanges[cur.code] ?? 0;
               const isUp = change >= 0;
-              const arrowColor = isUp ? '#16a34a' : '#ef4444';
+              const _arrowColor = isUp ? '#16a34a' : '#ef4444';
 
               if (cur.isPrimary) {
                 return (

@@ -13,7 +13,21 @@ const DEFAULT_QUERIES = [
   "اقتصاد سوريا أخبار",
 ];
 
-let cachedNews: any[] = [];
+interface GNewsArticle {
+  title?: string;
+  description?: string;
+  content?: string;
+  source?: { name?: string };
+  publishedAt?: string;
+  url?: string;
+  image?: string;
+}
+
+interface GNewsResponse {
+  articles?: GNewsArticle[];
+}
+
+let cachedNews: ReturnType<typeof mapArticles> = [];
 let cacheTime = 0;
 const CACHE_TTL = 30 * 60 * 1000;
 let queryIndex = 0;
@@ -23,13 +37,13 @@ function getFromDate(): string {
   return d.toISOString().split('T')[0];
 }
 
-async function fetchGNews(query: string, max = 8, lang = 'ar'): Promise<any[]> {
+async function fetchGNews(query: string, max = 8, lang = 'ar'): Promise<ReturnType<typeof mapArticles>> {
   try {
     const from = getFromDate();
     const url = `${GNEWS_BASE}/search?q=${encodeURIComponent(query)}&lang=${lang}&max=${max}&sortby=publishedAt&from=${from}&token=${GNEWS_API_KEY}`;
     const res = await fetch(url, { headers: { "User-Agent": "SYR-SYP/1.0" } });
     if (!res.ok) return [];
-    const data = await res.json() as { articles?: any[] };
+    const data = await res.json() as GNewsResponse;
     return mapArticles(data.articles || []);
   } catch {
     return [];
@@ -44,10 +58,10 @@ function categorize(title: string, summary: string): string {
   return 'economy';
 }
 
-function mapArticles(articles: any[]): any[] {
+function mapArticles(articles: GNewsArticle[]) {
   return articles
     .filter(a => a.title && a.title.length > 10)
-    .map((a: any, i: number) => ({
+    .map((a, i) => ({
       id: `gnews-${Date.now()}-${i}`,
       title: a.title || "",
       summary: a.description || a.content?.substring(0, 200) || "",
@@ -77,7 +91,7 @@ router.get("/news", async (req, res): Promise<void> => {
   const startIdx = queryIndex % DEFAULT_QUERIES.length;
   queryIndex++;
 
-  let articles: any[] = [];
+  let articles: ReturnType<typeof mapArticles> = [];
   for (let i = 0; i < DEFAULT_QUERIES.length; i++) {
     const query = DEFAULT_QUERIES[(startIdx + i) % DEFAULT_QUERIES.length];
     articles = await fetchGNews(query, 8);

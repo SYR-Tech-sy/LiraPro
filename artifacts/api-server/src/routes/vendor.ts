@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { db, vendorProfilesTable, vendorPricesTable, usersTable } from "@workspace/db";
 import { requireSupabaseAuth } from "../middlewares/requireSupabaseAuth.js";
 import { updateVendorPriceSchema } from "@workspace/db";

@@ -57,7 +57,7 @@ function ensureCurrentSession(userId: string): StoredSession[] {
   return existing.map(s => s.id === currentId ? { ...s, isCurrent: true } : s);
 }
 
-function VerifiedBadge({ size = 20, className = '' }: { size?: number; className?: string }) {
+export function VerifiedBadge({ size = 20, className = '' }: { size?: number; className?: string }) {
   const id = React.useId().replace(/:/g, 'x');
   /* cycle = shine(1.1s) + delay(1.4s) = 2.5s
      pop fires right after shine ends → times[2] ≈ 1.1/2.5 = 0.44 */
@@ -179,7 +179,7 @@ export default function ProfilePage() {
     } catch {}
   };
 
-  interface VerifyReqItem {
+  interface _VerifyReqItem {
     id: string; supabaseId: string; lphId: string;
     fullName: string; email: string;
     requestedAt: string; status: 'pending' | 'approved' | 'rejected';
@@ -383,9 +383,8 @@ export default function ProfilePage() {
     }, 2000);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: profile, isLoading: loadingProfile, refetch } = useGetProfile({
-    query: { enabled: !!isSignedIn, queryKey: ['profile', user?.id] } as any
+    query: { enabled: !!isSignedIn, queryKey: ['profile', user?.id] as readonly unknown[] }
   });
   const updateProfile = useUpdateProfile();
 

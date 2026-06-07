@@ -39,7 +39,7 @@ export default function SettingsPage() {
   const [pwModal, setPwModal] = useState(false);
   const [pwStep, setPwStep] = useState<'request' | 'verify' | 'change'>('request');
   const [pwCode, setPwCode] = useState('');
-  const [pwCurrent, setPwCurrent] = useState('');
+  const [_pwCurrent, setPwCurrent] = useState('');
   const [pwNew, setPwNew] = useState('');
   const [pwConfirm, setPwConfirm] = useState('');
   const [pwMsg, setPwMsg] = useState('');

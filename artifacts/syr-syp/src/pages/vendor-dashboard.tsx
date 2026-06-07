@@ -1,11 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'wouter';
 import {
   ChevronLeft, Plus, Edit3, Trash2, Eye, TrendingUp, Star, BarChart2,
   MapPin, Loader2, CheckCircle, X, AlertCircle, Package, RefreshCw,
-  Building2, Shield, ChevronDown, DollarSign, BadgeCheck
+  Building2, Shield, ChevronDown, DollarSign
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

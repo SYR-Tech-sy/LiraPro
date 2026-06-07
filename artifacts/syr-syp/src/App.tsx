@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { lazy, Suspense, useState, useEffect, useRef, useMemo } from 'react';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect, Link } from 'wouter';
 import { QueryClientProvider, QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -23,9 +23,6 @@ import { saveQueryToCache, loadCachedQueries } from '@/lib/offline-cache';
 
 const ANIM_DONE = 1.0;
 
-const LAST_ACTIVE_KEY = 'syp-last-active-ts';
-const RESUME_THRESHOLD_MS = 2 * 60 * 1000;
-
 // Seed QueryClient with cached data for instant offline display
 const cachedEntries = loadCachedQueries();
 const queryClient = new QueryClient({
@@ -34,7 +31,7 @@ const queryClient = new QueryClient({
       staleTime: 2 * 60 * 1000,
       gcTime: 10 * 60 * 1000,
       // On slow/offline connections: show cached data, retry in background
-      retry: (failureCount, error) => {
+      retry: (failureCount, _error) => {
         if (!navigator.onLine) return false;
         return failureCount < 2;
       },
@@ -533,7 +530,7 @@ function CurrencyTickerBoard() {
       { code: 'GBP', flag: '🇬🇧', rate: Math.round(fx['GBP'] ? usd / fx['GBP'] : 17100),                    change: 0 },
       { code: 'AED', flag: '🇦🇪', rate: Math.round(fx['AED'] ? usd / fx['AED'] : 3675),                     change: 0 },
     ];
-  }, [(ratesData as unknown as { usd_to_syp?: number } | undefined)?.usd_to_syp]);
+  }, [ratesData]);
 
   const [perturbations, setPerturbations] = useState<number[]>(() => TICKER_FALLBACK.map(() => 0));
   const [flash, setFlash] = useState<{ idx: number; dir: 'up' | 'down' } | null>(null);
@@ -1001,7 +998,7 @@ function BanGuard({ children }: { children: React.ReactNode }) {
       return stored ? (JSON.parse(stored) as AccountStatus) : null;
     } catch { return null; }
   });
-  const [checking, setChecking] = useState(false);
+  const [_checking, setChecking] = useState(false);
   const signedOutRef = React.useRef(false);
 
   useEffect(() => {
@@ -1041,7 +1038,7 @@ function BanGuard({ children }: { children: React.ReactNode }) {
     check();
     const interval = setInterval(check, 60_000);
     return () => { mounted = false; clearInterval(interval); };
-  }, [isLoaded, isSignedIn, user?.id, signOut]);
+  }, [isLoaded, isSignedIn, user, user?.id, signOut]);
 
   const clearBlockedStatus = React.useCallback(() => {
     localStorage.removeItem(BAN_STORAGE_KEY);

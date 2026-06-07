@@ -60,7 +60,7 @@ export default function MarketPage() {
       const ids = CRYPTO_LIST.map(c => c.id).join(',');
       fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`)
         .then(r => r.json())
-        .then((data: any) => {
+        .then((data: Record<string, { usd?: number; usd_24h_change?: number }>) => {
           const result: CryptoData[] = CRYPTO_LIST.map(c => ({
             symbol: c.symbol,
             name: c.name,
@@ -169,7 +169,7 @@ export default function MarketPage() {
                 <XAxis dataKey="code" tick={{ fontSize: 10 }} />
                 <YAxis tick={{ fontSize: 9 }} />
                 <Tooltip
-                  formatter={(v: any) => [`${formatNum(v, { decimals: 0 })} ل.س`, language === 'ar' ? 'السعر' : 'Price']}
+                  formatter={(v: number) => [`${formatNum(v, { decimals: 0 })} ل.س`, language === 'ar' ? 'السعر' : 'Price']}
                   contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 11 }}
                 />
                 <Bar dataKey="rate" radius={[4, 4, 0, 0]}>
@@ -225,7 +225,7 @@ export default function MarketPage() {
             <CardContent className="p-4">
               <div className="grid grid-cols-3 gap-3">
                 {[24, 21, 18].map(karat => {
-                  const k = (goldData.karats ?? []).find((k: any) => k.karat === karat);
+                  const k = (goldData.karats ?? []).find((k: { karat: number }) => k.karat === karat);
                   if (!k) return null;
                   return (
                     <Link key={karat} href={`/app/gold/${karat}`}>

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, X, BellOff, Info, AlertTriangle, CheckCircle, TrendingUp, ShieldCheck, Trash2 } from 'lucide-react';
-import { GoldenBadge, AdminBadge, RainbowBadge } from './golden-badge';
+import { AdminBadge, RainbowBadge } from './golden-badge';
 import { useCheckAlerts } from '@workspace/api-client-react';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { useUser } from '@/context/auth-context';
