@@ -146,7 +146,7 @@ function SenderBadge({ sender }: { sender: string }) {
   );
 }
 
-async function fetchNotificationsData(userId?: string): Promise<Notification[]> {
+async function fetchNotificationsData(userId?: string, token?: string): Promise<Notification[]> {
   const walletId = userId ?? localStorage.getItem('syp-wallet-id') ?? undefined;
   const adminMsgs: Notification[] = (() => {
     try {
@@ -162,9 +162,11 @@ async function fetchNotificationsData(userId?: string): Promise<Notification[]> 
     } catch { return []; }
   })();
   let serverUserMsgs: Notification[] = [];
-  if (walletId) {
+  if (walletId && token) {
     try {
-      const userRes = await fetch(`/api/notifications/user?walletId=${encodeURIComponent(walletId)}`);
+      const userRes = await fetch(`/api/notifications/user?walletId=${encodeURIComponent(walletId)}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
       if (userRes.ok) serverUserMsgs = await userRes.json() as Notification[];
     } catch { /* ignore */ }
   }
@@ -206,7 +208,10 @@ export function NotificationsPanel() {
 
   const { data: notifications = getOrCreateWelcomeNotification() } = useQuery({
     queryKey: ['user-notifications', user?.id],
-    queryFn: () => fetchNotificationsData(user?.id),
+    queryFn: async () => {
+      const token = user?.id ? await getToken().catch(() => undefined) : undefined;
+      return fetchNotificationsData(user?.id, token ?? undefined);
+    },
     refetchInterval: 8_000,
     staleTime: 0,
   });

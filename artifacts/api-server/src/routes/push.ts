@@ -5,6 +5,7 @@ import { pushSubscriptionsTable } from "@workspace/db";
 import { and, eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { requireSupabaseAuth } from "../middlewares/requireSupabaseAuth.js";
+import { makeDeliveryReceipt } from "../lib/deliveryReceipt.js";
 
 const router = Router();
 
@@ -138,13 +139,15 @@ export async function sendPushToAll(
 
   await Promise.all(
     subs.map(async (sub) => {
-      // Include walletId (= sub.userId) so the SW can enqueue a delivered receipt
-      // for broadcast notifications via /delivered (sent → delivered lifecycle step)
+      // Include walletId + HMAC receipt so the SW can call /delivered
+      // for both broadcast and per-user notifications.
+      const receipt = notifId ? makeDeliveryReceipt(notifId, sub.userId) : undefined;
       const payload = JSON.stringify({
         title, body, url,
         walletId: sub.userId,
         ...(notifId ? { notifId } : {}),
         ...(type ? { type } : {}),
+        ...(receipt ? { receipt } : {}),
       });
       try {
         await webpush.sendNotification(
@@ -192,12 +195,14 @@ export async function sendPushToUser(
   }
   if (subs.length === 0) return { sent: 0, failed: 0 };
 
-  // Include walletId + type so the SW can enqueue a read receipt
+  // Include walletId + HMAC receipt so the SW can call /delivered
+  const receipt = notifId ? makeDeliveryReceipt(notifId, userId) : undefined;
   const payload = JSON.stringify({
     title, body, url,
     walletId: userId,
     ...(notifId ? { notifId } : {}),
     ...(type ? { type } : {}),
+    ...(receipt ? { receipt } : {}),
   });
   const expiredEndpoints: string[] = [];
   let sent = 0;

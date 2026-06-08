@@ -2,7 +2,7 @@ import { createHash } from "crypto";
 import { type Response } from "express";
 import { db } from "@workspace/db";
 import { notificationLogTable } from "@workspace/db";
-import { and, gt, eq, or, isNull, desc } from "drizzle-orm";
+import { and, gt, eq, or, desc } from "drizzle-orm";
 import { sendPushToAll, sendPushToUser } from "../routes/push.js";
 
 // ── SSE Client Registry ────────────────────────────────────────────────────────

@@ -17,6 +17,7 @@ import {
   updateNotifLogStatus,
   logNotification,
 } from "../services/notificationService.js";
+import { verifyDeliveryReceipt } from "../lib/deliveryReceipt.js";
 
 const router: IRouter = Router();
 
@@ -151,11 +152,22 @@ router.post("/notifications", async (req, res): Promise<void> => {
   if (logId !== null) void updateNotifLogStatus(logId, result.sent > 0 ? "sent" : "failed");
 });
 
-// ── GET /api/notifications/user — DB-backed, JSON fallback ───────────────────
+// ── GET /api/notifications/user — auth required; user sees only their own ─────
+// walletId query param must match the authenticated user's Supabase UUID.
+// Admin token bearer may query any walletId.
 
-router.get("/notifications/user", async (req, res): Promise<void> => {
+router.get("/notifications/user", requireSupabaseAuth, async (req, res): Promise<void> => {
+  const userId = req.supabaseUserId!;
+  const adminToken = req.headers["x-admin-token"] as string | undefined;
   const walletId = req.query.walletId as string;
   if (!walletId) { res.status(400).json({ error: "walletId required" }); return; }
+
+  // Ownership check: only the owner or an admin can view per-user notifications
+  if (walletId !== userId && (!adminToken || adminToken !== ADMIN_TOKEN)) {
+    res.status(403).json({ error: "Forbidden — can only view your own notifications" });
+    return;
+  }
+
   try {
     const rows = await db
       .select()
@@ -302,14 +314,16 @@ function saveViews(data: ViewsData): void {
   try { writeFileSync(VIEWS_FILE, JSON.stringify(data, null, 2), "utf-8"); } catch {}
 }
 
-// POST /api/notifications/:id/delivered — unauthenticated (SW background sync)
-// Transitions sent → delivered, scoped to recipient (broadcast OR user-specific).
+// POST /api/notifications/:id/delivered — SW background sync (no session auth)
+// Protected by HMAC receipt embedded in the push payload at send time.
+// Receipt = HMAC-SHA256(notifId:walletId, SESSION_SECRET).slice(0,32).
+// Without a valid receipt the update is silently skipped (still 200 to not leak info).
 router.post("/notifications/:id/delivered", async (req, res): Promise<void> => {
   const id = String((req.params as { id: string }).id ?? "");
-  const { walletId } = req.body as { walletId?: string };
+  const { walletId, receipt } = req.body as { walletId?: string; receipt?: string };
   if (!walletId) { res.status(400).json({ error: "walletId required" }); return; }
   const numericId = parseInt(id);
-  if (!isNaN(numericId)) {
+  if (!isNaN(numericId) && receipt && verifyDeliveryReceipt(numericId, walletId, receipt)) {
     void db
       .update(notificationLogTable)
       .set({ status: "delivered" })
@@ -325,6 +339,7 @@ router.post("/notifications/:id/delivered", async (req, res): Promise<void> => {
       )
       .catch(() => {});
   }
+  // Always 200 — avoid leaking whether the receipt is valid
   res.json({ ok: true });
 });
 

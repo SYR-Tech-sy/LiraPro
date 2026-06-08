@@ -32,14 +32,15 @@ function openSyncDb() {
 /**
  * Enqueue a notification delivered receipt in IndexedDB for background sync.
  * Called when a push arrives — marks the notification as 'delivered' once online.
+ * receipt: HMAC token embedded in push payload for /delivered endpoint hardening.
  */
-async function enqueueRead(notifId, walletId) {
+async function enqueueRead(notifId, walletId, receipt) {
   if (!notifId || !walletId) return;
   try {
     var db = await openSyncDb();
     var key = String(notifId) + '-' + String(walletId);
     var tx = db.transaction('pending-reads', 'readwrite');
-    tx.objectStore('pending-reads').put({ key: key, notifId: notifId, walletId: walletId });
+    tx.objectStore('pending-reads').put({ key: key, notifId: notifId, walletId: walletId, receipt: receipt || null });
     await new Promise(function (r) { tx.oncomplete = r; tx.onerror = r; });
     db.close();
     // Request background sync to flush receipts immediately if online
@@ -79,7 +80,8 @@ self.addEventListener('push', function (event) {
   event.waitUntil(
     self.registration.showNotification(title, options).then(function () {
       // Enqueue a delivered receipt so flushNotificationReads can POST to /delivered
-      return enqueueRead(data.notifId, data.walletId);
+      // receipt is the HMAC token from the push payload for endpoint hardening
+      return enqueueRead(data.notifId, data.walletId, data.receipt);
     })
   );
 });
@@ -149,10 +151,13 @@ async function flushNotificationReads() {
     var item = items[i];
     try {
       // POST to /delivered (no auth) — transitions notification_log: sent → delivered
+      // receipt is the HMAC token verified server-side for endpoint hardening
+      var body = { walletId: item.walletId };
+      if (item.receipt) body.receipt = item.receipt;
       var resp = await fetch('/api/notifications/' + item.notifId + '/delivered', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletId: item.walletId }),
+        body: JSON.stringify(body),
       });
       if (resp.ok) flushed.push(item.key);
     } catch { /* keep for next sync attempt */ }
