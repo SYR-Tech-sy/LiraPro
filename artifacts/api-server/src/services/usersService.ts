@@ -33,6 +33,8 @@ export interface RegisteredUser {
   softDeleted?: boolean;
   deletedAt?: string;
   deleteReason?: string;
+  permanentlyDeleted?: boolean;
+  permanentlyDeletedAt?: string;
 }
 
 interface UsersData {
@@ -178,6 +180,17 @@ export function deleteUser(walletId: string): boolean {
     return true;
   }
   return false;
+}
+
+export function markPermanentlyDeleted(walletId: string): boolean {
+  const data = readData();
+  const u = data.users.find((u) => u.walletId === walletId || u.supabaseId === walletId);
+  if (!u) return false;
+  u.permanentlyDeleted = true;
+  u.permanentlyDeletedAt = new Date().toISOString();
+  u.softDeleted = false;
+  writeData(data);
+  return true;
 }
 
 export function getActiveUsers(withinMinutes = 60): RegisteredUser[] {

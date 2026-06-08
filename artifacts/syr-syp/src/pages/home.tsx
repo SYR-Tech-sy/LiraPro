@@ -781,6 +781,99 @@ interface BroadcastData {
   speed?: 'slow' | 'normal' | 'fast';
 }
 
+function MerchantCurrencySection() {
+  const { formatNum } = useApp();
+  const { data: prices = [], isLoading } = useQuery<MarketPrice[]>({
+    queryKey: ['merchant-currency-prices'],
+    queryFn: async () => {
+      const res = await fetch('/api/market/prices?category=currency');
+      if (res.ok) return res.json() as Promise<MarketPrice[]>;
+      return [];
+    },
+    staleTime: 60_000,
+  });
+
+  if (isLoading || prices.length === 0) return null;
+
+  return (
+    <section>
+      <div className="flex items-center gap-3 mb-4" style={{ marginBottom: '0.5rem' }}>
+        <div className="flex-1 h-[2.5px] rounded-full" style={{ background: '#0284c7' }} />
+      </div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-base font-bold flex items-center gap-2">
+          <Store className="w-4 h-4 text-blue-500" /> أسعار التجار المحليين (صرافة)
+        </h2>
+        <span className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full font-bold">
+          {prices.length} سعر
+        </span>
+      </div>
+      <div className="flex flex-col gap-3">
+        {prices.slice(0, 6).map((p) => {
+          const parts = p.productNameAr.split(' / ');
+          const fromCode = parts[0]?.match(/\(([A-Z]+)\)/)?.[1] ?? '';
+          const toCode = parts[1]?.match(/\(([A-Z]+)\)/)?.[1] ?? 'SYP';
+          const flagMap: Record<string, string> = {
+            USD:'🇺🇸',EUR:'🇪🇺',TRY:'🇹🇷',GBP:'🇬🇧',SAR:'🇸🇦',AED:'🇦🇪',
+            CAD:'🇨🇦',CHF:'🇨🇭',JPY:'🇯🇵',JOD:'🇯🇴',EGP:'🇪🇬',IQD:'🇮🇶',
+            KWD:'🇰🇼',QAR:'🇶🇦',LBP:'🇱🇧',SYP:'🇸🇾',
+          };
+          const fromFlag = fromCode === 'SYP' ? undefined : flagMap[fromCode];
+          const fromLabel = parts[0]?.replace(/\s*\([A-Z]+\)/, '') ?? p.productNameAr;
+          return (
+            <Card key={p.productNameAr} className="bg-gradient-to-br from-blue-600 to-blue-700 text-white border-none shadow-md overflow-hidden relative">
+              <div className="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full blur-2xl" />
+              <CardContent className="p-4 relative z-10">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    {fromCode === 'SYP'
+                      ? <img src="/syria-flag.png" alt="SY" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
+                      : <span className="text-xl leading-none">{fromFlag ?? '🌍'}</span>}
+                    <div>
+                      <p className="text-white/70 text-xs">{fromLabel} {fromCode ? `(${fromCode})` : ''}</p>
+                      <p className="font-bold text-base">{formatNum(p.weightedAvg, { decimals: 0 })} <span className="text-xs font-normal text-white/60">{toCode}</span></p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[9px] text-white/50">{p.sourceCount} تاجر</p>
+                  </div>
+                </div>
+                {(p.minPrice !== p.maxPrice || p.sources.some(s => s.priceBuy || s.priceSell)) && (
+                  <div className="flex gap-4 border-t border-white/20 pt-2">
+                    {p.sources[0]?.priceBuy ? (
+                      <>
+                        <div>
+                          <p className="text-[9px] text-white/50">شراء</p>
+                          <p className="font-bold text-xs">{formatNum(p.sources[0].priceBuy!, { decimals: 0 })}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-white/50">بيع</p>
+                          <p className="font-bold text-xs">{formatNum(p.sources[0].priceSell ?? p.weightedAvg, { decimals: 0 })}</p>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <p className="text-[9px] text-white/50">أدنى</p>
+                          <p className="font-bold text-xs">{formatNum(p.minPrice, { decimals: 0 })}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-white/50">أعلى</p>
+                          <p className="font-bold text-xs">{formatNum(p.maxPrice, { decimals: 0 })}</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export default function HomePage() {
   const { data: ratesData, isLoading: loadingRates } = useGetExchangeRates();
   const { data: goldData, isLoading: loadingGold } = useGetGoldPrices();
@@ -1128,6 +1221,9 @@ export default function HomePage() {
           </div>
         ) : null}
       </section>
+
+      {/* Merchant Currency Prices */}
+      <MerchantCurrencySection />
 
       {/* Gold Prices */}
       <section>

@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { desc, eq } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
-import { getAllUsers, upsertUser, deleteUser, banUser, unbanUser, restrictUser, unrestrictUser, softDeleteUser, undeleteUser, updateUser, getActiveUsers } from "../services/usersService.js";
+import { getAllUsers, upsertUser, deleteUser, markPermanentlyDeleted, restrictUser, unrestrictUser, softDeleteUser, undeleteUser, updateUser, getActiveUsers } from "../services/usersService.js";
 import { getAllRequests, addRequest, markHandled, cancelRequestByWallet, deleteRequestById } from "../services/deletionService.js";
 import { getAllOverrides, setOverride, deleteOverride, clearAllOverrides } from "../services/rateOverridesService.js";
 import { incrementVisit, getVisitStats } from "../services/visitService.js";
@@ -103,6 +103,8 @@ router.get("/admin/users", async (req, res): Promise<void> => {
         banned: jsonUser?.banned ?? false,
         banReason: jsonUser?.banReason ?? undefined,
         bannedAt: jsonUser?.bannedAt ?? undefined,
+        permanentlyDeleted: jsonUser?.permanentlyDeleted ?? false,
+        permanentlyDeletedAt: jsonUser?.permanentlyDeletedAt ?? undefined,
         restricted: jsonUser?.restricted ?? false,
         restrictedUntil: jsonUser?.restrictedUntil ?? undefined,
         restrictReason: jsonUser?.restrictReason ?? undefined,
@@ -135,9 +137,10 @@ router.patch("/admin/users/:walletId", (req, res): void => {
 router.delete("/admin/users/:walletId", async (req, res): Promise<void> => {
   if (!verifyAdmin(req, res)) return;
   const walletId = req.params.walletId!;
-  deleteUser(walletId);
+  // Mark as permanently deleted in users-data.json (keeps a record for admin panel)
+  markPermanentlyDeleted(walletId);
+  // Remove from DB and Supabase auth so user cannot log in
   try { await db.delete(usersTable).where(eq(usersTable.supabaseId, walletId)); } catch {}
-  // Also delete from Supabase auth via service key if available
   try {
     const { createClient } = await import("@supabase/supabase-js");
     const supabaseAdmin = createClient(
@@ -147,19 +150,6 @@ router.delete("/admin/users/:walletId", async (req, res): Promise<void> => {
     await supabaseAdmin.auth.admin.deleteUser(walletId);
   } catch {}
   res.json({ success: true });
-});
-
-router.post("/admin/users/:walletId/ban", (req, res): void => {
-  if (!verifyAdmin(req, res)) return;
-  const { reason } = req.body as { reason?: string };
-  const ok = banUser(req.params.walletId, reason ?? "");
-  res.json({ success: ok });
-});
-
-router.post("/admin/users/:walletId/unban", (req, res): void => {
-  if (!verifyAdmin(req, res)) return;
-  const ok = unbanUser(req.params.walletId);
-  res.json({ success: ok });
 });
 
 router.post("/admin/users/:walletId/restrict", (req, res): void => {

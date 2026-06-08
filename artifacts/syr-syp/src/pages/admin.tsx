@@ -109,6 +109,8 @@ interface RegisteredUser {
   restricted?: boolean;
   restrictedUntil?: string;
   softDeleted?: boolean;
+  permanentlyDeleted?: boolean;
+  permanentlyDeletedAt?: string;
   profilePhoto?: string | null;
   lastIp?: string | null;
   lastDevice?: string | null;
@@ -1370,9 +1372,8 @@ export default function AdminPage() {
   const [userSearch, setUserSearch] = useState('');
   const [userFilter, setUserFilter] = useState('all');
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
-  const [banReason, setBanReason] = useState('');
-  const [banningUser, setBanningUser] = useState<string | null>(null);
   const [restrictingUser, setRestrictingUser] = useState<string | null>(null);
+  const [deletedSubTab, setDeletedSubTab] = useState<'recoverable' | 'permanent'>('recoverable');
   const [restrictReason, setRestrictReason] = useState('');
   const [restrictDays, setRestrictDays] = useState('');
   const [deletingUser, setDeletingUser] = useState<string | null>(null);
@@ -2156,55 +2157,6 @@ export default function AdminPage() {
 
   // ── Action handlers ────────────────────────────────────────────────────────
 
-  const handleBanUser = async (walletId: string) => {
-    const u = users.find(u => u.walletId === walletId);
-    const reason = banReason;
-    try {
-      await fetch(`/api/admin/users/${walletId}/ban`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token ?? '' },
-        body: JSON.stringify({ reason: reason || 'تم الحظر من قبل المدير' }),
-      });
-      queryClient.setQueryData<RegisteredUser[]>(['admin-users', token], prev => prev?.map(u2 => u2.walletId === walletId ? { ...u2, banned: true, banReason: reason || 'تم الحظر من قبل المدير' } : u2) ?? []);
-      setBanReason('');
-      setBanningUser(null);
-      await queryClient.invalidateQueries({ queryKey: ['admin-users', token] });
-      await queryClient.invalidateQueries({ queryKey: ['admin-stats', token] });
-      setActionNotif({
-        visible: true, walletId, targetName: u?.fullName || u?.businessName || walletId,
-        title: 'تم تقييد حسابك',
-        body: `تم تقييد حسابك على منصة LiraPro${reason ? ` بسبب: ${reason}` : ''}. للاستفسار تواصل مع الدعم.`,
-        type: 'warning', sender: (badgeAssignedSender || 'LiraPro') as 'LiraPro' | 'فريق LiraPro',
-        sending: false, msg: '',
-      });
-    } catch {}
-  };
-
-  const handleUnbanUser = async (walletId: string) => {
-    const u = users.find(u => u.walletId === walletId);
-    try {
-      const res = await fetch(`/api/admin/users/${walletId}/unban`, {
-        method: 'POST',
-        headers: { 'X-Admin-Token': token ?? '' },
-      });
-      const data = await res.json().catch(() => ({})) as { success?: boolean; error?: string };
-      if (!res.ok || data.success === false) {
-        toast.error(data.error ?? 'فشل رفع الحظر: المستخدم غير موجود في قاعدة البيانات');
-        return;
-      }
-      queryClient.setQueryData<RegisteredUser[]>(['admin-users', token], prev => prev?.map(u2 => u2.walletId === walletId ? { ...u2, banned: false, banReason: '' } : u2) ?? []);
-      await queryClient.invalidateQueries({ queryKey: ['admin-users', token] });
-      await queryClient.invalidateQueries({ queryKey: ['admin-stats', token] });
-      setActionNotif({
-        visible: true, walletId, targetName: u?.fullName || u?.businessName || walletId,
-        title: 'تم رفع الحظر عن حسابك',
-        body: `تم رفع الحظر عن حسابك على منصة LiraPro. يمكنك الآن استخدام جميع مزايا المنصة بشكل طبيعي.`,
-        type: 'success', sender: (badgeAssignedSender || 'LiraPro') as 'LiraPro' | 'فريق LiraPro',
-        sending: false, msg: '',
-      });
-    } catch { toast.error('خطأ في الاتصال'); }
-  };
-
   const handleRestrictUser = async (walletId: string) => {
     const u = users.find(u => u.walletId === walletId);
     const days = parseInt(restrictDays);
@@ -2733,11 +2685,10 @@ export default function AdminPage() {
   const filteredUsers = useMemo(() => {
     return users
       .filter(u => {
-        if (userFilter === 'private') return u.accountType === 'private' && !u.banned && !u.softDeleted;
-        if (userFilter === 'provider') return u.accountType === 'provider' && !u.banned && !u.softDeleted;
-        if (userFilter === 'banned') return !!u.banned;
-        if (userFilter === 'deleted') return !!u.softDeleted;
-        if (userFilter === 'restricted') return !!u.restricted;
+        if (userFilter === 'personal') return u.accountType === 'private' && !u.softDeleted && !u.permanentlyDeleted;
+        if (userFilter === 'merchant') return u.accountType === 'provider' && !u.softDeleted && !u.permanentlyDeleted;
+        if (userFilter === 'restricted') return !!u.restricted && !u.softDeleted && !u.permanentlyDeleted;
+        if (userFilter === 'deleted') return !!u.softDeleted || !!u.permanentlyDeleted;
         return true;
       })
       .filter(u => {
@@ -2934,8 +2885,8 @@ export default function AdminPage() {
               <div className="grid grid-cols-4 gap-2">
                 {[
                   { label: 'شخصي', val: stats?.privateUsers ?? 0, color: '#003C32', tab: 'users' },
-                  { label: 'مزودون', val: stats?.providers ?? 0, color: '#D20073', tab: 'users' },
-                  { label: 'محظورون', val: stats?.bannedUsers ?? 0, color: '#ef4444', tab: 'users' },
+                  { label: 'تجار', val: stats?.providers ?? 0, color: '#D20073', tab: 'users' },
+                  { label: 'مقيّدون', val: users.filter(u => !!u.restricted).length, color: '#f59e0b', tab: 'users' },
                   { label: 'إشعارات', val: notifications.length, color: '#0284c7', tab: 'notifications' },
                 ].map(s => (
                   <button key={s.label}
@@ -3088,14 +3039,13 @@ export default function AdminPage() {
               className="flex flex-col gap-3">
 
               {/* Stats bar */}
-              <div className="grid grid-cols-6 gap-2">
+              <div className="grid grid-cols-5 gap-2">
                 {[
                   { label: 'الكل', val: users.length, filter: 'all', color: '#003C32' },
-                  { label: 'شخصي', val: users.filter(u => u.accountType === 'private' && !u.banned && !u.softDeleted).length, filter: 'private', color: '#0284c7' },
-                  { label: 'مزود', val: users.filter(u => u.accountType === 'provider' && !u.banned && !u.softDeleted).length, filter: 'provider', color: '#D20073' },
-                  { label: 'محظور', val: users.filter(u => !!u.banned).length, filter: 'banned', color: '#ef4444' },
-                  { label: 'مقيد', val: users.filter(u => !!u.restricted).length, filter: 'restricted', color: '#f59e0b' },
-                  { label: 'محذوف', val: users.filter(u => !!u.softDeleted).length, filter: 'deleted', color: '#6b7280' },
+                  { label: 'شخصي', val: users.filter(u => u.accountType === 'private' && !u.softDeleted && !u.permanentlyDeleted).length, filter: 'personal', color: '#0284c7' },
+                  { label: 'تاجر', val: users.filter(u => u.accountType === 'provider' && !u.softDeleted && !u.permanentlyDeleted).length, filter: 'merchant', color: '#D20073' },
+                  { label: 'مقيد', val: users.filter(u => !!u.restricted && !u.softDeleted && !u.permanentlyDeleted).length, filter: 'restricted', color: '#f59e0b' },
+                  { label: 'محذوف', val: users.filter(u => !!u.softDeleted || !!u.permanentlyDeleted).length, filter: 'deleted', color: '#6b7280' },
                 ].map(s => (
                   <button key={s.filter} onClick={() => setUserFilter(s.filter)}
                     className={`rounded-xl p-2.5 text-center transition-all ${userFilter === s.filter ? 'shadow-md' : 'bg-card border border-border'}`}
@@ -3120,7 +3070,27 @@ export default function AdminPage() {
                 )}
               </div>
 
-              {filteredUsers.length === 0 ? (
+              {/* Sub-tabs for deleted filter */}
+              {userFilter === 'deleted' && (
+                <div className="flex gap-1 bg-secondary/40 rounded-xl p-1">
+                  <button
+                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${deletedSubTab === 'recoverable' ? 'bg-card shadow text-foreground' : 'text-muted-foreground'}`}
+                    onClick={() => setDeletedSubTab('recoverable')}>
+                    قابل للاسترجاع
+                  </button>
+                  <button
+                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${deletedSubTab === 'permanent' ? 'bg-red-600 shadow text-white' : 'text-muted-foreground'}`}
+                    onClick={() => setDeletedSubTab('permanent')}>
+                    محذوف نهائياً
+                  </button>
+                </div>
+              )}
+
+              {(() => {
+                const visibleUsers = userFilter === 'deleted'
+                  ? filteredUsers.filter(u => deletedSubTab === 'permanent' ? !!u.permanentlyDeleted : (!!u.softDeleted && !u.permanentlyDeleted))
+                  : filteredUsers;
+                return visibleUsers.length === 0 ? (
                 <div className="text-center py-12">
                   <Users className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
                   <p className="text-sm text-muted-foreground">
@@ -3133,25 +3103,25 @@ export default function AdminPage() {
               ) : (
                 <div className="flex flex-col gap-2">
                   <p className="text-xs text-muted-foreground px-1">
-                    عرض {filteredUsers.length} من {users.length} مستخدم
+                    عرض {visibleUsers.length} من {users.length} مستخدم
                   </p>
-                  {filteredUsers.map(u => {
+                  {visibleUsers.map(u => {
                     const isExpanded = expandedUser === u.id;
                     const isProvider = u.accountType === 'provider';
                     return (
-                      <Card key={u.id} className={`border-border shadow-sm overflow-hidden ${u.banned ? 'border-red-200 dark:border-red-900/40' : ''}`}>
+                      <Card key={u.id} className={`border-border shadow-sm overflow-hidden ${u.softDeleted || u.permanentlyDeleted ? 'opacity-75' : ''}`}>
                         {/* Collapsed header */}
                         <button className="w-full p-3 flex items-center gap-3 text-right"
                           onClick={() => setExpandedUser(isExpanded ? null : u.id)}>
                           <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-base overflow-hidden"
                             style={{
-                              background: u.softDeleted ? '#6b728020' : u.banned ? '#ef444420' : isProvider ? '#D2007320' : '#003C3220',
-                              color: u.softDeleted ? '#6b7280' : u.banned ? '#ef4444' : isProvider ? '#D20073' : '#003C32'
+                              background: u.permanentlyDeleted ? '#ef444420' : u.softDeleted ? '#6b728020' : isProvider ? '#D2007320' : '#003C3220',
+                              color: u.permanentlyDeleted ? '#ef4444' : u.softDeleted ? '#6b7280' : isProvider ? '#D20073' : '#003C32'
                             }}>
-                            {u.softDeleted
+                            {u.permanentlyDeleted
                               ? <Trash2 className="w-5 h-5" />
-                              : u.banned
-                                ? <Ban className="w-5 h-5" />
+                              : u.softDeleted
+                                ? <Trash2 className="w-5 h-5" />
                                 : u.profilePhoto
                                   ? <img src={u.profilePhoto} alt="" className="w-full h-full object-cover" />
                                   : <span>{(u.fullName || u.businessName || '؟').charAt(0).toUpperCase()}</span>
@@ -3168,14 +3138,15 @@ export default function AdminPage() {
                               {/* Clickable status badge — filters list by this status */}
                               <button
                                 type="button"
-                                onClick={e => { e.stopPropagation(); setUserFilter(u.softDeleted ? 'deleted' : u.banned ? 'banned' : isProvider ? 'provider' : 'private'); }}
+                                onClick={e => { e.stopPropagation(); setUserFilter(u.permanentlyDeleted || u.softDeleted ? 'deleted' : u.restricted ? 'restricted' : isProvider ? 'merchant' : 'personal'); }}
                                 className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0 cursor-pointer transition-opacity hover:opacity-70 ${
-                                  u.softDeleted ? 'bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400'
-                                  : u.banned ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                                  u.permanentlyDeleted ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                                  : u.softDeleted ? 'bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400'
+                                  : u.restricted ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
                                   : isProvider ? 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300'
                                   : 'bg-primary/10 text-primary'
                                 }`}>
-                                {u.softDeleted ? 'محذوف' : u.banned ? 'محظور' : isProvider ? 'مزود' : 'شخصي'}
+                                {u.permanentlyDeleted ? 'محذوف نهائياً' : u.softDeleted ? 'محذوف' : u.restricted ? 'مقيد' : isProvider ? 'تاجر' : 'شخصي'}
                               </button>
                             </div>
                             {u.supabaseId && userLphIds[u.supabaseId] && (
@@ -3406,42 +3377,22 @@ export default function AdminPage() {
                                   )}
                                 </div>
 
-                                {/* Ban reason */}
-                                {u.banned && u.banReason && (
+                                {/* Permanently deleted info */}
+                                {u.permanentlyDeleted && (
                                   <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 rounded-xl p-2">
-                                    <p className="text-[10px] text-red-600 dark:text-red-400 font-medium">
-                                      سبب الحظر: {u.banReason}
+                                    <p className="text-[10px] text-red-600 dark:text-red-400 font-medium flex items-center gap-1">
+                                      <Trash2 className="w-3 h-3" /> محذوف نهائياً من المنصة
                                     </p>
-                                    {u.bannedAt && (
+                                    {u.permanentlyDeletedAt && (
                                       <p className="text-[9px] text-red-500/70 mt-0.5">
-                                        تاريخ الحظر: {new Date(u.bannedAt).toLocaleDateString('ar-SY')}
+                                        تاريخ الحذف: {new Date(u.permanentlyDeletedAt).toLocaleDateString('ar-SY')}
                                       </p>
                                     )}
                                   </div>
                                 )}
 
-                                {/* Ban reason input */}
-                                {banningUser === u.id && (
-                                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-                                    className="flex flex-col gap-2">
-                                    <Input value={banReason} onChange={e => setBanReason(e.target.value)}
-                                      placeholder="سبب الحظر (اختياري)..."
-                                      className="h-9 text-xs" />
-                                    <div className="flex gap-2">
-                                      <Button size="sm" className="flex-1 gap-1 h-8 text-xs bg-red-600 hover:bg-red-700"
-                                        onClick={() => handleBanUser(u.walletId)}>
-                                        <Ban className="w-3 h-3" /> تأكيد الحظر
-                                      </Button>
-                                      <Button size="sm" variant="outline" className="flex-1 h-8 text-xs"
-                                        onClick={() => { setBanningUser(null); setBanReason(''); }}>
-                                        إلغاء
-                                      </Button>
-                                    </div>
-                                  </motion.div>
-                                )}
-
                                 {/* Action buttons */}
-                                {banningUser !== u.id && editingUser !== u.id && (
+                                {editingUser !== u.id && (
                                   <div className="flex flex-col gap-2">
                                     <div className="flex gap-2">
                                       {u.supabaseId && (
@@ -3465,24 +3416,11 @@ export default function AdminPage() {
                                         <Edit3 className="w-3 h-3" /> تعديل
                                       </Button>
                                     </div>
-                                    {/* Ban / Unban — both always visible */}
+                                    {/* Restrict / Unrestrict */}
                                     <div className="flex gap-2">
-                                      <Button size="sm"
-                                        disabled={!u.banned}
-                                        className={`flex-1 gap-1 h-8 text-xs ${u.banned ? 'bg-green-600 hover:bg-green-700 text-white' : 'opacity-40 cursor-not-allowed bg-secondary text-muted-foreground'}`}
-                                        onClick={() => { if (u.banned) handleUnbanUser(u.walletId); }}>
-                                        <Unlock className="w-3 h-3" /> رفع الحظر
-                                      </Button>
-                                      <Button size="sm" variant="outline"
-                                        disabled={!!u.banned}
-                                        className={`flex-1 gap-1 h-8 text-xs ${!u.banned ? 'border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400' : 'opacity-40 cursor-not-allowed'}`}
-                                        onClick={() => { if (!u.banned) { setBanningUser(u.id); setRestrictingUser(null); setDeletingUser(null); } }}>
-                                        <Ban className="w-3 h-3" /> حظر دائم
-                                      </Button>
-                                      {/* Restrict / Unrestrict */}
                                       <Button size="sm" variant="outline"
                                         className="flex-1 gap-1 h-8 text-xs border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400"
-                                        onClick={() => { setRestrictingUser(restrictingUser === u.id ? null : u.id); setBanningUser(null); setDeletingUser(null); }}>
+                                        onClick={() => { setRestrictingUser(restrictingUser === u.id ? null : u.id); setDeletingUser(null); }}>
                                         <Timer className="w-3 h-3" />
                                         {restrictingUser === u.id ? 'إلغاء' : 'تقييد'}
                                       </Button>
@@ -3519,7 +3457,7 @@ export default function AdminPage() {
                                     <div className="flex gap-2">
                                       <Button size="sm" variant="outline"
                                         className="flex-1 gap-1 h-8 text-xs border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400"
-                                        onClick={() => { setDeletingUser(deletingUser === u.id ? null : u.id); setBanningUser(null); setRestrictingUser(null); }}>
+                                        onClick={() => { setDeletingUser(deletingUser === u.id ? null : u.id); setRestrictingUser(null); }}>
                                         <Trash2 className="w-3 h-3" />
                                         {deletingUser === u.id ? 'إلغاء' : 'حذف الحساب'}
                                       </Button>
@@ -3646,7 +3584,8 @@ export default function AdminPage() {
                     );
                   })}
                 </div>
-              )}
+              );
+              })()}
             </motion.div>
           )}
 
@@ -5161,11 +5100,10 @@ export default function AdminPage() {
                   {[
                     { label: 'إجمالي المستخدمين المسجلين', val: stats?.totalUsers ?? 0, color: '#003C32', onClick: () => setActiveTab('users') },
                     { label: 'الحسابات الشخصية', val: stats?.privateUsers ?? 0, color: '#0284c7', onClick: () => setActiveTab('users') },
-                    { label: 'مزودو الخدمة (مستخدمون)', val: stats?.providers ?? 0, color: '#D20073', onClick: () => setActiveTab('users') },
-                    { label: 'التجار ومدخلو الأسعار', val: vendors.length, color: '#7C3AED', onClick: () => setActiveTab('vendors') },
-                    { label: 'طلبات العضوية المعلقة', val: pendingApps, color: '#f59e0b', onClick: () => setActiveTab('requests') },
+                    { label: 'التجار ومزودو الأسعار', val: stats?.providers ?? 0, color: '#D20073', onClick: () => setActiveTab('users') },
+                    { label: 'المقيّدون', val: users.filter(u => !!u.restricted).length, color: '#f59e0b', onClick: () => setActiveTab('users') },
                     { label: 'المستخدمون النشطون (آخر ساعة)', val: stats?.activeUsers ?? 0, color: '#059669', onClick: () => setActiveTab('users') },
-                    { label: 'المحظورون', val: stats?.bannedUsers ?? 0, color: '#ef4444', onClick: () => setActiveTab('users') },
+                    { label: 'طلبات العضوية المعلقة', val: pendingApps, color: '#7C3AED', onClick: () => setActiveTab('requests') },
                   ].map(s => (
                     <button key={s.label} onClick={s.onClick}
                       className="flex items-center justify-between py-2 border-b border-border last:border-0 w-full text-right hover:bg-secondary/50 active:bg-secondary transition-colors rounded-lg px-1.5 -mx-1.5 cursor-pointer">
@@ -6101,10 +6039,10 @@ export default function AdminPage() {
               {/* KPI Row */}
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label: 'إجمالي المستخدمين', value: stats?.totalUsers ?? 0, icon: Users, color: '#003C32', sub: `${stats?.privateUsers ?? 0} شخصي · ${stats?.providers ?? 0} مزود` },
+                  { label: 'إجمالي المستخدمين', value: stats?.totalUsers ?? 0, icon: Users, color: '#003C32', sub: `${stats?.privateUsers ?? 0} شخصي · ${stats?.providers ?? 0} تاجر` },
                   { label: 'التجار المسجلون', value: vendors.length, icon: Building2, color: '#7C3AED', sub: `${vendors.filter(v => v.isActive !== false).length} نشط` },
                   { label: 'زيارات اليوم', value: stats?.todayVisits ?? 0, icon: Eye, color: '#D20073', sub: `الإجمالي: ${stats?.totalVisits ?? 0}` },
-                  { label: 'محظورون', value: stats?.bannedUsers ?? 0, icon: Ban, color: '#ef4444', sub: `${((stats?.bannedUsers ?? 0) / Math.max(stats?.totalUsers ?? 1, 1) * 100).toFixed(1)}% من الكل` },
+                  { label: 'مقيّدون', value: users.filter(u => !!u.restricted).length, icon: Timer, color: '#f59e0b', sub: `${(users.filter(u => !!u.restricted).length / Math.max(stats?.totalUsers ?? 1, 1) * 100).toFixed(1)}% من الكل` },
                 ].map((item) => {
                   const Icon = item.icon;
                   return (
@@ -6132,8 +6070,8 @@ export default function AdminPage() {
                   const total = Math.max(stats?.totalUsers ?? 0, 1);
                   const segments = [
                     { label: 'شخصي', val: stats?.privateUsers ?? 0, color: '#003C32' },
-                    { label: 'مزودو خدمات', val: stats?.providers ?? 0, color: '#D20073' },
-                    { label: 'محظورون', val: stats?.bannedUsers ?? 0, color: '#ef4444' },
+                    { label: 'تجار', val: stats?.providers ?? 0, color: '#D20073' },
+                    { label: 'مقيّدون', val: users.filter(u => !!u.restricted).length, color: '#f59e0b' },
                     { label: 'نشطون اليوم', val: stats?.activeUsers ?? 0, color: '#0284c7' },
                   ];
                   return (

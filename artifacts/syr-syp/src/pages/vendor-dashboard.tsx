@@ -22,7 +22,25 @@ const CATEGORIES: Record<string, string> = {
   local_market: 'الأسواق المحلية', crypto: 'الكريبتو والعملات الرقمية',
 };
 
-const CURRENCIES = ['دولار أمريكي (USD)', 'يورو (EUR)', 'ليرة تركية (TRY)', 'ريال سعودي (SAR)', 'درهم إماراتي (AED)', 'جنيه إسترليني (GBP)', 'دولار كندي (CAD)', 'فرنك سويسري (CHF)', 'ين ياباني (JPY)', 'دينار أردني (JOD)', 'ليرة سورية (SYP)'];
+const CURRENCY_LIST = [
+  { code: 'USD', nameAr: 'دولار أمريكي',    flag: '🇺🇸' },
+  { code: 'EUR', nameAr: 'يورو',             flag: '🇪🇺' },
+  { code: 'TRY', nameAr: 'ليرة تركية',      flag: '🇹🇷' },
+  { code: 'SAR', nameAr: 'ريال سعودي',      flag: '🇸🇦' },
+  { code: 'AED', nameAr: 'درهم إماراتي',    flag: '🇦🇪' },
+  { code: 'GBP', nameAr: 'جنيه إسترليني',  flag: '🇬🇧' },
+  { code: 'CAD', nameAr: 'دولار كندي',      flag: '🇨🇦' },
+  { code: 'CHF', nameAr: 'فرنك سويسري',    flag: '🇨🇭' },
+  { code: 'JPY', nameAr: 'ين ياباني',       flag: '🇯🇵' },
+  { code: 'JOD', nameAr: 'دينار أردني',     flag: '🇯🇴' },
+  { code: 'EGP', nameAr: 'جنيه مصري',       flag: '🇪🇬' },
+  { code: 'IQD', nameAr: 'دينار عراقي',     flag: '🇮🇶' },
+  { code: 'KWD', nameAr: 'دينار كويتي',     flag: '🇰🇼' },
+  { code: 'QAR', nameAr: 'ريال قطري',       flag: '🇶🇦' },
+  { code: 'LBP', nameAr: 'ليرة لبنانية',    flag: '🇱🇧' },
+  { code: 'SYP', nameAr: 'ليرة سورية',      flag: '🇸🇾' },
+];
+const CURRENCIES = CURRENCY_LIST.map(c => `${c.nameAr} (${c.code})`);
 const FUEL_TYPES = ['بنزين أوكتان 95', 'بنزين أوكتان 90', 'ديزل', 'مازوت منزلي', 'غاز منزلي (LPG)'];
 const GOLD_KARATS = ['14 قيراط', '16 قيراط', '18 قيراط', '21 قيراط', '22 قيراط', '24 قيراط'];
 const CRYPTO_COINS = ['Bitcoin (BTC)', 'Ethereum (ETH)', 'Tether (USDT)', 'BNB', 'Ripple (XRP)', 'Solana (SOL)'];
@@ -103,6 +121,43 @@ function SimpleSelect({ value, onChange, options, placeholder }: {
                 {opt}
               </button>
             ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function CurrencySelectWithFlag({ value, onChange, placeholder }: {
+  value: string; onChange: (v: string) => void; placeholder: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = CURRENCY_LIST.find(c => `${c.nameAr} (${c.code})` === value);
+  return (
+    <div className="relative">
+      <button type="button" onClick={() => setOpen(v => !v)}
+        className="w-full border border-border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none flex items-center justify-between gap-2 text-right">
+        {selected
+          ? <span className="flex items-center gap-2"><span className="text-lg leading-none">{selected.flag}</span><span>{selected.nameAr} ({selected.code})</span></span>
+          : <span className="text-muted-foreground">{placeholder}</span>}
+        <ChevronDown className={`w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.12 }}
+            className="absolute z-[200] top-full mt-1 w-full bg-card border border-border rounded-xl shadow-xl overflow-hidden max-h-52 overflow-y-auto">
+            {CURRENCY_LIST.map(c => {
+              const opt = `${c.nameAr} (${c.code})`;
+              return (
+                <button key={c.code} type="button" onClick={() => { onChange(opt); setOpen(false); }}
+                  className={`w-full text-right px-3 py-2 text-sm transition-colors hover:bg-secondary flex items-center gap-2 ${value === opt ? 'bg-primary/10 font-bold text-primary' : ''}`}>
+                  <span className="text-lg leading-none">{c.flag}</span>
+                  <span>{c.nameAr}</span>
+                  <span className="text-xs text-muted-foreground ml-auto">{c.code}</span>
+                </button>
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>
@@ -248,11 +303,11 @@ function PriceFormModal({
               <>
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-bold text-foreground/70">من عملة *</label>
-                  <SimpleSelect value={fromCurrency} onChange={setFromCurrency} options={CURRENCIES} placeholder="اختر العملة المصدر" />
+                  <CurrencySelectWithFlag value={fromCurrency} onChange={setFromCurrency} placeholder="اختر العملة المصدر" />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-bold text-foreground/70">إلى عملة</label>
-                  <SimpleSelect value={toCurrency} onChange={setToCurrency} options={CURRENCIES} placeholder="اختر العملة الهدف" />
+                  <CurrencySelectWithFlag value={toCurrency} onChange={setToCurrency} placeholder="اختر العملة الهدف" />
                 </div>
                 {inp('السعر الرئيسي *', 'price', '0', 'number', true)}
                 {inp('سعر الشراء', 'priceBuy', '0', 'number')}
