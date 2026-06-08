@@ -1318,9 +1318,13 @@ function AppSideEffects() {
       try {
         const tok = await getToken();
         if (!tok) return;
+        const deviceId = localStorage.getItem('syp-device-id');
         await fetch('/api/sessions/heartbeat', {
           method: 'PUT',
-          headers: { Authorization: `Bearer ${tok}` },
+          headers: {
+            Authorization: `Bearer ${tok}`,
+            ...(deviceId ? { 'X-Device-Id': deviceId } : {}),
+          },
         });
       } catch { /* non-critical */ }
     };

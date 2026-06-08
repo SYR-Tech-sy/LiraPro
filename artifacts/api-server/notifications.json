@@ -45,5 +45,14 @@
     "icon": "bell",
     "recipient": "all",
     "createdAt": "2026-06-08T17:23:18.668Z"
+  },
+  {
+    "id": 1780939882559,
+    "title": "Status test",
+    "body": "Testing queued→sent lifecycle",
+    "type": "info",
+    "icon": "bell",
+    "recipient": "all",
+    "createdAt": "2026-06-08T17:31:22.559Z"
   }
 ]

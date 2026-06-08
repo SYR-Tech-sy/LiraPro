@@ -4,7 +4,7 @@ import { Bell, X, BellOff, Info, AlertTriangle, CheckCircle, TrendingUp, ShieldC
 import { AdminBadge, RainbowBadge } from './golden-badge';
 import { useCheckAlerts } from '@workspace/api-client-react';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
-import { useUser } from '@/context/auth-context';
+import { useAuth, useUser } from '@/context/auth-context';
 
 interface Notification {
   id: number;
@@ -195,6 +195,7 @@ export function NotificationsPanel() {
   const [readIds, setReadIds] = useState<Set<number>>(getReadIds);
   const panelRef = useRef<HTMLDivElement>(null);
   const { user } = useUser();
+  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -255,15 +256,21 @@ export function NotificationsPanel() {
       void queryClient.invalidateQueries({ queryKey: ['user-notifications', user?.id] });
       const walletId = user?.id ?? localStorage.getItem('syp-wallet-id');
       if (walletId) {
-        for (const n of notifications) {
-          if (!readIds.has(n.id) && n.id < 1000000000) {
-            fetch(`/api/notifications/${n.id}/view`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ walletId }),
-            }).catch(() => {});
+        // Mark each unread notification as viewed — include auth token for ownership verification
+        getToken().then(tok => {
+          for (const n of notifications) {
+            if (!readIds.has(n.id) && n.id < 1_000_000_000) {
+              fetch(`/api/notifications/${n.id}/view`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...(tok ? { Authorization: `Bearer ${tok}` } : {}),
+                },
+                body: JSON.stringify({ walletId }),
+              }).catch(() => {});
+            }
           }
-        }
+        }).catch(() => {});
       }
     }
   }
@@ -278,7 +285,11 @@ export function NotificationsPanel() {
     const walletId = user?.id ?? localStorage.getItem('syp-wallet-id');
     if (walletId) {
       try {
-        await fetch(`/api/notifications/user/${encodeURIComponent(walletId)}/all`, { method: 'DELETE' });
+        const tok = await getToken();
+        await fetch(`/api/notifications/user/${encodeURIComponent(walletId)}/all`, {
+          method: 'DELETE',
+          headers: tok ? { Authorization: `Bearer ${tok}` } : {},
+        });
       } catch { /* ignore */ }
     }
   }

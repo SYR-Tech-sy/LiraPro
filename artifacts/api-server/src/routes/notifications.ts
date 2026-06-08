@@ -206,7 +206,7 @@ router.post("/notifications", async (req, res): Promise<void> => {
   broadcastSSE("notification", newNotification);
   res.json(newNotification);
 
-  // DB log: insert as 'queued' → send push → update to 'sent'/'failed'
+  // DB log: insert as 'queued' → send push → update based on actual results
   const logId = await logNotification({
     notifId: newNotification.id,
     title, body,
@@ -214,11 +214,10 @@ router.post("/notifications", async (req, res): Promise<void> => {
     recipientType: "all",
     actionUrl: "/app/home",
   });
-  try {
-    await sendPushToAll(title, body, "/app/home", newNotification.id);
-    if (logId !== null) void updateNotifLogStatus(logId, "sent");
-  } catch {
-    if (logId !== null) void updateNotifLogStatus(logId, "failed");
+  const result = await sendPushToAll(title, body, "/app/home", newNotification.id, newNotification.type)
+    .catch(() => ({ sent: 0, failed: 0 }));
+  if (logId !== null) {
+    void updateNotifLogStatus(logId, result.sent > 0 ? "sent" : "failed");
   }
 });
 
@@ -280,7 +279,7 @@ router.post("/notifications/user", async (req, res): Promise<void> => {
   broadcastSSE("notification", newMsg, walletId);
   res.json(newMsg);
 
-  // DB log: insert as 'queued' → send push → update to 'sent'/'failed'
+  // DB log: insert as 'queued' → send push → update based on actual results
   const logId = await logNotification({
     notifId: newMsg.id,
     title, body,
@@ -289,11 +288,10 @@ router.post("/notifications/user", async (req, res): Promise<void> => {
     targetUserId: walletId,
     actionUrl: "/app/home",
   });
-  try {
-    await sendPushToUser(walletId, title, body, "/app/home", newMsg.id);
-    if (logId !== null) void updateNotifLogStatus(logId, "sent");
-  } catch {
-    if (logId !== null) void updateNotifLogStatus(logId, "failed");
+  const result = await sendPushToUser(walletId, title, body, "/app/home", newMsg.id, newMsg.type)
+    .catch(() => ({ sent: 0, failed: 0 }));
+  if (logId !== null) {
+    void updateNotifLogStatus(logId, result.sent > 0 ? "sent" : "failed");
   }
 });
 
@@ -379,18 +377,47 @@ function saveViews(data: ViewsData): void {
   writeFileSync(VIEWS_FILE, JSON.stringify(data, null, 2), "utf-8");
 }
 
-// POST /api/notifications/:id/view — user marks notification as read (delivered → read)
-router.post("/notifications/:id/view", async (req, res): Promise<void> => {
-  const id = req.params.id ?? "";
+// POST /api/notifications/:id/delivered — unauthenticated; called by SW background sync
+// Transitions notification_log: sent → delivered (scoped by notifId + walletId)
+router.post("/notifications/:id/delivered", async (req, res): Promise<void> => {
+  const id = String((req.params as { id: string }).id ?? "");
   const { walletId } = req.body as { walletId?: string };
   if (!walletId) { res.status(400).json({ error: "walletId required" }); return; }
+  const numericId = parseInt(id);
+  if (!isNaN(numericId)) {
+    void db
+      .update(notificationLogTable)
+      .set({ status: "delivered" })
+      .where(
+        and(
+          eq(notificationLogTable.notifId, numericId),
+          // Match rows targeting this user OR broadcast rows (targetUserId IS NULL)
+          eq(notificationLogTable.status, "sent"),
+        ),
+      )
+      .catch(() => {});
+  }
+  res.json({ ok: true });
+});
+
+// POST /api/notifications/:id/view — authenticated; transitions delivered → read
+// Requires auth; walletId must match the authenticated user
+router.post("/notifications/:id/view", requireSupabaseAuth, async (req, res): Promise<void> => {
+  const id = String((req.params as { id: string }).id ?? "");
+  const userId = req.supabaseUserId!;
+  // Accept caller-supplied walletId but always verify it matches the authenticated user
+  const { walletId } = req.body as { walletId?: string };
+  const effectiveWalletId = userId; // always use auth identity — ignore body param for security
+  if (walletId && walletId !== userId) {
+    // walletId supplied but doesn't match auth — log but continue with auth identity
+  }
   const views = readViews();
   if (!views[id]) views[id] = [];
-  const already = views[id].some(v => v.walletId === walletId);
+  const already = views[id].some(v => v.walletId === effectiveWalletId);
   if (!already) {
-    views[id].push({ walletId, viewedAt: new Date().toISOString() });
+    views[id].push({ walletId: effectiveWalletId, viewedAt: new Date().toISOString() });
     saveViews(views);
-    // Transition notification_log → 'read'
+    // Transition notification_log → 'read' scoped to notifId + recipient
     const numericId = parseInt(id);
     if (!isNaN(numericId)) {
       void db

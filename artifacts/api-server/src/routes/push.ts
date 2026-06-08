@@ -122,17 +122,24 @@ export async function sendPushToAll(
   body: string,
   url = "/app/home",
   notifId?: number,
-): Promise<void> {
+  type?: string,
+): Promise<{ sent: number; failed: number }> {
   let subs: typeof pushSubscriptionsTable.$inferSelect[];
   try {
     subs = await db.select().from(pushSubscriptionsTable);
   } catch {
-    return;
+    return { sent: 0, failed: 0 };
   }
-  if (subs.length === 0) return;
+  if (subs.length === 0) return { sent: 0, failed: 0 };
 
-  const payload = JSON.stringify({ title, body, url, ...(notifId ? { notifId } : {}) });
+  const payload = JSON.stringify({
+    title, body, url,
+    ...(notifId ? { notifId } : {}),
+    ...(type ? { type } : {}),
+  });
   const expiredEndpoints: string[] = [];
+  let sent = 0;
+  let failed = 0;
 
   await Promise.all(
     subs.map(async (sub) => {
@@ -145,9 +152,10 @@ export async function sendPushToAll(
           .update(pushSubscriptionsTable)
           .set({ lastUsedAt: new Date() })
           .where(eq(pushSubscriptionsTable.endpoint, sub.endpoint));
+        sent++;
       } catch (err) {
         if (isPermanentPushError(err)) expiredEndpoints.push(sub.endpoint);
-        // Transient errors → keep subscription
+        failed++;
       }
     }),
   );
@@ -159,6 +167,7 @@ export async function sendPushToAll(
       ),
     ).catch(() => {});
   }
+  return { sent, failed };
 }
 
 export async function sendPushToUser(
@@ -167,7 +176,8 @@ export async function sendPushToUser(
   body: string,
   url = "/app/home",
   notifId?: number,
-): Promise<void> {
+  type?: string,
+): Promise<{ sent: number; failed: number }> {
   let subs: typeof pushSubscriptionsTable.$inferSelect[];
   try {
     subs = await db
@@ -175,19 +185,20 @@ export async function sendPushToUser(
       .from(pushSubscriptionsTable)
       .where(eq(pushSubscriptionsTable.userId, userId));
   } catch {
-    return;
+    return { sent: 0, failed: 0 };
   }
-  if (subs.length === 0) return;
+  if (subs.length === 0) return { sent: 0, failed: 0 };
 
-  // Include walletId so the SW can enqueue a read receipt
+  // Include walletId + type so the SW can enqueue a read receipt
   const payload = JSON.stringify({
-    title,
-    body,
-    url,
+    title, body, url,
     walletId: userId,
     ...(notifId ? { notifId } : {}),
+    ...(type ? { type } : {}),
   });
   const expiredEndpoints: string[] = [];
+  let sent = 0;
+  let failed = 0;
 
   await Promise.all(
     subs.map(async (sub) => {
@@ -200,8 +211,10 @@ export async function sendPushToUser(
           .update(pushSubscriptionsTable)
           .set({ lastUsedAt: new Date() })
           .where(eq(pushSubscriptionsTable.endpoint, sub.endpoint));
+        sent++;
       } catch (err) {
         if (isPermanentPushError(err)) expiredEndpoints.push(sub.endpoint);
+        failed++;
       }
     }),
   );
@@ -213,6 +226,7 @@ export async function sendPushToUser(
       ),
     ).catch(() => {});
   }
+  return { sent, failed };
 }
 
 export default router;

@@ -211,7 +211,13 @@ export default function ProfilePage() {
       try {
         const tok = await getToken();
         if (!tok) return ensureCurrentSession(user.id);
-        const res = await fetch('/api/sessions', { headers: { Authorization: `Bearer ${tok}` } });
+        const deviceId = localStorage.getItem('syp-device-id');
+        const res = await fetch('/api/sessions', {
+          headers: {
+            Authorization: `Bearer ${tok}`,
+            ...(deviceId ? { 'X-Device-Id': deviceId } : {}),
+          },
+        });
         if (!res.ok) return ensureCurrentSession(user.id);
         const data = await res.json() as Array<{ id: string; deviceName: string; deviceType: string; lastSeenAt: string; createdAt: string; isCurrent: boolean }>;
         return data.map(s => ({
@@ -250,9 +256,13 @@ export default function ProfilePage() {
     try {
       const tok = await getToken();
       if (tok) {
+        const deviceId = localStorage.getItem('syp-device-id');
         await fetch(`/api/sessions/${encodeURIComponent(sessionId)}`, {
           method: 'DELETE',
-          headers: { Authorization: `Bearer ${tok}` },
+          headers: {
+            Authorization: `Bearer ${tok}`,
+            ...(deviceId ? { 'X-Device-Id': deviceId } : {}),
+          },
         });
       }
     } catch {}
@@ -1006,7 +1016,14 @@ export default function ProfilePage() {
                         try {
                           const tok = await getToken();
                           if (tok) {
-                            await fetch('/api/sessions', { method: 'DELETE', headers: { Authorization: `Bearer ${tok}` } });
+                            const deviceId = localStorage.getItem('syp-device-id');
+            await fetch('/api/sessions', {
+              method: 'DELETE',
+              headers: {
+                Authorization: `Bearer ${tok}`,
+                ...(deviceId ? { 'X-Device-Id': deviceId } : {}),
+              },
+            });
                           }
                         } catch {}
                         void queryClient.invalidateQueries({ queryKey: ['sessions', user.id] });
