@@ -2,6 +2,10 @@ import { Router, type IRouter, type Response } from "express";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { createHash } from "crypto";
+import { db } from "@workspace/db";
+import { notificationLogTable } from "@workspace/db";
+import { and, gt, eq } from "drizzle-orm";
 import { sendPushToAll } from "./push.js";
 
 const router: IRouter = Router();
@@ -57,6 +61,58 @@ router.get("/notifications/stream", async (req, res): Promise<void> => {
   });
 });
 
+// ── Notification dedup & DB logging ──────────────────────────────────────────
+
+function makeNotifDedup(title: string, body: string, recipientType: string, targetUserId?: string): string {
+  return createHash("sha256")
+    .update(`${title}::${body}::${recipientType}::${targetUserId ?? ""}`)
+    .digest("hex")
+    .slice(0, 32);
+}
+
+/** Returns true if an identical notification was sent in the last 60 seconds. */
+async function isDuplicate(dedupHash: string): Promise<boolean> {
+  try {
+    const cutoff = new Date(Date.now() - 60_000);
+    const rows = await db
+      .select({ logId: notificationLogTable.logId })
+      .from(notificationLogTable)
+      .where(and(eq(notificationLogTable.dedupHash, dedupHash), gt(notificationLogTable.createdAt, cutoff)))
+      .limit(1);
+    return rows.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/** Logs a dispatched notification to the DB; status starts as 'sent'. */
+async function logNotification(
+  notifId: number,
+  title: string,
+  body: string,
+  type: string,
+  recipientType: string,
+  targetUserId?: string,
+): Promise<void> {
+  try {
+    const dedupHash = makeNotifDedup(title, body, recipientType, targetUserId);
+    await db.insert(notificationLogTable).values({
+      notifId,
+      title,
+      body,
+      type,
+      recipientType,
+      targetUserId: targetUserId ?? null,
+      status: "sent",
+      dedupHash,
+    });
+  } catch {
+    // Non-critical — log errors must not fail the request
+  }
+}
+
+// ── JSON storage (notification content) ──────────────────────────────────────
+
 const __dir = dirname(fileURLToPath(import.meta.url));
 const NOTIFICATIONS_FILE = join(__dir, "../notifications.json");
 
@@ -92,12 +148,11 @@ function saveNotifications(notifications: Notification[]): void {
 // GET /api/notifications — public
 router.get("/notifications", (_req, res): void => {
   const notifications = readNotifications();
-  // Return latest 50, newest first
   res.json(notifications.slice(-50).reverse());
 });
 
 // POST /api/notifications — admin only
-router.post("/notifications", (req, res): void => {
+router.post("/notifications", async (req, res): Promise<void> => {
   const token = req.headers["x-admin-token"] as string;
   if (!token || token !== ADMIN_TOKEN) {
     res.status(403).json({ error: "Unauthorized" });
@@ -110,7 +165,13 @@ router.post("/notifications", (req, res): void => {
     return;
   }
 
-  const notifications = readNotifications();
+  // 60-second dedup guard
+  const dedupHash = makeNotifDedup(title, body, "all");
+  if (await isDuplicate(dedupHash)) {
+    res.status(409).json({ error: "Duplicate notification — identical message sent within the last 60 seconds" });
+    return;
+  }
+
   const newNotification: Notification = {
     id: Date.now(),
     title,
@@ -121,8 +182,12 @@ router.post("/notifications", (req, res): void => {
     recipient: "all",
     createdAt: new Date().toISOString(),
   };
+  const notifications = readNotifications();
   notifications.push(newNotification);
   saveNotifications(notifications);
+
+  // Log to DB (fire-and-forget)
+  void logNotification(newNotification.id, title, body, newNotification.type, "all");
 
   req.log.info({ id: newNotification.id }, "Notification created");
   broadcastSSE("notification", newNotification);
@@ -152,7 +217,7 @@ router.get("/notifications/user", (req, res): void => {
 });
 
 // POST /api/notifications/user — admin sends notification to a specific user
-router.post("/notifications/user", (req, res): void => {
+router.post("/notifications/user", async (req, res): Promise<void> => {
   const token = req.headers["x-admin-token"] as string;
   if (!token || token !== ADMIN_TOKEN) { res.status(403).json({ error: "Unauthorized" }); return; }
   const { walletId, title, body, type = "info", sender, targetName } = req.body as {
@@ -162,6 +227,14 @@ router.post("/notifications/user", (req, res): void => {
     res.status(400).json({ error: "walletId, title, body required" });
     return;
   }
+
+  // 60-second dedup guard for per-user notifications
+  const dedupHash = makeNotifDedup(title, body, "user", walletId);
+  if (await isDuplicate(dedupHash)) {
+    res.status(409).json({ error: "Duplicate notification — identical message sent within the last 60 seconds" });
+    return;
+  }
+
   const all = readUserNotifications();
   if (!all[walletId]) all[walletId] = [];
   const newMsg: Notification = {
@@ -179,6 +252,10 @@ router.post("/notifications/user", (req, res): void => {
   all[walletId].unshift(newMsg);
   all[walletId] = all[walletId].slice(0, 30);
   saveUserNotifications(all);
+
+  // Log to DB (fire-and-forget)
+  void logNotification(newMsg.id, title, body, newMsg.type, "user", walletId);
+
   req.log.info({ walletId, id: newMsg.id }, "User notification sent");
   broadcastSSE("notification", newMsg, walletId);
   res.json(newMsg);
@@ -217,7 +294,7 @@ router.put("/notifications/user/:walletId/:id", (req, res): void => {
   res.json(userMsgs[idx]);
 });
 
-// DELETE /api/notifications/user/:walletId/all — user self-clears all their notifications (no auth needed)
+// DELETE /api/notifications/user/:walletId/all — user self-clears all their notifications
 router.delete("/notifications/user/:walletId/all", (req, res): void => {
   const { walletId } = req.params as { walletId: string };
   if (!walletId) { res.status(400).json({ error: "walletId required" }); return; }
@@ -258,7 +335,7 @@ function saveViews(data: ViewsData): void {
 }
 
 // POST /api/notifications/:id/view — user marks notification as viewed
-router.post("/notifications/:id/view", (req, res): void => {
+router.post("/notifications/:id/view", async (req, res): Promise<void> => {
   const id = req.params.id ?? "";
   const { walletId } = req.body as { walletId?: string };
   if (!walletId) { res.status(400).json({ error: "walletId required" }); return; }
@@ -268,6 +345,15 @@ router.post("/notifications/:id/view", (req, res): void => {
   if (!already) {
     views[id].push({ walletId, viewedAt: new Date().toISOString() });
     saveViews(views);
+    // Update status to 'read' in notification_log
+    const numericId = parseInt(id);
+    if (!isNaN(numericId)) {
+      void db
+        .update(notificationLogTable)
+        .set({ status: "read" })
+        .where(eq(notificationLogTable.notifId, numericId))
+        .catch(() => {});
+    }
   }
   res.json({ success: true, count: views[id].length });
 });

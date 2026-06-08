@@ -2,7 +2,7 @@ import { Router } from "express";
 import webpush from "web-push";
 import { db } from "@workspace/db";
 import { pushSubscriptionsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { requireSupabaseAuth } from "../middlewares/requireSupabaseAuth.js";
 
@@ -23,6 +23,12 @@ webpush.setVapidDetails("mailto:admin@lirapro.app", VAPID_PUBLIC_KEY, VAPID_PRIV
 interface SubBody {
   endpoint: string;
   keys: { auth: string; p256dh: string };
+}
+
+/** Returns true only for permanent subscription expiry errors (410 Gone, 404 Not Found). */
+function isPermanentPushError(err: unknown): boolean {
+  const status = (err as { statusCode?: number })?.statusCode;
+  return status === 404 || status === 410;
 }
 
 // GET /api/push/vapid-public-key
@@ -75,14 +81,20 @@ router.post("/push/subscribe", requireSupabaseAuth, async (req, res): Promise<vo
   }
 });
 
-// DELETE /api/push/subscribe — authenticated
+// DELETE /api/push/subscribe — authenticated, scoped to the requesting user
 router.delete("/push/subscribe", requireSupabaseAuth, async (req, res): Promise<void> => {
+  const userId = req.supabaseUserId!;
   const { endpoint } = req.body as { endpoint?: string };
   if (endpoint) {
     try {
       await db
         .delete(pushSubscriptionsTable)
-        .where(eq(pushSubscriptionsTable.endpoint, endpoint));
+        .where(
+          and(
+            eq(pushSubscriptionsTable.endpoint, endpoint),
+            eq(pushSubscriptionsTable.userId, userId),
+          ),
+        );
     } catch (err) {
       req.log.error(err, "push/unsubscribe DB error");
     }
@@ -115,7 +127,7 @@ export async function sendPushToAll(title: string, body: string, url = "/app/hom
   if (subs.length === 0) return;
 
   const payload = JSON.stringify({ title, body, url });
-  const failed: string[] = [];
+  const expiredEndpoints: string[] = [];
 
   await Promise.all(
     subs.map(async (sub) => {
@@ -128,15 +140,18 @@ export async function sendPushToAll(title: string, body: string, url = "/app/hom
           .update(pushSubscriptionsTable)
           .set({ lastUsedAt: new Date() })
           .where(eq(pushSubscriptionsTable.endpoint, sub.endpoint));
-      } catch {
-        failed.push(sub.endpoint);
+      } catch (err) {
+        if (isPermanentPushError(err)) {
+          expiredEndpoints.push(sub.endpoint);
+        }
+        // Transient errors (5xx, network) → keep subscription, retry next time
       }
     }),
   );
 
-  if (failed.length > 0) {
+  if (expiredEndpoints.length > 0) {
     await Promise.all(
-      failed.map((endpoint) =>
+      expiredEndpoints.map((endpoint) =>
         db.delete(pushSubscriptionsTable).where(eq(pushSubscriptionsTable.endpoint, endpoint)),
       ),
     ).catch(() => {});
@@ -156,7 +171,7 @@ export async function sendPushToUser(userId: string, title: string, body: string
   if (subs.length === 0) return;
 
   const payload = JSON.stringify({ title, body, url });
-  const failed: string[] = [];
+  const expiredEndpoints: string[] = [];
 
   await Promise.all(
     subs.map(async (sub) => {
@@ -165,15 +180,21 @@ export async function sendPushToUser(userId: string, title: string, body: string
           { endpoint: sub.endpoint, keys: { auth: sub.auth, p256dh: sub.p256dh } } as webpush.PushSubscription,
           payload,
         );
-      } catch {
-        failed.push(sub.endpoint);
+        await db
+          .update(pushSubscriptionsTable)
+          .set({ lastUsedAt: new Date() })
+          .where(eq(pushSubscriptionsTable.endpoint, sub.endpoint));
+      } catch (err) {
+        if (isPermanentPushError(err)) {
+          expiredEndpoints.push(sub.endpoint);
+        }
       }
     }),
   );
 
-  if (failed.length > 0) {
+  if (expiredEndpoints.length > 0) {
     await Promise.all(
-      failed.map((endpoint) =>
+      expiredEndpoints.map((endpoint) =>
         db.delete(pushSubscriptionsTable).where(eq(pushSubscriptionsTable.endpoint, endpoint)),
       ),
     ).catch(() => {});

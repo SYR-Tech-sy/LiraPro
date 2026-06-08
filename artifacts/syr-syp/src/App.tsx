@@ -1180,10 +1180,19 @@ function AppRoutes() {
   );
 }
 
+type SseNotifItem = {
+  id?: number; title?: string; body?: string;
+  type?: string; icon?: string; createdAt?: string; sender?: string;
+};
+
 function AppSideEffects() {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, user } = useUser();
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
+
+  // Stable ref so SSE handler always reads the latest userId without reconnecting
+  const userIdRef = useRef<string | undefined>(user?.id);
+  useEffect(() => { userIdRef.current = user?.id; }, [user?.id]);
 
   // Push notification subscription (only when signed in — server requires auth)
   useEffect(() => {
@@ -1227,8 +1236,26 @@ function AppSideEffects() {
 
         es.addEventListener('notification', (e) => {
           try {
-            const data = JSON.parse((e as MessageEvent).data) as { title?: string; body?: string };
-            void queryClient.invalidateQueries({ queryKey: ['notifications'] });
+            const data = JSON.parse((e as MessageEvent).data) as SseNotifItem;
+            const uid = userIdRef.current;
+            // Prepend the new notification directly into the cache so the panel updates instantly
+            queryClient.setQueryData<SseNotifItem[]>(
+              ['user-notifications', uid],
+              (old) => {
+                const item: SseNotifItem = {
+                  id: data.id ?? Date.now(),
+                  title: data.title ?? '',
+                  body: data.body ?? '',
+                  type: data.type ?? 'info',
+                  icon: data.icon ?? 'bell',
+                  createdAt: data.createdAt ?? new Date().toISOString(),
+                  ...(data.sender ? { sender: data.sender } : {}),
+                };
+                return [item, ...(old ?? [])];
+              },
+            );
+            // Also invalidate so the full list refreshes from the server in the background
+            void queryClient.invalidateQueries({ queryKey: ['user-notifications', uid] });
             if (data.title) {
               document.dispatchEvent(new CustomEvent('syp-notification', { detail: data }));
             }
@@ -1264,6 +1291,24 @@ function AppSideEffects() {
       es?.close();
     };
   }, [isSignedIn, getToken, queryClient]);
+
+  // 5-minute session heartbeat — keeps lastSeenAt fresh in the DB
+  useEffect(() => {
+    if (!isSignedIn) return;
+    const ping = async () => {
+      try {
+        const tok = await getToken();
+        if (!tok) return;
+        await fetch('/api/sessions/heartbeat', {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${tok}` },
+        });
+      } catch { /* non-critical */ }
+    };
+    void ping(); // fire immediately on sign-in
+    const interval = setInterval(() => { void ping(); }, 5 * 60_000);
+    return () => clearInterval(interval);
+  }, [isSignedIn, getToken]);
 
   return null;
 }

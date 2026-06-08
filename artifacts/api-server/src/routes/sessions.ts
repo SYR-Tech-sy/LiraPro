@@ -5,6 +5,7 @@ import {
   deleteSession,
   deleteAllOtherSessions,
   makeSessionId,
+  trackSession,
 } from "../services/sessionService.js";
 
 const router = Router();
@@ -21,6 +22,18 @@ router.get("/sessions", requireSupabaseAuth, async (req, res): Promise<void> => 
       isCurrent: s.id === currentId,
     })),
   );
+});
+
+// PUT /api/sessions/heartbeat — update lastSeenAt for the current session (called every 5 min)
+router.put("/sessions/heartbeat", requireSupabaseAuth, async (req, res): Promise<void> => {
+  const userId = req.supabaseUserId!;
+  const ip =
+    ((req.headers["x-forwarded-for"] as string | undefined) ?? req.socket.remoteAddress ?? "")
+      .split(",")[0]
+      ?.trim() ?? "";
+  const ua = (req.headers["user-agent"] as string | undefined) ?? "";
+  await trackSession(userId, ip, ua);
+  res.json({ ok: true });
 });
 
 // DELETE /api/sessions/:sessionId — revoke a specific session

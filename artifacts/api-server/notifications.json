@@ -18,5 +18,14 @@
     "sender": "LiraPro",
     "recipient": "all",
     "createdAt": "2026-06-07T14:49:42.724Z"
+  },
+  {
+    "id": 1780938529331,
+    "title": "test",
+    "body": "test dedup",
+    "type": "info",
+    "icon": "bell",
+    "recipient": "all",
+    "createdAt": "2026-06-08T17:08:49.331Z"
   }
 ]
