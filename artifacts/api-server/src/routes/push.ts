@@ -132,17 +132,20 @@ export async function sendPushToAll(
   }
   if (subs.length === 0) return { sent: 0, failed: 0 };
 
-  const payload = JSON.stringify({
-    title, body, url,
-    ...(notifId ? { notifId } : {}),
-    ...(type ? { type } : {}),
-  });
   const expiredEndpoints: string[] = [];
   let sent = 0;
   let failed = 0;
 
   await Promise.all(
     subs.map(async (sub) => {
+      // Include walletId (= sub.userId) so the SW can enqueue a delivered receipt
+      // for broadcast notifications via /delivered (sent → delivered lifecycle step)
+      const payload = JSON.stringify({
+        title, body, url,
+        walletId: sub.userId,
+        ...(notifId ? { notifId } : {}),
+        ...(type ? { type } : {}),
+      });
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { auth: sub.auth, p256dh: sub.p256dh } } as webpush.PushSubscription,

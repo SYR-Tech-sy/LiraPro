@@ -1,31 +1,29 @@
-import { Router, type IRouter, type Response } from "express";
+import { Router, type IRouter } from "express";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import { createHash } from "crypto";
 import { db } from "@workspace/db";
 import { notificationLogTable } from "@workspace/db";
-import { and, gt, eq, or, isNull, desc } from "drizzle-orm";
-import { sendPushToAll, sendPushToUser } from "./push.js";
+import { and, eq, or, isNull, desc } from "drizzle-orm";
+import { sendPushToAll } from "./push.js";
 import { requireSupabaseAuth } from "../middlewares/requireSupabaseAuth.js";
+import {
+  addSseClient,
+  removeSseClient,
+  broadcastSSE,
+  emitNotification,
+  makeNotifDedup,
+  isDuplicate,
+  updateNotifLogStatus,
+  logNotification,
+} from "../services/notificationService.js";
 
 const router: IRouter = Router();
 
-// ── SSE Client Registry ────────────────────────────────────────────────────────
-
-interface SseClient { userId: string; res: Response; }
-const sseClients = new Map<string, SseClient>();
 let connCounter = 0;
 
-function broadcastSSE(event: string, data: unknown, targetUserId?: string): void {
-  const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-  for (const [, client] of sseClients) {
-    if (targetUserId && client.userId !== targetUserId) continue;
-    try { client.res.write(payload); } catch { /* closed */ }
-  }
-}
+// ── SSE stream ────────────────────────────────────────────────────────────────
 
-// GET /api/notifications/stream — SSE real-time channel
 router.get("/notifications/stream", async (req, res): Promise<void> => {
   const { verifySupabaseToken } = await import("../lib/supabase-admin.js");
   const tokenFromHeader = (req.headers.authorization ?? "").replace(/^Bearer\s+/i, "").trim();
@@ -44,74 +42,15 @@ router.get("/notifications/stream", async (req, res): Promise<void> => {
   res.setHeader("X-Accel-Buffering", "no");
   res.flushHeaders();
   res.write(`event: connected\ndata: ${JSON.stringify({ clientId })}\n\n`);
-  sseClients.set(clientId, { userId, res });
+  addSseClient(clientId, userId, res);
 
   const heartbeat = setInterval(() => {
     try { res.write(`: heartbeat\n\n`); } catch { clearInterval(heartbeat); }
   }, 25_000);
-  req.on("close", () => { clearInterval(heartbeat); sseClients.delete(clientId); });
+  req.on("close", () => { clearInterval(heartbeat); removeSseClient(clientId); });
 });
 
-// ── Notification dedup & DB logging ──────────────────────────────────────────
-
-function makeNotifDedup(title: string, body: string, recipientType: string, targetUserId?: string): string {
-  return createHash("sha256")
-    .update(`${title}::${body}::${recipientType}::${targetUserId ?? ""}`)
-    .digest("hex")
-    .slice(0, 32);
-}
-
-async function isDuplicate(dedupHash: string): Promise<boolean> {
-  try {
-    const cutoff = new Date(Date.now() - 60_000);
-    const rows = await db
-      .select({ logId: notificationLogTable.logId })
-      .from(notificationLogTable)
-      .where(and(eq(notificationLogTable.dedupHash, dedupHash), gt(notificationLogTable.createdAt, cutoff)))
-      .limit(1);
-    return rows.length > 0;
-  } catch { return false; }
-}
-
-/**
- * Write notification to DB as 'queued'. Returns logId (or null on error).
- * This is the primary write path — notification_log IS the notification store.
- */
-async function logNotification(opts: {
-  notifId: number; title: string; body: string; type: string; icon: string;
-  recipientType: string; targetUserId?: string; actionUrl?: string;
-}): Promise<number | null> {
-  try {
-    const dedupHash = makeNotifDedup(opts.title, opts.body, opts.recipientType, opts.targetUserId);
-    const rows = await db
-      .insert(notificationLogTable)
-      .values({
-        notifId: opts.notifId,
-        title: opts.title,
-        body: opts.body,
-        type: opts.type,
-        icon: opts.icon,
-        recipientType: opts.recipientType,
-        targetUserId: opts.targetUserId ?? null,
-        actionUrl: opts.actionUrl ?? "/app/home",
-        status: "queued",
-        dedupHash,
-      })
-      .returning({ logId: notificationLogTable.logId });
-    return rows[0]?.logId ?? null;
-  } catch { return null; }
-}
-
-async function updateNotifLogStatus(logId: number, status: "sent" | "failed" | "delivered" | "read"): Promise<void> {
-  try {
-    await db
-      .update(notificationLogTable)
-      .set({ status, ...(status === "sent" ? { sentAt: new Date() } : {}) })
-      .where(eq(notificationLogTable.logId, logId));
-  } catch { /* non-critical */ }
-}
-
-// ── JSON storage (keep as write mirror for legacy admin panel compat) ─────────
+// ── JSON storage (write mirror for legacy admin panel compat) ─────────────────
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const NOTIFICATIONS_FILE = join(__dir, "../notifications.json");
@@ -121,8 +60,7 @@ const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "SYRSYP2026ADMIN";
 
 interface NotifJson {
   id: number; title: string; body: string;
-  type: "info" | "warning" | "success" | "price";
-  icon: string; sender?: string;
+  type: string; icon: string; sender?: string;
   recipient?: "all" | "specific"; targetWalletId?: string; targetName?: string;
   createdAt: string;
 }
@@ -134,7 +72,7 @@ function readNotifications(): NotifJson[] {
   } catch { return []; }
 }
 function saveNotifications(n: NotifJson[]): void {
-  writeFileSync(NOTIFICATIONS_FILE, JSON.stringify(n, null, 2), "utf-8");
+  try { writeFileSync(NOTIFICATIONS_FILE, JSON.stringify(n, null, 2), "utf-8"); } catch {}
 }
 function readUserNotifications(): Record<string, NotifJson[]> {
   try {
@@ -143,12 +81,11 @@ function readUserNotifications(): Record<string, NotifJson[]> {
   } catch { return {}; }
 }
 function saveUserNotifications(data: Record<string, NotifJson[]>): void {
-  writeFileSync(USER_NOTIFICATIONS_FILE, JSON.stringify(data, null, 2), "utf-8");
+  try { writeFileSync(USER_NOTIFICATIONS_FILE, JSON.stringify(data, null, 2), "utf-8"); } catch {}
 }
 
-// ── Notification read/write endpoints ────────────────────────────────────────
+// ── GET /api/notifications — DB-backed, JSON fallback ─────────────────────────
 
-// GET /api/notifications — DB-backed, falls back to JSON
 router.get("/notifications", async (_req, res): Promise<void> => {
   try {
     const rows = await db
@@ -159,22 +96,19 @@ router.get("/notifications", async (_req, res): Promise<void> => {
       .limit(50);
     if (rows.length > 0) {
       res.json(rows.map(r => ({
-        id: r.notifId,
-        title: r.title,
-        body: r.body,
-        type: r.type,
-        icon: r.icon,
+        id: r.notifId, title: r.title, body: r.body,
+        type: r.type, icon: r.icon,
         sender: r.userId ?? undefined,
         recipient: "all",
         createdAt: r.createdAt.toISOString(),
       })));
       return;
     }
-  } catch { /* fallthrough to JSON */ }
+  } catch { /* fallthrough */ }
   res.json(readNotifications().slice(-50).reverse());
 });
 
-// POST /api/notifications — admin only
+// ── POST /api/notifications — admin; type: info|warning|success|price|broadcast
 router.post("/notifications", async (req, res): Promise<void> => {
   const token = req.headers["x-admin-token"] as string;
   if (!token || token !== ADMIN_TOKEN) { res.status(403).json({ error: "Unauthorized" }); return; }
@@ -182,7 +116,7 @@ router.post("/notifications", async (req, res): Promise<void> => {
   const { title, body, type = "info", icon = "bell", sender } = req.body as NotifJson;
   if (!title || !body) { res.status(400).json({ error: "title and body are required" }); return; }
 
-  const dedupHash = makeNotifDedup(title, body, "all");
+  const dedupHash = makeNotifDedup(type, title);
   if (await isDuplicate(dedupHash)) {
     res.status(409).json({ error: "Duplicate notification — identical message sent within the last 60 seconds" });
     return;
@@ -190,34 +124,35 @@ router.post("/notifications", async (req, res): Promise<void> => {
 
   const notifId = Date.now();
   const newNotification: NotifJson = {
-    id: notifId, title, body,
-    type: type as NotifJson["type"], icon,
+    id: notifId, title, body, type, icon,
     ...(sender ? { sender } : {}),
     recipient: "all",
     createdAt: new Date().toISOString(),
   };
 
-  // Write to DB FIRST (primary store) — then JSON mirror
+  // DB write FIRST (primary)
   const logId = await logNotification({
-    notifId, title, body, type: newNotification.type, icon,
-    recipientType: "all", actionUrl: "/app/home",
+    notifId, title, body, type, icon,
+    userId: sender,
+    recipientType: "all",
+    actionUrl: "/app/home",
   });
   // JSON mirror (legacy compat)
   const notifications = readNotifications();
   notifications.push(newNotification);
   saveNotifications(notifications);
 
-  req.log.info({ id: notifId }, "Notification created");
+  req.log.info({ id: notifId }, "Global notification created");
   broadcastSSE("notification", newNotification);
   res.json(newNotification);
 
-  // Send push; update log status based on actual delivery counts
-  const result = await sendPushToAll(title, body, "/app/home", notifId, newNotification.type)
-    .catch(() => ({ sent: 0, failed: 0 }));
+  // Push after responding
+  const result = await sendPushToAll(title, body, "/app/home", notifId, type).catch(() => ({ sent: 0, failed: 0 }));
   if (logId !== null) void updateNotifLogStatus(logId, result.sent > 0 ? "sent" : "failed");
 });
 
-// GET /api/notifications/user — DB-backed, falls back to JSON
+// ── GET /api/notifications/user — DB-backed, JSON fallback ───────────────────
+
 router.get("/notifications/user", async (req, res): Promise<void> => {
   const walletId = req.query.walletId as string;
   if (!walletId) { res.status(400).json({ error: "walletId required" }); return; }
@@ -230,11 +165,8 @@ router.get("/notifications/user", async (req, res): Promise<void> => {
       .limit(50);
     if (rows.length > 0) {
       res.json(rows.map(r => ({
-        id: r.notifId,
-        title: r.title,
-        body: r.body,
-        type: r.type,
-        icon: r.icon,
+        id: r.notifId, title: r.title, body: r.body,
+        type: r.type, icon: r.icon,
         sender: r.userId ?? undefined,
         recipient: "specific",
         targetWalletId: r.targetUserId ?? undefined,
@@ -242,61 +174,56 @@ router.get("/notifications/user", async (req, res): Promise<void> => {
       })));
       return;
     }
-  } catch { /* fallthrough to JSON */ }
+  } catch { /* fallthrough */ }
   res.json((readUserNotifications()[walletId] ?? []).slice(0, 50));
 });
 
-// POST /api/notifications/user — admin sends to specific user
+// ── POST /api/notifications/user — admin; type: admin|alert|wallet|info|warning|success
 router.post("/notifications/user", async (req, res): Promise<void> => {
   const token = req.headers["x-admin-token"] as string;
   if (!token || token !== ADMIN_TOKEN) { res.status(403).json({ error: "Unauthorized" }); return; }
-  const { walletId, title, body, type = "info", sender, targetName } = req.body as {
-    walletId: string; title: string; body: string; type?: string; sender?: string; targetName?: string;
+  const { walletId, title, body, type = "admin", icon = "admin", sender, targetName, actionUrl } = req.body as {
+    walletId: string; title: string; body: string; type?: string; icon?: string;
+    sender?: string; targetName?: string; actionUrl?: string;
   };
   if (!walletId || !title || !body) {
     res.status(400).json({ error: "walletId, title, body required" }); return;
   }
 
-  const dedupHash = makeNotifDedup(title, body, "user", walletId);
-  if (await isDuplicate(dedupHash)) {
+  const result = await emitNotification({
+    title, body, type, icon,
+    recipientType: "user",
+    targetUserId: walletId,
+    actionUrl: actionUrl ?? "/app/home",
+    sender,
+  });
+
+  if (result.deduplicated) {
     res.status(409).json({ error: "Duplicate notification — identical message sent within the last 60 seconds" });
     return;
   }
 
-  const notifId = Date.now();
+  // JSON mirror
   const newMsg: NotifJson = {
-    id: notifId, title, body,
-    type: type as NotifJson["type"],
-    icon: "admin",
+    id: result.notifId, title, body, type, icon,
     ...(sender ? { sender } : {}),
     recipient: "specific",
     targetWalletId: walletId,
     ...(targetName ? { targetName } : {}),
     createdAt: new Date().toISOString(),
   };
-
-  // Write to DB FIRST (primary store)
-  const logId = await logNotification({
-    notifId, title, body, type: newMsg.type, icon: "admin",
-    recipientType: "user", targetUserId: walletId, actionUrl: "/app/home",
-  });
-  // JSON mirror
   const all = readUserNotifications();
   if (!all[walletId]) all[walletId] = [];
   all[walletId].unshift(newMsg);
   all[walletId] = all[walletId].slice(0, 30);
   saveUserNotifications(all);
 
-  req.log.info({ walletId, id: notifId }, "User notification sent");
-  broadcastSSE("notification", newMsg, walletId);
+  req.log.info({ walletId, id: result.notifId }, "User notification sent");
   res.json(newMsg);
-
-  const result = await sendPushToUser(walletId, title, body, "/app/home", notifId, newMsg.type)
-    .catch(() => ({ sent: 0, failed: 0 }));
-  if (logId !== null) void updateNotifLogStatus(logId, result.sent > 0 ? "sent" : "failed");
 });
 
-// PUT /api/notifications/:id — admin only
+// ── PUT /api/notifications/:id — admin only ───────────────────────────────────
+
 router.put("/notifications/:id", (req, res): void => {
   const token = req.headers["x-admin-token"] as string;
   if (!token || token !== ADMIN_TOKEN) { res.status(403).json({ error: "Unauthorized" }); return; }
@@ -311,7 +238,8 @@ router.put("/notifications/:id", (req, res): void => {
   res.json(notifications[idx]);
 });
 
-// PUT /api/notifications/user/:walletId/:id — admin only
+// ── PUT /api/notifications/user/:walletId/:id — admin only ───────────────────
+
 router.put("/notifications/user/:walletId/:id", (req, res): void => {
   const token = req.headers["x-admin-token"] as string;
   if (!token || token !== ADMIN_TOKEN) { res.status(403).json({ error: "Unauthorized" }); return; }
@@ -329,8 +257,9 @@ router.put("/notifications/user/:walletId/:id", (req, res): void => {
   res.json(userMsgs[idx]);
 });
 
-// DELETE /api/notifications/user/:walletId/all
-// Requires auth; walletId must match the authenticated user OR admin token provided.
+// ── DELETE /api/notifications/user/:walletId/all — requires auth ──────────────
+// walletId must match authenticated user OR admin token.
+
 router.delete("/notifications/user/:walletId/all", requireSupabaseAuth, (req, res): void => {
   const { walletId } = req.params as { walletId: string };
   const userId = req.supabaseUserId!;
@@ -345,7 +274,8 @@ router.delete("/notifications/user/:walletId/all", requireSupabaseAuth, (req, re
   res.json({ success: true });
 });
 
-// DELETE /api/notifications/user/:walletId/:id — admin only
+// ── DELETE /api/notifications/user/:walletId/:id — admin only ────────────────
+
 router.delete("/notifications/user/:walletId/:id", (req, res): void => {
   const token = req.headers["x-admin-token"] as string;
   if (!token || token !== ADMIN_TOKEN) { res.status(403).json({ error: "Unauthorized" }); return; }
@@ -369,11 +299,11 @@ function readViews(): ViewsData {
   } catch { return {}; }
 }
 function saveViews(data: ViewsData): void {
-  writeFileSync(VIEWS_FILE, JSON.stringify(data, null, 2), "utf-8");
+  try { writeFileSync(VIEWS_FILE, JSON.stringify(data, null, 2), "utf-8"); } catch {}
 }
 
 // POST /api/notifications/:id/delivered — unauthenticated (SW background sync)
-// Transitions notification_log: sent → delivered, scoped to recipient
+// Transitions sent → delivered, scoped to recipient (broadcast OR user-specific).
 router.post("/notifications/:id/delivered", async (req, res): Promise<void> => {
   const id = String((req.params as { id: string }).id ?? "");
   const { walletId } = req.body as { walletId?: string };
@@ -387,7 +317,6 @@ router.post("/notifications/:id/delivered", async (req, res): Promise<void> => {
         and(
           eq(notificationLogTable.notifId, numericId),
           eq(notificationLogTable.status, "sent"),
-          // Only affect rows targeting this user OR broadcast rows (no specific recipient)
           or(
             eq(notificationLogTable.targetUserId, walletId),
             isNull(notificationLogTable.targetUserId),
@@ -400,7 +329,6 @@ router.post("/notifications/:id/delivered", async (req, res): Promise<void> => {
 });
 
 // POST /api/notifications/:id/view — authenticated; transitions delivered/sent → read
-// Uses auth identity (req.supabaseUserId); body walletId is ignored for security.
 router.post("/notifications/:id/view", requireSupabaseAuth, async (req, res): Promise<void> => {
   const id = String((req.params as { id: string }).id ?? "");
   const userId = req.supabaseUserId!;
@@ -418,7 +346,6 @@ router.post("/notifications/:id/view", requireSupabaseAuth, async (req, res): Pr
         .where(
           and(
             eq(notificationLogTable.notifId, numericId),
-            // Scope to this user's rows OR broadcast rows
             or(
               eq(notificationLogTable.targetUserId, userId),
               isNull(notificationLogTable.targetUserId),
@@ -465,7 +392,7 @@ router.get("/broadcast", (_req, res): void => {
   res.json(activeBroadcast);
 });
 
-router.post("/broadcast", (req, res): void => {
+router.post("/broadcast", async (req, res): Promise<void> => {
   const token = req.headers["x-admin-token"] as string;
   if (!token || token !== ADMIN_TOKEN) { res.status(403).json({ error: "Unauthorized" }); return; }
   const { text, textColor = "#ffffff", countdown, countdownColor = "#ff4444", speed = "normal" } = req.body as {
@@ -478,9 +405,19 @@ router.post("/broadcast", (req, res): void => {
       countdown, countdownColor, endsAt: new Date(Date.now() + countdown * 1000).toISOString(),
     } : {}),
   };
-  void sendPushToAll("🔴 بث مباشر — LiraPro", text.trim(), "/app/home").catch(() => {});
+
   broadcastSSE("broadcast", activeBroadcast);
   res.json(activeBroadcast);
+
+  // Log broadcast notification to DB + push (type: broadcast)
+  void emitNotification({
+    title: "🔴 بث مباشر — LiraPro",
+    body: text.trim(),
+    type: "broadcast",
+    icon: "broadcast",
+    recipientType: "all",
+    actionUrl: "/app/home",
+  }).catch(() => {});
 });
 
 router.delete("/broadcast", (req, res): void => {

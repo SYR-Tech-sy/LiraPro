@@ -26,6 +26,7 @@ import avatarRouter from "./avatar";
 import downloadRouter from "./download";
 import pushRouter from "./push";
 import sessionsRouter from "./sessions";
+import walletRouter from "./wallet";
 
 const router: IRouter = Router();
 
@@ -70,5 +71,8 @@ router.use(pushRouter);
 
 // Session management (DB-backed)
 router.use(sessionsRouter);
+
+// Wallet event notifications (type: wallet)
+router.use(walletRouter);
 
 export default router;

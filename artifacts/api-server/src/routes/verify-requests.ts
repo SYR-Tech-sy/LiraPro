@@ -4,6 +4,7 @@ import {
   addVerifyRequest,
   handleVerifyRequest,
 } from "../services/verifyService.js";
+import { emitNotification } from "../services/notificationService.js";
 
 const router: IRouter = Router();
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "SYRSYP2026ADMIN";
@@ -51,8 +52,27 @@ router.patch("/admin/verify-requests/:id", (req, res): void => {
     res.status(400).json({ error: "action must be 'approved' or 'rejected'" });
     return;
   }
+
+  // Find the request before handling so we can get the supabaseId for push
+  const all = getAllVerifyRequests();
+  const entry = all.find((r) => r.id === (req.params.id ?? ""));
   const ok = handleVerifyRequest(req.params.id ?? "", action);
   res.json({ success: ok });
+
+  // Send notification to the user (type: success for approved, warning for rejected)
+  if (ok && entry?.supabaseId) {
+    void emitNotification({
+      title: action === "approved" ? "تم قبول طلب التحقق ✓" : "تم رفض طلب التحقق",
+      body: action === "approved"
+        ? "تهانينا! تم التحقق من هويتك بنجاح."
+        : "تم رفض طلب التحقق. يرجى مراجعة البيانات وإعادة المحاولة.",
+      type: action === "approved" ? "success" : "warning",
+      icon: action === "approved" ? "check-circle" : "alert-triangle",
+      recipientType: "user",
+      targetUserId: entry.supabaseId,
+      actionUrl: "/app/profile",
+    }).catch(() => {});
+  }
 });
 
 export default router;

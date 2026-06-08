@@ -7,6 +7,7 @@ import { addRequest, getAllRequests, markHandled, cancelRequestByWallet, deleteR
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { emitNotification } from "../services/notificationService.js";
 
 const __vendorsDir = dirname(fileURLToPath(import.meta.url));
 const USER_NOTIF_FILE = join(__vendorsDir, "../user-notifications.json");
@@ -146,6 +147,19 @@ router.post("/admin/vendors", async (req, res): Promise<void> => {
 
     req.log.info({ vendor_id: data?.id }, "Vendor created via Supabase");
     res.status(201).json(data);
+
+    // Notify the linked user (type: success) — non-blocking
+    if (body.user_id) {
+      void emitNotification({
+        title: "تم تفعيل حساب التاجر ✓",
+        body: `مرحباً! تم تفعيل حساب التاجر "${body.business_name}" بنجاح. يمكنك الآن إضافة أسعارك.`,
+        type: "success",
+        icon: "store",
+        recipientType: "user",
+        targetUserId: body.user_id,
+        actionUrl: "/app/vendor",
+      }).catch(() => {});
+    }
   } catch (err) {
     req.log.error({ err }, "Failed to create vendor");
     res.status(500).json({ error: "Failed to create vendor" });
