@@ -5,6 +5,7 @@ import { AdminBadge, RainbowBadge } from './golden-badge';
 import { useCheckAlerts } from '@workspace/api-client-react';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { useAuth, useUser } from '@/context/auth-context';
+import { useToast } from '@/hooks/use-toast';
 
 interface Notification {
   id: number;
@@ -199,6 +200,7 @@ export function NotificationsPanel() {
   const { user } = useUser();
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user?.id) {
@@ -225,6 +227,22 @@ export function NotificationsPanel() {
     }, 8_000);
     return () => clearInterval(interval);
   }, [queryClient, user?.id]);
+
+  useEffect(() => {
+    function handleSseNotification(e: Event) {
+      const detail = (e as CustomEvent<{ title?: string; body?: string; type?: string }>).detail;
+      void queryClient.invalidateQueries({ queryKey: ['user-notifications', user?.id] });
+      if (detail?.title) {
+        toast({
+          title: detail.title,
+          description: detail.body ?? undefined,
+          duration: 5000,
+        });
+      }
+    }
+    document.addEventListener('syp-notification', handleSseNotification);
+    return () => document.removeEventListener('syp-notification', handleSseNotification);
+  }, [queryClient, user?.id, toast]);
 
   useEffect(() => {
     if (!open) return;
