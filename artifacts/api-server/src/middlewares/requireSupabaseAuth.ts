@@ -38,7 +38,9 @@ export async function requireSupabaseAuth(
     req.socket?.remoteAddress ||
     "";
   const ua = req.headers["user-agent"] ?? "";
-  void trackSession(user.id, ip, ua);
+  // Prefer client-supplied stable device ID for true per-device sessions
+  const deviceId = req.headers["x-device-id"] as string | undefined;
+  void trackSession(user.id, ip, ua, deviceId ?? ua);
 
   next();
 }

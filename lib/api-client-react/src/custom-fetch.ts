@@ -17,6 +17,7 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _deviceId: string | null = null;
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -42,6 +43,14 @@ export function setBaseUrl(url: string | null): void {
  */
 export function setAuthTokenGetter(getter: AuthTokenGetter | null): void {
   _authTokenGetter = getter;
+}
+
+/**
+ * Register a stable device identifier (UUID) that is injected as
+ * `X-Device-Id` on every API request.  Used for per-device session tracking.
+ */
+export function setDeviceId(id: string | null): void {
+  _deviceId = id;
 }
 
 function isRequest(input: RequestInfo | URL): input is Request {
@@ -356,6 +365,11 @@ export async function customFetch<T = unknown>(
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
     }
+  }
+
+  // Inject stable device ID for per-device session tracking.
+  if (_deviceId && !headers.has("x-device-id")) {
+    headers.set("x-device-id", _deviceId);
   }
 
   const requestInfo = { method, url: resolveUrl(input) };

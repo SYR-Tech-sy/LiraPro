@@ -35,7 +35,19 @@ function detectBrowser(ua: string): string {
   if (/safari/i.test(ua)) return 'Safari';
   return 'Browser';
 }
-interface StoredSession { id: string; deviceName: string; deviceType: string; deviceIcon: 'phone'|'tablet'|'desktop'; startedAt: string; isCurrent?: boolean; }
+interface StoredSession { id: string; deviceName: string; deviceType: string; deviceIcon: 'phone'|'tablet'|'desktop'; startedAt: string; lastSeenAt?: string; isCurrent?: boolean; }
+
+function sessionTimeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'الآن';
+  if (mins < 60) return `منذ ${mins} د`;
+  const h = Math.floor(mins / 60);
+  if (h < 24) return `منذ ${h} س`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `منذ ${d} ي`;
+  return new Date(dateStr).toLocaleDateString('ar-SY');
+}
 const SESSIONS_KEY_PREFIX = 'syp-sessions-';
 function getSessions(userId: string): StoredSession[] {
   try { return JSON.parse(localStorage.getItem(SESSIONS_KEY_PREFIX + userId) ?? '[]'); } catch { return []; }
@@ -208,6 +220,7 @@ export default function ProfilePage() {
           deviceType: s.deviceType,
           deviceIcon: (s.deviceType === 'phone' ? 'phone' : s.deviceType === 'tablet' ? 'tablet' : 'desktop') as 'phone' | 'tablet' | 'desktop',
           startedAt: s.createdAt,
+          lastSeenAt: s.lastSeenAt,
           isCurrent: s.isCurrent,
         }));
       } catch {
@@ -964,7 +977,10 @@ export default function ProfilePage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-bold truncate">{s.deviceName}</p>
-                          <p className="text-[9px] text-muted-foreground">{s.isCurrent ? '● هذا الجهاز · ' : ''}{new Date(s.startedAt).toLocaleDateString('ar-SY')}</p>
+                          <p className="text-[9px] text-muted-foreground">
+                            {s.isCurrent ? '● هذا الجهاز · ' : ''}
+                            {s.lastSeenAt ? sessionTimeAgo(s.lastSeenAt) : new Date(s.startedAt).toLocaleDateString('ar-SY')}
+                          </p>
                         </div>
                         {!s.isCurrent && (
                           <button onClick={() => removeSession(s.id)}

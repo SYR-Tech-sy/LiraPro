@@ -54,9 +54,14 @@ export function makeSessionId(userId: string, ua: string): string {
   return `sess-${userId.slice(0, 8)}-${hash.toString(16)}`;
 }
 
-export async function trackSession(userId: string, ip: string, userAgent: string): Promise<void> {
+/**
+ * Track a session. When `deviceKey` is provided (a client-generated UUID from
+ * localStorage) it is used as the session discriminator so each
+ * browser/device instance gets its own row.  Falls back to UA fingerprint.
+ */
+export async function trackSession(userId: string, ip: string, userAgent: string, deviceKey?: string): Promise<void> {
   try {
-    const sessionId = makeSessionId(userId, userAgent);
+    const sessionId = makeSessionId(userId, deviceKey ?? userAgent);
     await db
       .insert(userSessionsTable)
       .values({

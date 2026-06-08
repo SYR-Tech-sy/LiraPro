@@ -13,7 +13,7 @@ import { AppProvider, useApp } from '@/context/app-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth, useUser } from '@/context/auth-context';
-import { setAuthTokenGetter, useGetExchangeRates } from '@workspace/api-client-react';
+import { setAuthTokenGetter, setDeviceId, useGetExchangeRates } from '@workspace/api-client-react';
 import { GuestModal } from '@/components/guest-modal';
 import { NotificationsPanel } from '@/components/notifications-panel';
 import { AnimatedLogo } from '@/components/animated-logo';
@@ -1082,8 +1082,27 @@ function BanGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function getOrCreateDeviceId(): string {
+  try {
+    let id = localStorage.getItem('syp-device-id');
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem('syp-device-id', id);
+    }
+    return id;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
+
 function AuthSetup() {
   const { getToken, isSignedIn } = useAuth();
+
+  useEffect(() => {
+    // Register a stable device ID so every API call carries X-Device-Id
+    setDeviceId(getOrCreateDeviceId());
+    return () => setDeviceId(null);
+  }, []);
 
   useEffect(() => {
     if (!isSignedIn) {

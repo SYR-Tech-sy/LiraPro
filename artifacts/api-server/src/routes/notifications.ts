@@ -6,7 +6,8 @@ import { createHash } from "crypto";
 import { db } from "@workspace/db";
 import { notificationLogTable } from "@workspace/db";
 import { and, gt, eq } from "drizzle-orm";
-import { sendPushToAll } from "./push.js";
+import { sendPushToAll, sendPushToUser } from "./push.js";
+import { requireSupabaseAuth } from "../middlewares/requireSupabaseAuth.js";
 
 const router: IRouter = Router();
 
@@ -85,7 +86,10 @@ async function isDuplicate(dedupHash: string): Promise<boolean> {
   }
 }
 
-/** Logs a dispatched notification to the DB; status starts as 'sent'. */
+/**
+ * Inserts a notification_log row with status 'queued' and returns the logId.
+ * Returns null on DB error (non-critical).
+ */
 async function logNotification(
   notifId: number,
   title: string,
@@ -93,22 +97,36 @@ async function logNotification(
   type: string,
   recipientType: string,
   targetUserId?: string,
-): Promise<void> {
+): Promise<number | null> {
   try {
     const dedupHash = makeNotifDedup(title, body, recipientType, targetUserId);
-    await db.insert(notificationLogTable).values({
-      notifId,
-      title,
-      body,
-      type,
-      recipientType,
-      targetUserId: targetUserId ?? null,
-      status: "sent",
-      dedupHash,
-    });
+    const rows = await db
+      .insert(notificationLogTable)
+      .values({
+        notifId,
+        title,
+        body,
+        type,
+        recipientType,
+        targetUserId: targetUserId ?? null,
+        status: "queued",
+        dedupHash,
+      })
+      .returning({ logId: notificationLogTable.logId });
+    return rows[0]?.logId ?? null;
   } catch {
-    // Non-critical — log errors must not fail the request
+    return null;
   }
+}
+
+/** Update the status of a notification_log row after a send attempt. */
+async function updateNotifLogStatus(logId: number, status: "sent" | "failed"): Promise<void> {
+  try {
+    await db
+      .update(notificationLogTable)
+      .set({ status })
+      .where(eq(notificationLogTable.logId, logId));
+  } catch { /* non-critical */ }
 }
 
 // ── JSON storage (notification content) ──────────────────────────────────────
@@ -186,12 +204,18 @@ router.post("/notifications", async (req, res): Promise<void> => {
   notifications.push(newNotification);
   saveNotifications(notifications);
 
-  // Log to DB (fire-and-forget)
-  void logNotification(newNotification.id, title, body, newNotification.type, "all");
-
   req.log.info({ id: newNotification.id }, "Notification created");
   broadcastSSE("notification", newNotification);
   res.json(newNotification);
+
+  // Insert as 'queued', send push, update status
+  const logId = await logNotification(newNotification.id, title, body, newNotification.type, "all");
+  try {
+    await sendPushToAll(title, body, "/app/home");
+    if (logId !== null) void updateNotifLogStatus(logId, "sent");
+  } catch {
+    if (logId !== null) void updateNotifLogStatus(logId, "failed");
+  }
 });
 
 const USER_NOTIFICATIONS_FILE = join(__dir, "../user-notifications.json");
@@ -228,7 +252,7 @@ router.post("/notifications/user", async (req, res): Promise<void> => {
     return;
   }
 
-  // 60-second dedup guard for per-user notifications
+  // 60-second dedup guard
   const dedupHash = makeNotifDedup(title, body, "user", walletId);
   if (await isDuplicate(dedupHash)) {
     res.status(409).json({ error: "Duplicate notification — identical message sent within the last 60 seconds" });
@@ -253,12 +277,18 @@ router.post("/notifications/user", async (req, res): Promise<void> => {
   all[walletId] = all[walletId].slice(0, 30);
   saveUserNotifications(all);
 
-  // Log to DB (fire-and-forget)
-  void logNotification(newMsg.id, title, body, newMsg.type, "user", walletId);
-
   req.log.info({ walletId, id: newMsg.id }, "User notification sent");
   broadcastSSE("notification", newMsg, walletId);
   res.json(newMsg);
+
+  // Insert as 'queued', send push to user, update status
+  const logId = await logNotification(newMsg.id, title, body, newMsg.type, "user", walletId);
+  try {
+    await sendPushToUser(walletId, title, body, "/app/home");
+    if (logId !== null) void updateNotifLogStatus(logId, "sent");
+  } catch {
+    if (logId !== null) void updateNotifLogStatus(logId, "failed");
+  }
 });
 
 // PUT /api/notifications/:id — admin only (edit without re-sending)
@@ -294,8 +324,8 @@ router.put("/notifications/user/:walletId/:id", (req, res): void => {
   res.json(userMsgs[idx]);
 });
 
-// DELETE /api/notifications/user/:walletId/all — user self-clears all their notifications
-router.delete("/notifications/user/:walletId/all", (req, res): void => {
+// DELETE /api/notifications/user/:walletId/all — authenticated user clears their own notifications
+router.delete("/notifications/user/:walletId/all", requireSupabaseAuth, (req, res): void => {
   const { walletId } = req.params as { walletId: string };
   if (!walletId) { res.status(400).json({ error: "walletId required" }); return; }
   const all = readUserNotifications();
@@ -334,7 +364,7 @@ function saveViews(data: ViewsData): void {
   writeFileSync(VIEWS_FILE, JSON.stringify(data, null, 2), "utf-8");
 }
 
-// POST /api/notifications/:id/view — user marks notification as viewed
+// POST /api/notifications/:id/view — user marks notification as read
 router.post("/notifications/:id/view", async (req, res): Promise<void> => {
   const id = req.params.id ?? "";
   const { walletId } = req.body as { walletId?: string };
@@ -345,7 +375,7 @@ router.post("/notifications/:id/view", async (req, res): Promise<void> => {
   if (!already) {
     views[id].push({ walletId, viewedAt: new Date().toISOString() });
     saveViews(views);
-    // Update status to 'read' in notification_log
+    // Transition notification_log status → 'read'
     const numericId = parseInt(id);
     if (!isNaN(numericId)) {
       void db

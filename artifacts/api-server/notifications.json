@@ -27,5 +27,14 @@
     "icon": "bell",
     "recipient": "all",
     "createdAt": "2026-06-08T17:08:49.331Z"
+  },
+  {
+    "id": 1780939005931,
+    "title": "اختبار",
+    "body": "رسالة تجريبية للـ Phase 2",
+    "type": "info",
+    "icon": "bell",
+    "recipient": "all",
+    "createdAt": "2026-06-08T17:16:45.931Z"
   }
 ]
