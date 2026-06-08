@@ -430,6 +430,7 @@ export default function SupportPage() {
   // Voice-to-text (Speech Recognition)
   const [sttActive, setSttActive] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState('');
+  const [pendingTranscript, setPendingTranscript] = useState('');
   const sttRef = useRef<ISpeechRecognition | null>(null);
 
   const fileRef = useRef<HTMLInputElement>(null);
@@ -832,8 +833,7 @@ export default function SupportPage() {
       setInterimTranscript(interim);
       if (finalText) {
         setInterimTranscript('');
-        setInput(prev => (prev ? prev + ' ' + finalText : finalText).trim());
-        setTimeout(() => inputRef.current?.focus(), 100);
+        setPendingTranscript(prev => (prev ? prev + ' ' + finalText : finalText).trim());
       }
     };
     rec.onend = () => { setSttActive(false); setInterimTranscript(''); };
@@ -1230,6 +1230,55 @@ export default function SupportPage() {
           </motion.div>
         )}
 
+        {/* Voice transcript confirmation banner */}
+        {pendingTranscript && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            className="flex items-start gap-2 mb-2 px-3 py-2.5 bg-primary/8 dark:bg-primary/10 rounded-xl border border-primary/20"
+          >
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground mb-1 font-medium">النص المُعرَّف:</p>
+              <p className="text-sm text-foreground leading-snug break-words">{pendingTranscript}</p>
+            </div>
+            <div className="flex gap-1.5 flex-shrink-0 mt-0.5">
+              <button
+                onClick={() => {
+                  const text = pendingTranscript;
+                  setPendingTranscript('');
+                  const combined = (input ? input + ' ' + text : text).trim();
+                  if (combined) sendMessage(combined);
+                }}
+                className="px-2.5 py-1 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 active:scale-95 transition-all"
+              >
+                إرسال
+              </button>
+              <button
+                onClick={() => {
+                  setInput(prev => (prev ? prev + ' ' + pendingTranscript : pendingTranscript).trim());
+                  setPendingTranscript('');
+                  setTimeout(() => inputRef.current?.focus(), 50);
+                }}
+                className="px-2.5 py-1 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium hover:bg-secondary/80 active:scale-95 transition-all"
+              >
+                تعديل
+              </button>
+              <button
+                onClick={() => {
+                  setInput(prev => (prev ? prev + ' ' + pendingTranscript : pendingTranscript).trim());
+                  setPendingTranscript('');
+                  setTimeout(() => inputRef.current?.focus(), 50);
+                }}
+                className="w-6 h-6 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                title="إغلاق"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         {/* Recording indicator */}
         {isRecording && (
           <motion.div
@@ -1286,7 +1335,14 @@ export default function SupportPage() {
               <textarea
                 ref={inputRef}
                 value={input}
-                onChange={e => setInput(e.target.value)}
+                onChange={e => {
+                  if (pendingTranscript) {
+                    setInput((e.target.value + ' ' + pendingTranscript).trim());
+                    setPendingTranscript('');
+                  } else {
+                    setInput(e.target.value);
+                  }
+                }}
                 onKeyDown={handleKeyDown}
                 placeholder={ticketClosed ? 'التذكرة مغلقة · امسح المحادثة لفتح جديدة' : !botEnabled ? 'اكتب رسالتك للدعم البشري...' : 'اكتب رسالتك...'}
                 disabled={ticketClosed || sttActive}
