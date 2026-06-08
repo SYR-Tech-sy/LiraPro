@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { desc, eq } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
-import { getAllUsers, upsertUser, deleteUser, markPermanentlyDeleted, restrictUser, unrestrictUser, softDeleteUser, undeleteUser, updateUser, getActiveUsers } from "../services/usersService.js";
+import { getAllUsers, upsertUser, markPermanentlyDeleted, restrictUser, unrestrictUser, softDeleteUser, undeleteUser, updateUser, getActiveUsers } from "../services/usersService.js";
 import { getAllRequests, addRequest, markHandled, cancelRequestByWallet, deleteRequestById } from "../services/deletionService.js";
 import { getAllOverrides, setOverride, deleteOverride, clearAllOverrides } from "../services/rateOverridesService.js";
 import { incrementVisit, getVisitStats } from "../services/visitService.js";

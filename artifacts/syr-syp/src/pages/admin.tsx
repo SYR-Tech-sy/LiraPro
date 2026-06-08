@@ -7,7 +7,7 @@ import {
   Check, UserCheck, FileX, Building2, User, CheckCircle2, XCircle, Plus, Loader2,
   Phone, Mail, MapPin, Ban, Search, Activity, Globe, Database, Save,
   LayoutDashboard, MessageSquare, Clock, BarChart2, ChevronDown, ChevronRight,
-  ChevronUp, Unlock, CalendarDays, Hash, Info, Wifi, BadgeCheck,
+  ChevronUp, CalendarDays, Hash, Info, Wifi, BadgeCheck,
   ShieldCheck, MessageCircle, AlertOctagon, Coins as CoinsIcon, Tag, Timer, Mic,
   Image as ImageIcon, Paperclip, LifeBuoy, TicketCheck, Flag,
   ThumbsUp, ThumbsDown, Sparkles, UserX, Smartphone,
@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { useGetExchangeRates, useGetGoldPrices } from '@workspace/api-client-react';
 import { AdminBadge, RainbowBadge, GoldenBadge, BlueBadge, ChatBadge } from '@/components/golden-badge';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast as _toast } from 'sonner';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 

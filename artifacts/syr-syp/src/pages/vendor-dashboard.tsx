@@ -40,7 +40,6 @@ const CURRENCY_LIST = [
   { code: 'LBP', nameAr: 'ليرة لبنانية',    flag: '🇱🇧' },
   { code: 'SYP', nameAr: 'ليرة سورية',      flag: '🇸🇾' },
 ];
-const CURRENCIES = CURRENCY_LIST.map(c => `${c.nameAr} (${c.code})`);
 const FUEL_TYPES = ['بنزين أوكتان 95', 'بنزين أوكتان 90', 'ديزل', 'مازوت منزلي', 'غاز منزلي (LPG)'];
 const GOLD_KARATS = ['14 قيراط', '16 قيراط', '18 قيراط', '21 قيراط', '22 قيراط', '24 قيراط'];
 const CRYPTO_COINS = ['Bitcoin (BTC)', 'Ethereum (ETH)', 'Tether (USDT)', 'BNB', 'Ripple (XRP)', 'Solana (SOL)'];
