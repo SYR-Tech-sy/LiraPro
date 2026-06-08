@@ -22,6 +22,7 @@ import {
   CheckCheck, Trash2, X, Square, PhoneOff, Play, Pause, TicketCheck,
   LogIn, UserPlus, Info, ChevronRight, ThumbsUp, ThumbsDown,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Link } from 'wouter';
 import { useUser } from '@/context/auth-context';
 import { useGetProfile } from '@workspace/api-client-react';
@@ -803,12 +804,13 @@ export default function SupportPage() {
     };
     const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!SR) {
+      toast.info('جارٍ التسجيل الصوتي', { duration: 2500 });
       startRecording();
       return;
     }
     const rec = new SR();
     sttRef.current = rec;
-    rec.lang = 'ar';
+    rec.lang = 'ar-SA';
     rec.interimResults = false;
     rec.continuous = false;
     rec.onresult = (e: ISpeechRecognitionEvent) => {
