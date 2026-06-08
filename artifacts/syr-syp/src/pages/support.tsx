@@ -7,13 +7,16 @@ interface ISpeechRecognitionEvent {
   results: SpeechRecognitionResultList;
   resultIndex: number;
 }
+interface ISpeechRecognitionErrorEvent {
+  error: string;
+}
 interface ISpeechRecognition extends EventTarget {
   lang: string;
   interimResults: boolean;
   continuous: boolean;
   onresult: ((event: ISpeechRecognitionEvent) => void) | null;
   onend: (() => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((event: ISpeechRecognitionErrorEvent) => void) | null;
   start: () => void;
   stop: () => void;
 }
@@ -834,7 +837,13 @@ export default function SupportPage() {
       }
     };
     rec.onend = () => { setSttActive(false); setInterimTranscript(''); };
-    rec.onerror = () => { setSttActive(false); setInterimTranscript(''); };
+    rec.onerror = (e: ISpeechRecognitionErrorEvent) => {
+      setSttActive(false);
+      setInterimTranscript('');
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        toast.error('يرجى السماح بالوصول إلى الميكروفون من إعدادات المتصفح ثم حاول مجدداً', { duration: 6000 });
+      }
+    };
     rec.start();
     setSttActive(true);
   };
@@ -875,8 +884,14 @@ export default function SupportPage() {
       mr.start();
       setIsRecording(true);
       recTimerRef.current = setInterval(() => setRecordSecs(s => s + 1), 1000);
-    } catch {
-      setMicError('لم يتم منح إذن الميكروفون. يرجى السماح بالوصول إلى الميكروفون.');
+    } catch (err) {
+      const isPermissionDenied = err instanceof DOMException && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError');
+      if (isPermissionDenied) {
+        setMicError('تم رفض إذن الميكروفون. يرجى السماح بالوصول إلى الميكروفون من إعدادات المتصفح ثم حاول مجدداً.');
+        toast.error('يرجى السماح بالوصول إلى الميكروفون من إعدادات المتصفح ثم حاول مجدداً', { duration: 6000 });
+      } else {
+        setMicError('تعذّر الوصول إلى الميكروفون. يرجى التحقق من أن الجهاز يحتوي على ميكروفون وأنه يعمل بشكل صحيح.');
+      }
     }
   };
 
