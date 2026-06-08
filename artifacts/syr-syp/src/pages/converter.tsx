@@ -173,48 +173,35 @@ export default function ConverterPage() {
   const localUsdToSyp = ratesData?.usd_to_syp ?? 0;
   const globalUsdToSyp = (ratesData as unknown as { global_usd_to_syp?: number } | undefined)?.global_usd_to_syp ?? localUsdToSyp;
 
-  const [localCurrencyPrices, setLocalCurrencyPrices] = useState<Array<{
-    productNameAr: string; avgPrice: number; weightedAvg: number; unit: string; sourceCount: number;
-  }>>([]);
-  const [localCurrencyFetched, setLocalCurrencyFetched] = useState(false);
-
-  const [localGoldPrices, setLocalGoldPrices] = useState<Array<{
-    productNameAr: string; avgPrice: number; weightedAvg: number; unit: string; sourceCount: number;
-  }>>([]);
-  const [localGoldFetched, setLocalGoldFetched] = useState(false);
+  type LocalPriceRow = { productNameAr: string; avgPrice: number; weightedAvg: number; unit: string; sourceCount: number };
+  const [localCurrencyPrices, setLocalCurrencyPrices] = useState<LocalPriceRow[] | null>(null);
+  const [localGoldPrices, setLocalGoldPrices] = useState<LocalPriceRow[] | null>(null);
 
   useEffect(() => {
-    if (rateMode === 'local') {
-      setLocalCurrencyFetched(false);
-      setLocalGoldFetched(false);
-      const fetchAll = async () => {
-        try {
-          const prov = selectedProvince ? `&province=${encodeURIComponent(selectedProvince)}` : '';
-          const [r1, r2, r3] = await Promise.all([
-            fetch(`/api/market/prices?category=currency${prov}`).then(r => r.ok ? r.json() : []),
-            fetch(`/api/market/prices?category=صرافة${prov}`).then(r => r.ok ? r.json() : []),
-            fetch(`/api/market/prices?category=gold${prov}`).then(r => r.ok ? r.json() : []),
-          ]) as [typeof localCurrencyPrices, typeof localCurrencyPrices, typeof localGoldPrices];
-          const combined = [...(Array.isArray(r1) ? r1 : []), ...(Array.isArray(r2) ? r2 : [])];
-          setLocalCurrencyPrices(combined);
-          setLocalGoldPrices(Array.isArray(r3) ? r3 : []);
-        } catch {
-          setLocalCurrencyPrices([]);
-          setLocalGoldPrices([]);
-        } finally {
-          setLocalCurrencyFetched(true);
-          setLocalGoldFetched(true);
-        }
-      };
-      void fetchAll();
-    } else {
-      setLocalCurrencyFetched(false);
-      setLocalGoldFetched(false);
-    }
+    if (rateMode !== 'local') return;
+    const fetchAll = async () => {
+      setLocalCurrencyPrices(null);
+      setLocalGoldPrices(null);
+      try {
+        const prov = selectedProvince ? `&province=${encodeURIComponent(selectedProvince)}` : '';
+        const [r1, r2, r3] = await Promise.all([
+          fetch(`/api/market/prices?category=currency${prov}`).then(r => r.ok ? r.json() : []),
+          fetch(`/api/market/prices?category=صرافة${prov}`).then(r => r.ok ? r.json() : []),
+          fetch(`/api/market/prices?category=gold${prov}`).then(r => r.ok ? r.json() : []),
+        ]) as [LocalPriceRow[], LocalPriceRow[], LocalPriceRow[]];
+        const combined = [...(Array.isArray(r1) ? r1 : []), ...(Array.isArray(r2) ? r2 : [])];
+        setLocalCurrencyPrices(combined);
+        setLocalGoldPrices(Array.isArray(r3) ? r3 : []);
+      } catch {
+        setLocalCurrencyPrices([]);
+        setLocalGoldPrices([]);
+      }
+    };
+    void fetchAll();
   }, [rateMode, selectedProvince]);
 
   const localMarketEntry = useMemo(() => {
-    if (!localCurrencyPrices.length) return null;
+    if (!localCurrencyPrices?.length) return null;
     const usdKeywords = ['USD', 'دولار', 'dollar'];
     const usdEntry = localCurrencyPrices.find(p =>
       usdKeywords.some(kw => p.productNameAr.toLowerCase().includes(kw.toLowerCase()))
@@ -275,7 +262,7 @@ export default function ConverterPage() {
   };
 
   const localGoldPricePerGram = useMemo(() => {
-    if (!localGoldPrices.length) return null;
+    if (!localGoldPrices?.length) return null;
     const karatEntry = localGoldPrices.find(p =>
       p.productNameAr.includes(selectedKarat) || p.productNameAr.toLowerCase().includes(`karat ${selectedKarat}`)
     );
@@ -478,7 +465,7 @@ export default function ConverterPage() {
             <div className="bg-secondary/50 rounded-xl p-4 flex flex-col items-center min-h-[90px] justify-center">
               {loadingRates ? (
                 <Skeleton className="h-10 w-40" />
-              ) : (rateMode === 'local' && localCurrencyFetched && !localMarketSypRate) ? (
+              ) : (rateMode === 'local' && localCurrencyPrices !== null && !localMarketSypRate) ? (
                 <div className="text-center">
                   <span className="text-base font-bold text-muted-foreground">لم يتم تحديد السعر بعد</span>
                   <p className="text-[11px] text-muted-foreground/70 mt-1">لا توجد أسعار محلية مدخلة من التجار في هذه المنطقة</p>
@@ -588,7 +575,7 @@ export default function ConverterPage() {
             <div className="bg-secondary/50 rounded-xl p-4 flex flex-col items-center min-h-[90px] justify-center">
               {loadingGold ? (
                 <Skeleton className="h-12 w-40" />
-              ) : (rateMode === 'local' && localGoldFetched && !localGoldPricePerGram) ? (
+              ) : (rateMode === 'local' && localGoldPrices !== null && !localGoldPricePerGram) ? (
                 <div className="text-center">
                   <span className="text-base font-bold text-muted-foreground">لم يتم تحديد السعر بعد</span>
                   <p className="text-[11px] text-muted-foreground/70 mt-1">لا توجد أسعار ذهب محلية مدخلة من التجار في هذه المنطقة</p>

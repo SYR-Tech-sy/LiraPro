@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Trash2, Edit3, X, Check, Plus, Lock, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -118,7 +118,8 @@ export default function AlertsPage() {
   const { formatNum, t } = useApp();
   const { isSignedIn } = useUser();
 
-  const { data: alertsRaw, isLoading, refetch } = useGetAlerts({ query: { staleTime: 0, refetchOnMount: true } });
+  const { data: alertsRaw, isLoading, refetch } = useGetAlerts();
+  useEffect(() => { void refetch(); }, [refetch]);
   const alerts: PriceAlert[] = (alertsRaw as PriceAlert[] | undefined) ?? [];
 
   const deleteMutation = useDeleteAlert({
