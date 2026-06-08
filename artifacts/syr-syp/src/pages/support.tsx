@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // ─── SpeechRecognition type shim ──────────────────────────────────────────────
 interface ISpeechRecognitionEvent {
   results: SpeechRecognitionResultList;
+  resultIndex: number;
 }
 interface ISpeechRecognition extends EventTarget {
   lang: string;
@@ -425,6 +426,7 @@ export default function SupportPage() {
 
   // Voice-to-text (Speech Recognition)
   const [sttActive, setSttActive] = useState(false);
+  const [interimTranscript, setInterimTranscript] = useState('');
   const sttRef = useRef<ISpeechRecognition | null>(null);
 
   const fileRef = useRef<HTMLInputElement>(null);
@@ -811,17 +813,28 @@ export default function SupportPage() {
     const rec = new SR();
     sttRef.current = rec;
     rec.lang = 'ar-SA';
-    rec.interimResults = false;
+    rec.interimResults = true;
     rec.continuous = false;
     rec.onresult = (e: ISpeechRecognitionEvent) => {
-      const text = e.results[0]?.[0]?.transcript ?? '';
-      if (text) {
-        setInput(prev => (prev ? prev + ' ' + text : text).trim());
+      let interim = '';
+      let finalText = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i]?.[0]?.transcript ?? '';
+        if (e.results[i]?.isFinal) {
+          finalText += t;
+        } else {
+          interim += t;
+        }
+      }
+      setInterimTranscript(interim);
+      if (finalText) {
+        setInterimTranscript('');
+        setInput(prev => (prev ? prev + ' ' + finalText : finalText).trim());
         setTimeout(() => inputRef.current?.focus(), 100);
       }
     };
-    rec.onend = () => setSttActive(false);
-    rec.onerror = () => { setSttActive(false); };
+    rec.onend = () => { setSttActive(false); setInterimTranscript(''); };
+    rec.onerror = () => { setSttActive(false); setInterimTranscript(''); };
     rec.start();
     setSttActive(true);
   };
@@ -1253,7 +1266,7 @@ export default function SupportPage() {
           )}
 
           {/* Text input */}
-          {!isRecording && !sttActive && (
+          {!isRecording && (
             <div className="flex-1 relative">
               <textarea
                 ref={inputRef}
@@ -1261,7 +1274,8 @@ export default function SupportPage() {
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={ticketClosed ? 'التذكرة مغلقة · امسح المحادثة لفتح جديدة' : !botEnabled ? 'اكتب رسالتك للدعم البشري...' : 'اكتب رسالتك...'}
-                disabled={ticketClosed}
+                disabled={ticketClosed || sttActive}
+                readOnly={sttActive}
                 rows={1}
                 className="w-full resize-none rounded-2xl border border-border bg-secondary/40 px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary max-h-28 overflow-y-auto disabled:opacity-50"
                 style={{ minHeight: 36 }}
@@ -1271,6 +1285,11 @@ export default function SupportPage() {
                   el.style.height = Math.min(el.scrollHeight, 112) + 'px';
                 }}
               />
+              {sttActive && interimTranscript && (
+                <p className="absolute bottom-full mb-1 w-full px-3 py-1.5 text-sm italic text-muted-foreground bg-secondary/80 border border-border rounded-xl leading-snug break-words pointer-events-none">
+                  {interimTranscript}
+                </p>
+              )}
             </div>
           )}
 
