@@ -114,14 +114,17 @@ export function useAlertChecker(rates: Record<string, number> | undefined) {
         queryClient.invalidateQueries({ queryKey: ['getAlerts'] });
         for (const alert of triggered) {
           const direction = alert.type === 'buy' ? '🔽' : '🔼';
+          const title = `${direction} تنبيه سعر: ${alert.code}`;
+          const body = `وصل سعر ${alert.nameAr ?? alert.code} إلى ${alert.targetPrice.toLocaleString('ar-SY')} ل.س — السعر المستهدف تحقّق!`;
           addLocalNotification({
             id: Date.now() + alert.id,
-            title: `${direction} تنبيه سعر: ${alert.code}`,
-            body: `وصل سعر ${alert.nameAr ?? alert.code} إلى ${alert.targetPrice.toLocaleString('ar-SY')} ل.س — السعر المستهدف تحقّق!`,
+            title,
+            body,
             type: 'price',
             icon: 'trending',
             createdAt: new Date().toISOString(),
           });
+          document.dispatchEvent(new CustomEvent('syp-notification', { detail: { title, body, type: 'price' } }));
         }
       })
       .catch(() => {});
