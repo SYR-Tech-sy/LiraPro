@@ -1,0 +1,89 @@
+Apply all of the following changes carefully.
+
+1. Merchant Dashboard – Currency Exchange Category
+
+- In the "Add New Price" modal:
+  • Add all currencies available in the platform.
+  • Display country flags beside each currency.
+  • Use the same currency design language already used throughout the platform.
+- After adding a price, display it on the homepage using the same visual style used by the "Global Exchange Rates" card.
+
+2. Admin Panel – User Details Modal
+
+- Remove:
+  • Permanent Ban button
+  • Unban button
+- Remove all related functionality.
+- Remove associated database tables, columns, relationships, API endpoints, and Supabase references if no longer required.
+
+3. Admin Panel – System Statistics
+
+- In User Statistics, remove:
+  "Service Providers (Users)"
+  because it duplicates merchant and price-provider roles.
+
+4. User Role Display
+
+- When a user is approved as a merchant or price provider:
+  • Replace "Personal" with "Merchant" everywhere in the admin panel user listings.
+
+5. Users Page Structure
+
+Rename and reorganize categories as follows:
+
+Current Categories:
+
+- Provider
+- Permanently Banned
+
+New Categories:
+
+- Personal
+- Merchant
+- Restricted
+- Deleted
+
+6. Restricted Category
+
+- Display users restricted through the Restrict action.
+- Show:
+  • Full user data
+  • Restriction date
+  • Restriction duration
+- Restrictions must expire automatically once the selected duration ends.
+- Users must be automatically restored when restriction time expires.
+
+7. Deleted Category
+
+Create two tabs:
+
+A. Recoverable
+
+- Users deleted through the standard Delete action.
+- Show:
+  • Full user data
+  • Deletion date
+  • Restore Account button
+
+B. Permanently Deleted
+
+- Users deleted through the Permanent Delete action.
+- Show:
+  • Full user data
+  • Permanent deletion date
+
+8. Data Integrity
+
+- Ensure all user states are synchronized across:
+  • Admin panel
+  • Database
+  • Authentication
+  • User management services
+
+Final Requirements:
+
+- Review the entire application after implementation.
+- Verify all database migrations are safe.
+- Ensure no existing functionality is broken.
+- Ensure all role transitions, restrictions, deletions, and restorations work correctly.
+- Test all changes thoroughly before considering implementation complete.
