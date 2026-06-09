@@ -116,7 +116,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-3">
-            <button
+            <button type="button"
               onClick={() => setLanguage('ar')}
               className={`flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-all ${
                 language === 'ar'
@@ -126,7 +126,7 @@ export default function SettingsPage() {
             >
               العربية
             </button>
-            <button
+            <button type="button"
               onClick={() => setLanguage('en')}
               className={`flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-all ${
                 language === 'en'
@@ -149,7 +149,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-3">
-            <button
+            <button type="button"
               onClick={() => setNumberFormat('arabic')}
               className={`flex-1 py-3 px-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1 ${
                 numberFormat === 'arabic'
@@ -160,7 +160,7 @@ export default function SettingsPage() {
               <span className="text-xl font-black tracking-widest leading-none">٣٢١</span>
               <span className="text-[10px] font-bold opacity-80">{t('arabicNums')}</span>
             </button>
-            <button
+            <button type="button"
               onClick={() => setNumberFormat('english')}
               className={`flex-1 py-3 px-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1 ${
                 numberFormat === 'english'
@@ -184,7 +184,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-3">
-            <button
+            <button type="button"
               onClick={() => setTheme('light')}
               className={`flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-all flex items-center justify-center gap-2 ${
                 theme === 'light'
@@ -194,7 +194,7 @@ export default function SettingsPage() {
             >
               <Sun className="w-4 h-4" /> {t('lightMode')}
             </button>
-            <button
+            <button type="button"
               onClick={() => setTheme('dark')}
               className={`flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-all flex items-center justify-center gap-2 ${
                 theme === 'dark'
@@ -248,7 +248,7 @@ export default function SettingsPage() {
                   <pref.Icon className="w-4 h-4 text-primary flex-shrink-0" />
                   <span className="text-sm font-medium truncate">{pref.labelAr}</span>
                 </div>
-                <button
+                <button type="button"
                   onClick={() => toggleNotifPref(pref.id)}
                   className={`relative w-11 h-6 rounded-full flex-shrink-0 transition-colors duration-200 ${isOn ? 'bg-primary' : 'bg-border'}`}
                 >
@@ -268,7 +268,7 @@ export default function SettingsPage() {
                 {ar ? 'صوت تنبيهات الأسعار' : 'Price alert sound'}
               </span>
               {soundEnabled && (
-                <button
+                <button type="button"
                   onClick={() => playAlertChime()}
                   className="text-xs text-primary/70 hover:text-primary border border-primary/30 hover:border-primary/60 rounded-full px-2 py-0.5 transition-colors duration-150 flex-shrink-0"
                   title={ar ? 'معاينة الصوت' : 'Preview sound'}
@@ -277,7 +277,7 @@ export default function SettingsPage() {
                 </button>
               )}
             </div>
-            <button
+            <button type="button"
               onClick={toggleSound}
               className={`relative w-11 h-6 rounded-full flex-shrink-0 transition-colors duration-200 ${soundEnabled ? 'bg-primary' : 'bg-border'}`}
             >
@@ -306,7 +306,7 @@ export default function SettingsPage() {
               style={{ maxHeight: 'calc(100dvh - 32px)', overscrollBehavior: 'contain' }}>
               <div className="p-6 pb-16 flex flex-col gap-4">
                 <div className="flex items-center justify-between">
-                  <button onClick={resetPwModal} className="p-1 rounded-full hover:bg-secondary transition-colors">
+                  <button type="button" onClick={resetPwModal} className="p-1 rounded-full hover:bg-secondary transition-colors">
                     <X className="w-5 h-5 text-foreground" />
                   </button>
                   <h3 className="font-bold text-foreground text-base">{ar ? 'تغيير كلمة المرور' : 'Change Password'}</h3>

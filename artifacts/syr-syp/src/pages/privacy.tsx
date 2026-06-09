@@ -137,7 +137,7 @@ function SectionGroup({
   const [expanded, setExpanded] = useState(true);
   return (
     <div className="flex flex-col gap-3">
-      <button
+      <button type="button"
         onClick={() => setExpanded(e => !e)}
         className="flex items-center gap-2 p-3 rounded-xl border-2 transition-all"
         style={{ borderColor: color + '40', background: color + '08' }}
@@ -196,7 +196,7 @@ export default function PrivacyPage() {
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4 pb-10">
       <div className="flex items-center gap-3 mb-2">
-        <button onClick={() => navigate('/app/home')} className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
+        <button type="button" onClick={() => navigate('/app/home')} className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
           <ChevronRight className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-2">

@@ -101,7 +101,7 @@ export default function MarketPage() {
         </div>
         <div className="flex items-center gap-2">
           <LiveBadge />
-          <button onClick={handleRefresh} className="p-1.5 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
+          <button type="button" onClick={handleRefresh} className="p-1.5 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
             <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
         </div>
@@ -118,7 +118,7 @@ export default function MarketPage() {
           هذه الأسعار وفق الأسعار العالمية، لعرض الأسعار المحلية انتقل إلى قسم الصرافة.
         </span>
         <Link href="/app/home?cat=currency">
-          <button className="flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 px-2 py-1 rounded-xl border border-blue-300 dark:border-blue-600 bg-blue-100 dark:bg-blue-900/40 flex-shrink-0 hover:opacity-80 transition-opacity">
+          <button type="button" className="flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 px-2 py-1 rounded-xl border border-blue-300 dark:border-blue-600 bg-blue-100 dark:bg-blue-900/40 flex-shrink-0 hover:opacity-80 transition-opacity">
             <TrendingUpIcon className="w-3 h-3" /> الصرافة
           </button>
         </Link>

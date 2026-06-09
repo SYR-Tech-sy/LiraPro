@@ -130,7 +130,7 @@ function CryptoDetailModal({
               <p className="text-[10px] text-muted-foreground uppercase">{coin.symbol}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-secondary">
+          <button type="button" onClick={onClose} className="p-1.5 rounded-full hover:bg-secondary">
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
@@ -174,7 +174,7 @@ function CryptoDetailModal({
           <div>
             <div className="flex gap-2 mb-2">
               {(['daily', 'weekly', 'monthly'] as const).map(p => (
-                <button key={p} onClick={() => setPeriod(p)}
+                <button type="button" key={p} onClick={() => setPeriod(p)}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${period === p ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'}`}>
                   {t(p)}
                 </button>
@@ -221,7 +221,7 @@ function CryptoDetailModal({
               <>
                 <div className="flex gap-2 mb-3">
                   {(['buy', 'sell'] as const).map(type => (
-                    <button key={type} onClick={() => setAlertType(type)}
+                    <button type="button" key={type} onClick={() => setAlertType(type)}
                       className={`flex-1 py-1.5 rounded-lg text-xs font-bold border-2 transition-all ${alertType === type ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'}`}>
                       {t(type)}
                     </button>
@@ -235,7 +235,7 @@ function CryptoDetailModal({
                   className="h-10 mb-3"
                   dir="ltr"
                 />
-                <button
+                <button type="button"
                   onClick={handleSaveAlert}
                   disabled={!alertTarget}
                   className="w-full h-10 rounded-xl bg-primary text-primary-foreground text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
@@ -293,7 +293,7 @@ export default function CryptoPage() {
         </div>
         <div className="flex items-center gap-2">
           <LiveBadge variant="crypto" />
-          <button onClick={() => void refetch()} disabled={loading}
+          <button type="button" onClick={() => void refetch()} disabled={loading}
             className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -328,7 +328,7 @@ export default function CryptoPage() {
             return (
               <motion.div key={coin.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.04 }}>
-                <button
+                <button type="button"
                   className="w-full text-right"
                   onClick={() => setSelectedCoin(coin)}
                 >

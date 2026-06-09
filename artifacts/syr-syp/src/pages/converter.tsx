@@ -102,7 +102,7 @@ function CurrencyPicker({ value, onChange, currencies, label }: CurrencyPickerPr
           >
             <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
               <h3 className="font-bold">{language === 'ar' ? 'اختر عملة' : 'Choose Currency'}</h3>
-              <button onClick={() => { setOpen(false); setSearch(''); }}>
+              <button type="button" onClick={() => { setOpen(false); setSearch(''); }}>
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -124,7 +124,7 @@ function CurrencyPicker({ value, onChange, currencies, label }: CurrencyPickerPr
                 </p>
               )}
               {filtered.map(c => (
-                <button
+                <button type="button"
                   key={c}
                   onClick={() => { onChange(c); setOpen(false); setSearch(''); }}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${value === c ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary'}`}
@@ -328,7 +328,7 @@ export default function ConverterPage() {
             <h2 className="text-lg font-black mb-1">اختر وضع التحويل</h2>
             <p className="text-sm text-muted-foreground mb-5">كيف تريد حساب أسعار الصرف؟</p>
             <div className="flex flex-col gap-3">
-              <button
+              <button type="button"
                 onClick={() => selectMode('local')}
                 className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-right transition-all ${rateMode === 'local' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
               >
@@ -342,7 +342,7 @@ export default function ConverterPage() {
                   </p>
                 </div>
               </button>
-              <button
+              <button type="button"
                 onClick={() => selectMode('global')}
                 className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-right transition-all ${rateMode === 'global' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-border hover:border-blue-300'}`}
               >
@@ -389,7 +389,7 @@ export default function ConverterPage() {
               : 'السعر المحلي (سعر API)'
           ) : 'التحويل بالسعر العالمي'}
         </span>
-        <button
+        <button type="button"
           onClick={() => setShowModeModal(true)}
           className="text-[10px] font-bold px-2 py-1 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors text-foreground/70"
         >
@@ -401,7 +401,7 @@ export default function ConverterPage() {
       {rateMode === 'local' && (
         <div className="flex gap-1.5 overflow-x-auto pb-0.5 no-scrollbar" dir="rtl">
           {['', 'دمشق', 'ريف دمشق', 'حلب', 'حمص', 'حماة', 'اللاذقية', 'طرطوس', 'درعا', 'السويداء', 'الحسكة', 'دير الزور', 'الرقة', 'إدلب'].map(p => (
-            <button
+            <button type="button"
               key={p || 'all'}
               onClick={() => setSelectedProvince(p)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${
@@ -424,7 +424,7 @@ export default function ConverterPage() {
 
         <div className="flex gap-2 mb-3">
           {(['buy', 'sell'] as const).map(mode => (
-            <button
+            <button type="button"
               key={mode}
               onClick={() => setBuySellMode(mode)}
               className={`flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-all ${buySellMode === mode ? 'bg-primary text-primary-foreground border-primary shadow' : 'bg-background border-border text-foreground/70 dark:text-white'}`}
@@ -451,7 +451,7 @@ export default function ConverterPage() {
               <CurrencyPicker value={fromCurrency} onChange={setFromCurrency} currencies={currencies} label={t('from')} />
               <div className="pb-0.5">
                 <motion.div animate={{ rotate: isSwapping ? 180 : 0 }} transition={{ duration: 0.3 }}>
-                  <button
+                  <button type="button"
                     onClick={handleSwap}
                     className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center border border-border shadow-sm hover:border-primary/40"
                   >
@@ -538,7 +538,7 @@ export default function ConverterPage() {
             {/* Gold Buy/Sell toggle */}
             <div className="flex gap-2">
               {(['buy', 'sell'] as const).map(mode => (
-                <button
+                <button type="button"
                   key={mode}
                   onClick={() => setGoldBuySellMode(mode)}
                   className={`flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-all ${
@@ -555,7 +555,7 @@ export default function ConverterPage() {
             {/* Currency display toggle (SYP/USD) */}
             <div className="flex gap-2">
               {(['SYP', 'USD'] as const).map(c => (
-                <button
+                <button type="button"
                   key={c}
                   onClick={() => setGoldDisplay(c)}
                   className={`flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-all ${

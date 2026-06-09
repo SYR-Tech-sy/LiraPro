@@ -172,7 +172,7 @@ export default function BusinessProfilePage() {
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-1">
-        <button onClick={() => navigate('/app/vendor')} className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
+        <button type="button" onClick={() => navigate('/app/vendor')} className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
           <ChevronLeft className="w-5 h-5" />
         </button>
         <h1 className="text-lg font-black">الملف الشخصي للنشاط</h1>
@@ -197,7 +197,7 @@ export default function BusinessProfilePage() {
                   <Building2 className="w-10 h-10 text-primary" />
                 </div>
               )}
-              <button
+              <button type="button"
                 onClick={() => logoInputRef.current?.click()}
                 disabled={uploadingLogo}
                 className="absolute -bottom-1 -left-1 w-7 h-7 rounded-full bg-white dark:bg-card flex items-center justify-center shadow-md border border-border hover:bg-secondary transition-colors disabled:opacity-60"
@@ -257,7 +257,7 @@ export default function BusinessProfilePage() {
         <CardContent className="p-4 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-sm">معلومات النشاط</h3>
-            <button
+            <button type="button"
               onClick={() => setEditing(v => !v)}
               className="flex items-center gap-1 text-xs text-primary font-bold hover:opacity-80 transition-opacity"
             >
@@ -406,7 +406,7 @@ export default function BusinessProfilePage() {
             alt="شعار النشاط"
             className="max-w-[80vw] max-h-[80vh] rounded-2xl object-contain shadow-2xl border-2 border-white/20"
           />
-          <button
+          <button type="button"
             onClick={() => setLogoViewOpen(false)}
             className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center text-lg hover:bg-black/80 transition-colors"
           >

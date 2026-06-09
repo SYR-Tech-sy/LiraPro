@@ -232,7 +232,7 @@ export default function MembershipPage() {
       {/* Header */}
       <div className="sticky top-14 z-40 bg-background/95 backdrop-blur-xl border-b border-border/60 px-4 py-3 flex items-center gap-3">
         <Link href="/app/home">
-          <button className="p-1.5 hover:bg-secondary rounded-lg transition-colors">
+          <button type="button" className="p-1.5 hover:bg-secondary rounded-lg transition-colors">
             <ChevronLeft className="w-5 h-5 rotate-180" />
           </button>
         </Link>

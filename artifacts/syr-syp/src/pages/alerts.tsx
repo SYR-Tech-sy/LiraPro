@@ -66,7 +66,7 @@ function EditAlertModal({ alert, onSave, onClose, formatNum: _formatNum, t, load
           <h3 className="font-bold flex items-center gap-2">
             <Edit3 className="w-4 h-4 text-primary" /> تعديل التنبيه
           </h3>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
+          <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
@@ -82,7 +82,7 @@ function EditAlertModal({ alert, onSave, onClose, formatNum: _formatNum, t, load
             <p className="text-xs font-semibold text-muted-foreground mb-2">{t('priceType')}</p>
             <div className="flex gap-2">
               {(['buy', 'sell'] as const).map(tp => (
-                <button key={tp} onClick={() => setType(tp)}
+                <button type="button" key={tp} onClick={() => setType(tp)}
                   className={`flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${type === tp ? 'bg-primary text-primary-foreground border-primary' : 'border-border'}`}>
                   {tp === 'buy' ? t('buyPrice') : t('sellPrice')}
                 </button>
@@ -162,7 +162,7 @@ export default function AlertsPage() {
             <Bell className="w-5 h-5 text-accent" />
             <h2 className="text-lg font-bold">إدارة التنبيهات</h2>
           </div>
-          <button onClick={() => refetch()} className="p-1.5 rounded-full hover:bg-secondary transition-colors" title="تحديث">
+          <button type="button" onClick={() => refetch()} className="p-1.5 rounded-full hover:bg-secondary transition-colors" title="تحديث">
             <RefreshCw className={`w-4 h-4 text-muted-foreground ${isLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
@@ -217,7 +217,7 @@ export default function AlertsPage() {
                               <p className="text-[9px] text-green-600 mt-0.5">تحقّق في: {formatDate(alert.triggeredAt)}</p>
                             )}
                           </div>
-                          <button
+                          <button type="button"
                             onClick={() => deleteMutation.mutate({ id: alert.id })}
                             className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors"
                           >
@@ -256,10 +256,10 @@ export default function AlertsPage() {
                             <p className="text-[9px] text-muted-foreground mt-0.5">{formatDate(alert.createdAt)}</p>
                           </div>
                           <div className="flex items-center gap-1 flex-shrink-0">
-                            <button onClick={() => setEditingAlert(alert)} className="p-1.5 rounded-lg hover:bg-primary/10 transition-colors">
+                            <button type="button" onClick={() => setEditingAlert(alert)} className="p-1.5 rounded-lg hover:bg-primary/10 transition-colors">
                               <Edit3 className="w-4 h-4 text-primary" />
                             </button>
-                            <button
+                            <button type="button"
                               onClick={() => deleteMutation.mutate({ id: alert.id })}
                               className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors"
                             >

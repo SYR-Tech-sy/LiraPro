@@ -336,7 +336,7 @@ export function NotificationsPanel() {
 
   return (
     <div className="relative" ref={panelRef}>
-      <button
+      <button type="button"
         onClick={handleOpen}
         className="relative p-1.5 rounded-full hover:bg-secondary transition-colors"
         aria-label="الإشعارات"
@@ -377,7 +377,7 @@ export function NotificationsPanel() {
               </div>
               <div className="flex items-center gap-1">
                 {notifications.length > 0 && (
-                  <button
+                  <button type="button"
                     onClick={handleClearAll}
                     className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                     title="مسح جميع الإشعارات"
@@ -386,7 +386,7 @@ export function NotificationsPanel() {
                     مسح الكل
                   </button>
                 )}
-                <button onClick={() => setOpen(false)} className="p-1 rounded-full hover:bg-secondary">
+                <button type="button" onClick={() => setOpen(false)} className="p-1 rounded-full hover:bg-secondary">
                   <X className="w-4 h-4 text-muted-foreground" />
                 </button>
               </div>

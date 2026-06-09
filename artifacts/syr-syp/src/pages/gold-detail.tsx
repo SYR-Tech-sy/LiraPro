@@ -66,7 +66,7 @@ function AlertModal({ onClose, karat, currentBuy, currentSell, t, formatNum }: {
           <h3 className="font-bold text-base flex items-center gap-2">
             <Bell className="w-4 h-4 text-yellow-500" /> {t('priceAlert')} - عيار {karat}
           </h3>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
+          <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
@@ -94,7 +94,7 @@ function AlertModal({ onClose, karat, currentBuy, currentSell, t, formatNum }: {
               <p className="text-xs font-semibold text-foreground/70 dark:text-white mb-2">{t('priceType')}</p>
               <div className="flex gap-2 mb-4">
                 {(['buy', 'sell'] as const).map(type => (
-                  <button key={type} onClick={() => setAlertType(type)}
+                  <button type="button" key={type} onClick={() => setAlertType(type)}
                     className={`flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${alertType === type ? 'bg-primary text-primary-foreground border-primary' : 'border-border'}`}>
                     {type === 'buy' ? t('buyPrice') : t('sellPrice')}
                   </button>
@@ -150,7 +150,7 @@ export default function GoldDetailPage() {
     <>
       <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-4 pb-10">
         <div className="flex items-center gap-3 mb-2">
-          <button onClick={() => navigate('/app/home')} className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
+          <button type="button" onClick={() => navigate('/app/home')} className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
             <ChevronRight className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2 flex-1">
@@ -161,7 +161,7 @@ export default function GoldDetailPage() {
             </div>
           </div>
           <LiveBadge />
-          <button onClick={handleAlertClick}
+          <button type="button" onClick={handleAlertClick}
             className="flex items-center gap-1 bg-accent/10 text-accent border border-accent/30 rounded-full px-3 py-1.5 text-xs font-bold hover:bg-accent/20 transition-colors">
             <Bell className="w-3.5 h-3.5" /> {t('alert')}
           </button>
@@ -202,7 +202,7 @@ export default function GoldDetailPage() {
 
         <div className="flex gap-2">
           {(['daily', 'weekly', 'monthly'] as Period[]).map(p => (
-            <button key={p} onClick={() => setPeriod(p)}
+            <button type="button" key={p} onClick={() => setPeriod(p)}
               className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${period === p ? 'bg-primary text-primary-foreground shadow' : 'bg-secondary text-foreground/70 dark:text-white'}`}>
               {t(p)}
             </button>
@@ -230,7 +230,7 @@ export default function GoldDetailPage() {
           <p className="text-xs font-semibold text-foreground/70 dark:text-white">عيارات أخرى</p>
           <div className="flex gap-2 flex-wrap">
             {[14, 18, 21, 22, 24].filter(k => k !== karat).map(k => (
-              <button key={k} onClick={() => navigate(`/app/gold/${k}`)}
+              <button type="button" key={k} onClick={() => navigate(`/app/gold/${k}`)}
                 className="px-4 py-2 rounded-xl bg-secondary text-sm font-bold hover:bg-secondary/80 border border-border transition-colors">
                 عيار {k}
               </button>

@@ -79,7 +79,7 @@ function VoicePlayer({ src, duration, isUser }: { src: string; duration?: number
     <div className={`flex items-center gap-1.5 px-2 py-1.5 min-w-[160px] max-w-[200px] ${isUser ? 'bg-primary/20' : 'bg-secondary/60'}`}
       dir="ltr">
       <audio ref={audioRef} src={src} preload="metadata" />
-      <button
+      <button type="button"
         onClick={toggle}
         className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ${isUser ? 'bg-white/20 hover:bg-white/30 text-primary-foreground' : 'bg-primary/10 hover:bg-primary/20 text-primary'}`}
       >
@@ -340,16 +340,16 @@ function ImageLightbox({ src, onClose }: { src: string | null; onClose: () => vo
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/88 backdrop-blur-sm" onClick={onClose}>
       <div className="relative flex flex-col items-center gap-3" style={{ maxWidth: '92vw', maxHeight: '92vh' }} onClick={e => e.stopPropagation()}>
         {/* Close */}
-        <button onClick={onClose} className="absolute -top-3 -right-3 z-20 w-8 h-8 rounded-full bg-white/20 hover:bg-white/35 backdrop-blur text-white flex items-center justify-center transition-colors">
+        <button type="button" onClick={onClose} className="absolute -top-3 -right-3 z-20 w-8 h-8 rounded-full bg-white/20 hover:bg-white/35 backdrop-blur text-white flex items-center justify-center transition-colors">
           <X className="w-4 h-4" />
         </button>
         {/* Zoom bar */}
         <div className="absolute -top-3 left-0 z-20 flex items-center gap-1 bg-black/55 backdrop-blur rounded-full px-2 py-1">
-          <button onClick={() => setZoom(z => clamp(z - 0.3))} className="w-6 h-6 rounded-full text-white/80 hover:text-white flex items-center justify-center text-sm font-black">−</button>
+          <button type="button" onClick={() => setZoom(z => clamp(z - 0.3))} className="w-6 h-6 rounded-full text-white/80 hover:text-white flex items-center justify-center text-sm font-black">−</button>
           <span className="text-[10px] text-white/70 font-mono w-8 text-center">{Math.round(zoom * 100)}%</span>
-          <button onClick={() => setZoom(z => clamp(z + 0.3))} className="w-6 h-6 rounded-full text-white/80 hover:text-white flex items-center justify-center text-sm font-black">+</button>
+          <button type="button" onClick={() => setZoom(z => clamp(z + 0.3))} className="w-6 h-6 rounded-full text-white/80 hover:text-white flex items-center justify-center text-sm font-black">+</button>
           {zoom !== 1 && (
-            <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} className="w-5 h-5 rounded-full text-white/60 hover:text-white flex items-center justify-center transition-colors">
+            <button type="button" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} className="w-5 h-5 rounded-full text-white/60 hover:text-white flex items-center justify-center transition-colors">
               <X className="w-2.5 h-2.5" />
             </button>
           )}
@@ -937,7 +937,7 @@ export default function SupportPage() {
 
       {/* Header */}
       <div className="flex items-center gap-2 p-3 border-b border-border bg-card rounded-t-2xl flex-shrink-0">
-        <button
+        <button type="button"
           onClick={() => window.history.back()}
           className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
           title="رجوع"
@@ -956,7 +956,7 @@ export default function SupportPage() {
             {botEnabled ? 'مساعد ذكي · يرد فوراً' : 'وضع الدعم البشري · قيد الانتظار'}
           </p>
         </div>
-        <button
+        <button type="button"
           onClick={() => setBotEnabled(b => !b)}
           className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
             botEnabled
@@ -967,7 +967,7 @@ export default function SupportPage() {
         >
           <PhoneOff className="w-3.5 h-3.5" />
         </button>
-        <button
+        <button type="button"
           onClick={clearChat}
           className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
           title="مسح المحادثة"
@@ -983,7 +983,7 @@ export default function SupportPage() {
           <p className="text-[11px] text-blue-700 dark:text-blue-300 leading-relaxed flex-1">
             يمكنك تعطيل المساعد الذكي بالضغط على زر <PhoneOff className="w-2.5 h-2.5 inline mb-0.5" /> لإرسال رسائلك مباشرةً لفريق الدعم البشري.
           </p>
-          <button
+          <button type="button"
             onClick={() => { setShowAIBanner(false); try { localStorage.setItem('syp-ai-banner-dismissed', 'true'); } catch {} }}
             className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-200 transition-colors flex-shrink-0"
           >
@@ -1146,7 +1146,7 @@ export default function SupportPage() {
                       {msg.role === 'user' && <CheckCheck className="w-3 h-3 text-primary/60" />}
                       {(msg.role === 'bot' || msg.role === 'admin') && !msg.isTicketNotice && !msg.isGuestLimit && (
                         <div className="flex items-center gap-0.5 mr-1">
-                          <button
+                          <button type="button"
                             onClick={() => rateMsg(msg.id, 'up')}
                             title="رد مفيد"
                             className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
@@ -1157,7 +1157,7 @@ export default function SupportPage() {
                           >
                             <ThumbsUp className="w-2.5 h-2.5" />
                           </button>
-                          <button
+                          <button type="button"
                             onClick={() => rateMsg(msg.id, 'down')}
                             title="رد غير مفيد"
                             className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
@@ -1224,7 +1224,7 @@ export default function SupportPage() {
               transition={{ duration: 0.8, repeat: Infinity }}
             />
             <span className="text-xs font-bold text-green-600 dark:text-green-400 flex-1">جارٍ الاستماع... تحدث الآن</span>
-            <button onClick={stopVoiceInput} className="text-muted-foreground hover:text-red-500 transition-colors">
+            <button type="button" onClick={stopVoiceInput} className="text-muted-foreground hover:text-red-500 transition-colors">
               <X className="w-4 h-4" />
             </button>
           </motion.div>
@@ -1243,7 +1243,7 @@ export default function SupportPage() {
               <p className="text-sm text-foreground leading-snug break-words">{pendingTranscript}</p>
             </div>
             <div className="flex gap-1.5 flex-shrink-0 mt-0.5">
-              <button
+              <button type="button"
                 onClick={() => {
                   const text = pendingTranscript;
                   setPendingTranscript('');
@@ -1254,7 +1254,7 @@ export default function SupportPage() {
               >
                 إرسال
               </button>
-              <button
+              <button type="button"
                 onClick={() => {
                   setInput(prev => (prev ? prev + ' ' + pendingTranscript : pendingTranscript).trim());
                   setPendingTranscript('');
@@ -1264,7 +1264,7 @@ export default function SupportPage() {
               >
                 تعديل
               </button>
-              <button
+              <button type="button"
                 onClick={() => {
                   setInput(prev => (prev ? prev + ' ' + pendingTranscript : pendingTranscript).trim());
                   setPendingTranscript('');
@@ -1302,7 +1302,7 @@ export default function SupportPage() {
               ))}
             </div>
             <span className="text-xs font-black text-red-600 tabular-nums">{fmtSecs(recordSecs)}</span>
-            <button onClick={() => stopRecording(false)} className="text-muted-foreground hover:text-red-500 transition-colors" title="إلغاء">
+            <button type="button" onClick={() => stopRecording(false)} className="text-muted-foreground hover:text-red-500 transition-colors" title="إلغاء">
               <X className="w-4 h-4" />
             </button>
           </motion.div>
@@ -1312,14 +1312,14 @@ export default function SupportPage() {
           {/* Attachment buttons */}
           {!isRecording && !sttActive && !ticketClosed && (
             <div className="flex gap-1 flex-shrink-0">
-              <button
+              <button type="button"
                 onClick={() => imageRef.current?.click()}
                 className="w-8 h-8 rounded-xl bg-secondary/60 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                 title="إرسال صورة للتحليل"
               >
                 <ImageIcon className="w-4 h-4" />
               </button>
-              <button
+              <button type="button"
                 onClick={() => fileRef.current?.click()}
                 className="w-8 h-8 rounded-xl bg-secondary/60 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                 title="إرفاق ملف"
@@ -1367,7 +1367,7 @@ export default function SupportPage() {
           {/* Send / voice */}
           {!ticketClosed && (
             isRecording ? (
-              <button
+              <button type="button"
                 onClick={() => stopRecording(true)}
                 className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground flex-shrink-0 active:scale-95 transition-transform"
                 title="إرسال الرسالة الصوتية"
@@ -1375,7 +1375,7 @@ export default function SupportPage() {
                 <Square className="w-4 h-4 fill-current" />
               </button>
             ) : sttActive ? (
-              <button
+              <button type="button"
                 onClick={stopVoiceInput}
                 className="w-9 h-9 rounded-xl bg-green-500 flex items-center justify-center text-white flex-shrink-0 active:scale-95 transition-transform"
                 title="إيقاف الاستماع"
@@ -1383,7 +1383,7 @@ export default function SupportPage() {
                 <Square className="w-4 h-4 fill-current" />
               </button>
             ) : input.trim() ? (
-              <button
+              <button type="button"
                 onClick={handleSend}
                 disabled={sending}
                 className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground flex-shrink-0 active:scale-95 transition-transform"
@@ -1391,7 +1391,7 @@ export default function SupportPage() {
                 <Send className="w-4 h-4" />
               </button>
             ) : (
-              <button
+              <button type="button"
                 onClick={startVoiceInput}
                 className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors bg-secondary/60 text-muted-foreground hover:text-primary hover:bg-primary/10"
                 title="تسجيل رسالة صوتية"

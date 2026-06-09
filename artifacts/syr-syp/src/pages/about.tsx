@@ -59,7 +59,7 @@ export default function AboutPage() {
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4 pb-10">
       <div className="flex items-center gap-3 mb-2">
-        <button onClick={() => navigate('/app/home')} className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
+        <button type="button" onClick={() => navigate('/app/home')} className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
           <ChevronRight className="w-5 h-5" />
         </button>
         <h2 className="text-lg font-bold">{t('aboutApp')}</h2>

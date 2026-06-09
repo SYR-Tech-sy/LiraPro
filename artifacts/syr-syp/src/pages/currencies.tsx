@@ -115,7 +115,7 @@ export default function CurrenciesPage() {
         <span className="text-blue-700 dark:text-blue-300 text-xs leading-relaxed flex-1">
           هذه الأسعار وفق الأسعار العالمية، لعرض الأسعار المحلية انتقل إلى قسم الصرافة.
         </span>
-        <button
+        <button type="button"
           onClick={() => navigate('/app/home?cat=currency')}
           className="flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 px-2 py-1 rounded-xl border border-blue-300 dark:border-blue-600 bg-blue-100 dark:bg-blue-900/40 flex-shrink-0 hover:opacity-80 transition-opacity"
         >

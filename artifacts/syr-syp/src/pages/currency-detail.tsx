@@ -81,7 +81,7 @@ function AlertModal({ onClose, code, currentBuy, currentSell, t, formatNum }: {
           <h3 className="font-bold text-lg flex items-center gap-2">
             <Bell className="w-5 h-5 text-accent" /> {t('priceAlert')}
           </h3>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
+          <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
@@ -114,11 +114,11 @@ function AlertModal({ onClose, code, currentBuy, currentSell, t, formatNum }: {
               </div>
               <p className="text-xs font-semibold text-foreground/70 dark:text-white mb-2">{t('priceType')}</p>
               <div className="flex gap-2 mb-4">
-                <button onClick={() => setAlertType('buy')}
+                <button type="button" onClick={() => setAlertType('buy')}
                   className={`flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${alertType === 'buy' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:border-primary/30'}`}>
                   {t('buyPrice')}
                 </button>
-                <button onClick={() => setAlertType('sell')}
+                <button type="button" onClick={() => setAlertType('sell')}
                   className={`flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${alertType === 'sell' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:border-primary/30'}`}>
                   {t('sellPrice')}
                 </button>
@@ -209,7 +209,7 @@ export default function CurrencyDetailPage() {
     <>
       <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-4 pb-10">
         <div className="flex items-center gap-3 mb-2">
-          <button onClick={() => window.history.back()} className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
+          <button type="button" onClick={() => window.history.back()} className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
             <ChevronRight className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2 flex-1">
@@ -223,7 +223,7 @@ export default function CurrencyDetailPage() {
             </div>
           </div>
           <LiveBadge />
-          <button
+          <button type="button"
             onClick={handleAlertClick}
             className="flex items-center gap-1 bg-accent/10 text-accent border border-accent/30 rounded-full px-3 py-1.5 text-xs font-bold hover:bg-accent/20 transition-colors"
           >
@@ -267,7 +267,7 @@ export default function CurrencyDetailPage() {
 
         <div className="flex gap-2">
           {(['daily', 'weekly', 'monthly'] as Period[]).map(p => (
-            <button key={p} onClick={() => setPeriod(p)}
+            <button type="button" key={p} onClick={() => setPeriod(p)}
               className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${period === p ? 'bg-primary text-primary-foreground shadow' : 'bg-secondary text-foreground/70 dark:text-white'}`}>
               {t(p)}
             </button>

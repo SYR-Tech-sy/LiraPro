@@ -176,7 +176,7 @@ export default function FAQPage() {
       {/* Header */}
       <div className="sticky top-14 z-40 bg-background/95 backdrop-blur-xl border-b border-border/60 px-4 py-3 flex items-center gap-3">
         <Link href="/app/home">
-          <button className="p-1.5 hover:bg-secondary rounded-lg transition-colors">
+          <button type="button" className="p-1.5 hover:bg-secondary rounded-lg transition-colors">
             <ChevronLeft className="w-5 h-5 rotate-180" />
           </button>
         </Link>
@@ -222,7 +222,7 @@ export default function FAQPage() {
           </div>
 
           <Link href="/app/support">
-            <button className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-card border border-border text-foreground font-bold text-sm shadow-sm active:scale-95 transition-transform">
+            <button type="button" className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-card border border-border text-foreground font-bold text-sm shadow-sm active:scale-95 transition-transform">
               <MessageSquare className="w-4 h-4" />
               ابدأ محادثة الآن
             </button>
@@ -242,7 +242,7 @@ export default function FAQPage() {
               key={i}
               className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm"
             >
-              <button
+              <button type="button"
                 className="w-full flex items-center justify-between px-4 py-3.5 text-right gap-3"
                 onClick={() => setOpenIdx(openIdx === i ? null : i)}
               >

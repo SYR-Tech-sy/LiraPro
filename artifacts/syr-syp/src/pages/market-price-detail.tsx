@@ -201,7 +201,7 @@ function AlertModal({ onClose, productName, currentPrice, currentBuy, currentSel
           <h3 className="font-bold text-lg flex items-center gap-2">
             <Bell className="w-5 h-5 text-accent" /> {t('priceAlert')}
           </h3>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
+          <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
@@ -246,17 +246,17 @@ function AlertModal({ onClose, productName, currentPrice, currentBuy, currentSel
               <div className="flex gap-2 mb-4">
                 {hasBuySell ? (
                   <>
-                    <button onClick={() => setAlertType('buy')}
+                    <button type="button" onClick={() => setAlertType('buy')}
                       className={`flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${alertType === 'buy' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:border-primary/30'}`}>
                       {t('buyPrice')}
                     </button>
-                    <button onClick={() => setAlertType('sell')}
+                    <button type="button" onClick={() => setAlertType('sell')}
                       className={`flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${alertType === 'sell' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:border-primary/30'}`}>
                       {t('sellPrice')}
                     </button>
                   </>
                 ) : (
-                  <button onClick={() => setAlertType('price')}
+                  <button type="button" onClick={() => setAlertType('price')}
                     className="flex-1 py-2.5 rounded-xl text-sm font-bold border-2 bg-primary text-primary-foreground border-primary">
                     {t('currentPrice')}
                   </button>
@@ -305,7 +305,7 @@ function VendorPopup({ source, onClose, formatNum: _formatNum }: { source: Price
               <h3 className="font-black text-base text-blue-600 dark:text-blue-400">{source.businessName}</h3>
               <GoldenBadge size={22} />
             </div>
-            <button onClick={onClose} className="p-1.5 hover:bg-secondary rounded-xl">
+            <button type="button" onClick={onClose} className="p-1.5 hover:bg-secondary rounded-xl">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -367,7 +367,7 @@ function ReportModal({ businessName, onClose }: { businessName: string; onClose:
           <span className="font-bold text-sm text-red-700 dark:text-red-400 flex items-center gap-1.5">
             <Flag className="w-4 h-4" /> الإبلاغ عن سعر مشبوه
           </span>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-secondary"><X className="w-4 h-4" /></button>
+          <button type="button" onClick={onClose} className="p-1 rounded-lg hover:bg-secondary"><X className="w-4 h-4" /></button>
         </div>
         <div className="p-4">
           {done ? (
@@ -381,7 +381,7 @@ function ReportModal({ businessName, onClose }: { businessName: string; onClose:
               <p className="text-xs text-muted-foreground mb-3">اختر سبب الإبلاغ عن <strong>{businessName}</strong>:</p>
               <div className="flex flex-col gap-2 mb-4">
                 {REASONS.map(r => (
-                  <button key={r} onClick={() => setReason(r)}
+                  <button type="button" key={r} onClick={() => setReason(r)}
                     className={`py-2 px-3 rounded-xl text-xs font-bold border-2 text-right transition-all ${reason === r ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700' : 'border-border hover:border-red-300'}`}>
                     {r}
                   </button>
@@ -421,7 +421,7 @@ function SourceCard({
         </span>
       </div>
 
-      <button onClick={onInfoClick} className="flex-shrink-0 focus:outline-none">
+      <button type="button" onClick={onInfoClick} className="flex-shrink-0 focus:outline-none">
         {source.logoUrl ? (
           <img src={source.logoUrl} alt={source.businessName}
             className="w-12 h-12 rounded-xl object-cover border border-border hover:opacity-80 transition-opacity" />
@@ -434,7 +434,7 @@ function SourceCard({
       </button>
 
       <div className="flex-1 min-w-0">
-        <button onClick={onInfoClick} className="flex items-center gap-1.5 mb-1 w-full text-right focus:outline-none">
+        <button type="button" onClick={onInfoClick} className="flex items-center gap-1.5 mb-1 w-full text-right focus:outline-none">
           <p className="font-black text-sm break-words text-blue-600 dark:text-blue-400">{source.businessName}</p>
           <GoldenBadge size={20} />
         </button>
@@ -472,19 +472,19 @@ function SourceCard({
 
         {/* Rating + Report row */}
         <div className="flex items-center gap-1.5 mt-2">
-          <button
+          <button type="button"
             onClick={() => handleVote('up')}
             className={`flex items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${vote === 'up' ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : 'bg-secondary/60 text-muted-foreground hover:text-green-600'}`}
           >
             <ThumbsUp className="w-3 h-3" />
           </button>
-          <button
+          <button type="button"
             onClick={() => handleVote('down')}
             className={`flex items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${vote === 'down' ? 'bg-red-100 dark:bg-red-900/30 text-red-600' : 'bg-secondary/60 text-muted-foreground hover:text-red-600'}`}
           >
             <ThumbsDown className="w-3 h-3" />
           </button>
-          <button
+          <button type="button"
             onClick={() => !reported && setShowReport(true)}
             className={`flex items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] font-bold transition-all mr-auto ${reported ? 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'bg-secondary/60 text-muted-foreground hover:text-orange-500'}`}
           >
@@ -568,7 +568,7 @@ export default function MarketPriceDetailPage() {
   if (loading) return (
     <div className="flex flex-col pb-28 min-h-screen" dir="rtl">
       <div className="flex items-center gap-3 p-4">
-        <button onClick={() => navigate('/app/home')} className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
+        <button type="button" onClick={() => navigate('/app/home')} className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
           <ChevronLeft className="w-5 h-5" />
         </button>
         <Skeleton className="h-5 w-40" />
@@ -596,7 +596,7 @@ export default function MarketPriceDetailPage() {
 
         {/* ── Header row — same layout as currency-detail ── */}
         <div className="flex items-center gap-3 mb-2">
-          <button onClick={() => navigate('/app/home')}
+          <button type="button" onClick={() => navigate('/app/home')}
             className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors flex-shrink-0">
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -610,7 +610,7 @@ export default function MarketPriceDetailPage() {
               <p className="text-xs text-foreground/60 dark:text-white/70">{catLabel}</p>
             </div>
           </div>
-          <button
+          <button type="button"
             onClick={handleAlertClick}
             className="flex items-center gap-1 bg-accent/10 text-accent border border-accent/30 rounded-full px-3 py-1.5 text-xs font-bold hover:bg-accent/20 transition-colors flex-shrink-0"
           >
@@ -670,7 +670,7 @@ export default function MarketPriceDetailPage() {
         {/* ── Period selector — identical to currency-detail ── */}
         <div className="flex gap-2">
           {(['daily', 'weekly', 'monthly'] as Period[]).map(p => (
-            <button key={p} onClick={() => setPeriod(p)}
+            <button type="button" key={p} onClick={() => setPeriod(p)}
               className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${period === p ? 'bg-primary text-primary-foreground shadow' : 'bg-secondary text-foreground/70 dark:text-white'}`}>
               {t(p)}
             </button>
@@ -717,7 +717,7 @@ export default function MarketPriceDetailPage() {
 
             {rest.length > 0 && (
               <>
-                <button
+                <button type="button"
                   onClick={() => setExpanded(v => !v)}
                   className="w-full py-2.5 flex items-center justify-center gap-2 border-t border-border/40 hover:bg-secondary/60 transition-colors"
                   style={{ color: catColor }}

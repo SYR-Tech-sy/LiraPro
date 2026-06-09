@@ -2,12 +2,10 @@ import type { Request, Response, NextFunction } from "express";
 import { verifySupabaseToken } from "../lib/supabase-admin.js";
 import { trackSession } from "../services/sessionService.js";
 
-declare global {
-  namespace Express {
-    interface Request {
-      supabaseUserId?: string;
-      supabaseUserEmail?: string;
-    }
+declare module "express" {
+  interface Request {
+    supabaseUserId?: string;
+    supabaseUserEmail?: string;
   }
 }
 
@@ -34,7 +32,9 @@ export async function requireSupabaseAuth(
 
   // Fire-and-forget: track session in DB (non-blocking)
   const ip =
-    (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim() ||
+    (req.headers["x-forwarded-for"] as string | undefined)
+      ?.split(",")[0]
+      ?.trim() ||
     req.socket?.remoteAddress ||
     "";
   const ua = req.headers["user-agent"] ?? "";

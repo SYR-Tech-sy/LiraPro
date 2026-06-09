@@ -50,7 +50,7 @@ export function GuestModal({ open, onClose, feature = 'هذه الميزة' }: G
                   إنشاء حساب جديد
                 </Button>
               </Link>
-              <button
+              <button type="button"
                 onClick={onClose}
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors mt-1 text-center"
               >

@@ -394,7 +394,7 @@ export function FloatingAiButton() {
           </div>
 
           {/* Arrow snap button */}
-          <button
+          <button type="button"
             data-arrow="true"
             onClick={handleArrowClick}
             title="إخفاء المساعد للحافة"

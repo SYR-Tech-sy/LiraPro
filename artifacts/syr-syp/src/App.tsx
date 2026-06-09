@@ -102,7 +102,7 @@ function DarkModeToggle() {
   const { theme, setTheme } = useTheme();
   const isDark = theme === 'dark';
   return (
-    <button
+    <button type="button"
       dir="ltr"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       className={`relative w-12 h-6 rounded-full transition-colors duration-300 flex items-center flex-shrink-0 ${isDark ? 'bg-primary' : 'bg-gray-200'}`}
@@ -118,7 +118,7 @@ function NumberFormatToggle() {
   const { numberFormat, setNumberFormat } = useApp();
   const isArabic = numberFormat === 'arabic';
   return (
-    <button
+    <button type="button"
       dir="ltr"
       onClick={() => setNumberFormat(isArabic ? 'english' : 'arabic')}
       className={`relative w-14 h-6 rounded-full transition-colors duration-300 flex items-center flex-shrink-0 ${isArabic ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'}`}

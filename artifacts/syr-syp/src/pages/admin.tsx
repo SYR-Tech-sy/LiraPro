@@ -476,15 +476,15 @@ function AdminTicketsPanel({ onOpenConv }: { onOpenConv?: (userId: string) => vo
             <span className="bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">{unreadCount} غير مقروءة</span>
           )}
           {ticketSelectMode && selectedTicketIds.size > 0 && (
-            <button onClick={() => void bulkDeleteTickets()}
+            <button type="button" onClick={() => void bulkDeleteTickets()}
               className="text-[9px] font-bold px-2.5 py-1 rounded-full bg-red-500 text-white flex items-center gap-1">
               <Trash2 className="w-2.5 h-2.5" /> حذف ({selectedTicketIds.size})
             </button>
           )}
-          <button onClick={() => void refresh()} className="text-[9px] px-2 py-1 rounded-full bg-secondary/60 text-muted-foreground hover:bg-secondary flex items-center gap-1">
+          <button type="button" onClick={() => void refresh()} className="text-[9px] px-2 py-1 rounded-full bg-secondary/60 text-muted-foreground hover:bg-secondary flex items-center gap-1">
             <RefreshCw className="w-2.5 h-2.5" />
           </button>
-          <button
+          <button type="button"
             onClick={() => { setTicketSelectMode(v => !v); setSelectedTicketIds(new Set()); setSelId(null); }}
             className={`text-[9px] font-bold px-2.5 py-1 rounded-full transition-colors ${ticketSelectMode ? 'bg-primary text-white' : 'bg-secondary/80 text-muted-foreground hover:bg-secondary'}`}
           >
@@ -493,7 +493,7 @@ function AdminTicketsPanel({ onOpenConv }: { onOpenConv?: (userId: string) => vo
         </div>
         <CardContent className="p-3 flex gap-2">
           {(['all', 'open', 'closed'] as const).map(f => (
-            <button
+            <button type="button"
               key={f}
               onClick={() => setFilter(f)}
               className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all ${filter === f ? 'bg-primary text-white' : 'bg-secondary text-muted-foreground'}`}
@@ -847,31 +847,31 @@ function AdminSupportPanel({ initUserId, onImageClick, openConfirm }: { initUser
           <span className="font-bold text-sm flex-1">محادثات الدعم</span>
           {unreadTotal > 0 && !convSelectMode && <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500 text-white font-black">{unreadTotal} جديد</span>}
           {selUserId && (
-            <button onClick={() => setSelUserId(null)} className="text-[10px] px-2 py-1 rounded-lg bg-secondary/60 text-muted-foreground hover:text-primary flex items-center gap-1">
+            <button type="button" onClick={() => setSelUserId(null)} className="text-[10px] px-2 py-1 rounded-lg bg-secondary/60 text-muted-foreground hover:text-primary flex items-center gap-1">
               <X className="w-3 h-3" /> رجوع
             </button>
           )}
           {selUserId && !selConv?.closedAt && (
-            <button onClick={closeTicket} className="text-[10px] px-2 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 flex items-center gap-1">
+            <button type="button" onClick={closeTicket} className="text-[10px] px-2 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 flex items-center gap-1">
               <Check className="w-3 h-3" /> إغلاق التذكرة
             </button>
           )}
           {!selUserId && (
             <>
               {convSelectMode && selectedConvIds.size > 0 && (
-                <button
+                <button type="button"
                   onClick={() => { selectedConvIds.forEach(uid => localStorage.removeItem(`syp-conv-${uid}`)); setSelectedConvIds(new Set()); setConvSelectMode(false); loadConvs(); }}
                   className="text-[9px] font-bold px-2.5 py-1 rounded-full bg-red-500 text-white flex items-center gap-1">
                   <Trash2 className="w-2.5 h-2.5" /> حذف ({selectedConvIds.size})
                 </button>
               )}
-              <button
+              <button type="button"
                 onClick={() => { setConvSelectMode(v => !v); setSelectedConvIds(new Set()); }}
                 className={`text-[10px] px-2 py-1 rounded-lg flex items-center gap-1 transition-colors ${convSelectMode ? 'bg-primary text-white' : 'bg-secondary/60 text-muted-foreground'}`}
               >
                 {convSelectMode ? <><X className="w-3 h-3" /> إلغاء</> : 'تحديد'}
               </button>
-              <button onClick={() => setShowAddAgent(v => !v)} className="text-[10px] px-2 py-1 rounded-lg bg-primary/10 text-primary flex items-center gap-1">
+              <button type="button" onClick={() => setShowAddAgent(v => !v)} className="text-[10px] px-2 py-1 rounded-lg bg-primary/10 text-primary flex items-center gap-1">
                 <Plus className="w-3 h-3" /> موظف دعم
               </button>
             </>
@@ -917,7 +917,7 @@ function AdminSupportPanel({ initUserId, onImageClick, openConfirm }: { initUser
           <span className="text-[10px] text-muted-foreground font-medium flex-shrink-0">الرد بوصفك:</span>
           <div className="flex gap-1.5 flex-wrap">
             {agents.map(ag => (
-              <button
+              <button type="button"
                 key={ag.id}
                 onClick={() => { setActiveAgentId(ag.id); localStorage.setItem(ACTIVE_AGENT_KEY, ag.id); }}
                 className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded-full border transition-colors ${
@@ -946,7 +946,7 @@ function AdminSupportPanel({ initUserId, onImageClick, openConfirm }: { initUser
                   const last = conv.msgs[conv.msgs.length - 1];
                   const isSelected = selectedConvIds.has(conv.userId);
                   return (
-                    <button
+                    <button type="button"
                       key={conv.userId}
                       onClick={() => convSelectMode
                         ? setSelectedConvIds(prev => { const next = new Set(prev); if (next.has(conv.userId)) next.delete(conv.userId); else next.add(conv.userId); return next; })
@@ -988,7 +988,7 @@ function AdminSupportPanel({ initUserId, onImageClick, openConfirm }: { initUser
                 <p className="text-xs font-bold">{selConv?.userName ?? '...'}</p>
                 <div className="flex items-center gap-1.5">
                   {selConv?.closedAt && <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600">مغلقة</span>}
-                  <button onClick={() => openConfirm({
+                  <button type="button" onClick={() => openConfirm({
                     title: 'حذف المحادثة',
                     body: `هل أنت متأكد من حذف محادثة ${selConv?.userName ?? ''}؟`,
                     destructive: true,
@@ -1075,19 +1075,19 @@ function AdminSupportPanel({ initUserId, onImageClick, openConfirm }: { initUser
                     <div className="flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-950/30 rounded-xl border border-red-200 dark:border-red-800/50">
                       <motion.div className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" animate={{ opacity: [1,0.3,1] }} transition={{ duration:0.8, repeat: Infinity }} />
                       <span className="text-xs font-bold text-red-600 flex-1">جارٍ التسجيل... {fmtSecs(adminRecSecs)}</span>
-                      <button onClick={() => stopAdminRec(false)} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
+                      <button type="button" onClick={() => stopAdminRec(false)} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
                     </div>
                   )}
                   <div className="flex gap-2">
                     <div className="flex gap-1">
-                      <button onClick={() => adminImgRef.current?.click()} className="w-7 h-7 rounded-lg bg-secondary/60 flex items-center justify-center hover:bg-primary/10 transition-colors text-muted-foreground hover:text-primary" title="صورة"><ImageIcon className="w-3.5 h-3.5" /></button>
-                      <button onClick={() => adminFileRef.current?.click()} className="w-7 h-7 rounded-lg bg-secondary/60 flex items-center justify-center hover:bg-primary/10 transition-colors text-muted-foreground hover:text-primary" title="ملف"><Paperclip className="w-3.5 h-3.5" /></button>
+                      <button type="button" onClick={() => adminImgRef.current?.click()} className="w-7 h-7 rounded-lg bg-secondary/60 flex items-center justify-center hover:bg-primary/10 transition-colors text-muted-foreground hover:text-primary" title="صورة"><ImageIcon className="w-3.5 h-3.5" /></button>
+                      <button type="button" onClick={() => adminFileRef.current?.click()} className="w-7 h-7 rounded-lg bg-secondary/60 flex items-center justify-center hover:bg-primary/10 transition-colors text-muted-foreground hover:text-primary" title="ملف"><Paperclip className="w-3.5 h-3.5" /></button>
                       {!adminRec ? (
-                        <button onClick={startAdminRec} className="w-7 h-7 rounded-lg bg-secondary/60 flex items-center justify-center hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors" title="تسجيل صوتي">
+                        <button type="button" onClick={startAdminRec} className="w-7 h-7 rounded-lg bg-secondary/60 flex items-center justify-center hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors" title="تسجيل صوتي">
                           <Mic className="w-3.5 h-3.5" />
                         </button>
                       ) : (
-                        <button onClick={() => stopAdminRec(true)} className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
+                        <button type="button" onClick={() => stopAdminRec(true)} className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
                           <Check className="w-3.5 h-3.5" />
                         </button>
                       )}
@@ -1175,16 +1175,16 @@ function AdminImageLightbox({ src, onClose }: { src: string | null; onClose: () 
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/88 backdrop-blur-sm" onClick={onClose}>
       <div className="relative flex flex-col items-center gap-3" style={{ maxWidth: '92vw', maxHeight: '92vh' }} onClick={e => e.stopPropagation()}>
         {/* Close */}
-        <button onClick={onClose} className="absolute -top-3 -right-3 z-20 w-8 h-8 rounded-full bg-white/20 hover:bg-white/35 backdrop-blur text-white flex items-center justify-center transition-colors">
+        <button type="button" onClick={onClose} className="absolute -top-3 -right-3 z-20 w-8 h-8 rounded-full bg-white/20 hover:bg-white/35 backdrop-blur text-white flex items-center justify-center transition-colors">
           <X className="w-4 h-4" />
         </button>
         {/* Zoom bar */}
         <div className="absolute -top-3 left-0 z-20 flex items-center gap-1 bg-black/55 backdrop-blur rounded-full px-2 py-1">
-          <button onClick={() => setZoom(z => clamp(z - 0.3))} className="w-6 h-6 rounded-full text-white/80 hover:text-white flex items-center justify-center text-sm font-black">−</button>
+          <button type="button" onClick={() => setZoom(z => clamp(z - 0.3))} className="w-6 h-6 rounded-full text-white/80 hover:text-white flex items-center justify-center text-sm font-black">−</button>
           <span className="text-[10px] text-white/70 font-mono w-8 text-center">{Math.round(zoom * 100)}%</span>
-          <button onClick={() => setZoom(z => clamp(z + 0.3))} className="w-6 h-6 rounded-full text-white/80 hover:text-white flex items-center justify-center text-sm font-black">+</button>
+          <button type="button" onClick={() => setZoom(z => clamp(z + 0.3))} className="w-6 h-6 rounded-full text-white/80 hover:text-white flex items-center justify-center text-sm font-black">+</button>
           {zoom !== 1 && (
-            <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} className="w-5 h-5 rounded-full text-white/60 hover:text-white flex items-center justify-center transition-colors">
+            <button type="button" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} className="w-5 h-5 rounded-full text-white/60 hover:text-white flex items-center justify-center transition-colors">
               <X className="w-2.5 h-2.5" />
             </button>
           )}
@@ -2755,11 +2755,11 @@ export default function AdminPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => { void queryClient.invalidateQueries({ queryKey: ['admin-stats', token] }); void queryClient.invalidateQueries({ queryKey: ['admin-users', token] }); void queryClient.invalidateQueries({ queryKey: ['admin-vendors', token] }); void queryClient.invalidateQueries({ queryKey: ['admin-notifications'] }); }}
+            <button type="button" onClick={() => { void queryClient.invalidateQueries({ queryKey: ['admin-stats', token] }); void queryClient.invalidateQueries({ queryKey: ['admin-users', token] }); void queryClient.invalidateQueries({ queryKey: ['admin-vendors', token] }); void queryClient.invalidateQueries({ queryKey: ['admin-notifications'] }); }}
               className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors">
               <RefreshCw className="w-4 h-4 text-white" />
             </button>
-            <button
+            <button type="button"
               onClick={() => { sessionStorage.removeItem(ADMIN_TOKEN_KEY); setToken(null); }}
               className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white text-xs font-bold">
               خروج
@@ -2777,7 +2777,7 @@ export default function AdminPage() {
             const hasBadge = (tab.id === 'requests' && totalRequestsBadge > 0) || (tab.id === 'applications' && (pendingApps > 0 || newEvents.applications > 0)) || (tab.id === 'support' && pendingSupportMsgs > 0) || (tab.id === 'tickets' && pendingTickets > 0) || (tab.id === 'users' && newEvents.users > 0);
             const badgeCount = tab.id === 'requests' ? totalRequestsBadge : tab.id === 'applications' ? (pendingApps + newEvents.applications) : tab.id === 'support' ? pendingSupportMsgs : tab.id === 'tickets' ? pendingTickets : tab.id === 'users' ? newEvents.users : 0;
             return (
-              <button
+              <button type="button"
                 key={tab.id}
                 onClick={() => {
                   setActiveTab(tab.id);
@@ -2849,12 +2849,12 @@ export default function AdminPage() {
                         <span className="font-bold text-sm">نشطون اليوم</span>
                         <span className="text-xs font-mono bg-secondary px-1.5 py-0.5 rounded">{activeToday.length}</span>
                       </div>
-                      <button onClick={() => setActiveTab('users')} className="text-[11px] text-primary font-bold hover:underline">عرض الكل</button>
+                      <button type="button" onClick={() => setActiveTab('users')} className="text-[11px] text-primary font-bold hover:underline">عرض الكل</button>
                     </div>
                     <CardContent className="p-3">
                       <div className="flex flex-wrap gap-2">
                         {activeToday.slice(0, 16).map(u => (
-                          <button key={u.id}
+                          <button type="button" key={u.id}
                             onClick={() => { setActiveTab('users'); setExpandedUser(u.id); }}
                             className="flex flex-col items-center gap-0.5 hover:scale-110 transition-transform active:scale-95"
                             title={u.fullName || u.businessName || '—'}>
@@ -2889,7 +2889,7 @@ export default function AdminPage() {
                   { label: 'مقيّدون', val: users.filter(u => !!u.restricted).length, color: '#f59e0b', tab: 'users' },
                   { label: 'إشعارات', val: notifications.length, color: '#0284c7', tab: 'notifications' },
                 ].map(s => (
-                  <button key={s.label}
+                  <button type="button" key={s.label}
                     onClick={() => setActiveTab(s.tab)}
                     className="bg-card border border-border shadow-sm rounded-xl active:scale-95 transition-transform hover:shadow-md">
                     <div className="p-2.5 text-center">
@@ -2907,7 +2907,7 @@ export default function AdminPage() {
                     <Users className="w-4 h-4 text-primary" />
                     <span className="font-bold text-sm">آخر التسجيلات</span>
                   </div>
-                  <button onClick={() => setActiveTab('users')}
+                  <button type="button" onClick={() => setActiveTab('users')}
                     className="text-[11px] text-primary font-bold hover:underline">عرض الكل</button>
                 </div>
                 <CardContent className="p-3 flex flex-col gap-2">
@@ -3047,7 +3047,7 @@ export default function AdminPage() {
                   { label: 'مقيد', val: users.filter(u => !!u.restricted && !u.softDeleted && !u.permanentlyDeleted).length, filter: 'restricted', color: '#f59e0b' },
                   { label: 'محذوف', val: users.filter(u => !!u.softDeleted || !!u.permanentlyDeleted).length, filter: 'deleted', color: '#6b7280' },
                 ].map(s => (
-                  <button key={s.filter} onClick={() => setUserFilter(s.filter)}
+                  <button type="button" key={s.filter} onClick={() => setUserFilter(s.filter)}
                     className={`rounded-xl p-2.5 text-center transition-all ${userFilter === s.filter ? 'shadow-md' : 'bg-card border border-border'}`}
                     style={userFilter === s.filter ? { background: s.color, color: 'white' } : {}}>
                     <p className="font-black text-base">{s.val}</p>
@@ -3063,7 +3063,7 @@ export default function AdminPage() {
                   placeholder="البحث عن مستخدم..."
                   className="pr-9 h-11 rounded-xl" />
                 {userSearch && (
-                  <button onClick={() => setUserSearch('')}
+                  <button type="button" onClick={() => setUserSearch('')}
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                     <X className="w-4 h-4" />
                   </button>
@@ -3073,12 +3073,12 @@ export default function AdminPage() {
               {/* Sub-tabs for deleted filter */}
               {userFilter === 'deleted' && (
                 <div className="flex gap-1 bg-secondary/40 rounded-xl p-1">
-                  <button
+                  <button type="button"
                     className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${deletedSubTab === 'recoverable' ? 'bg-card shadow text-foreground' : 'text-muted-foreground'}`}
                     onClick={() => setDeletedSubTab('recoverable')}>
                     قابل للاسترجاع
                   </button>
-                  <button
+                  <button type="button"
                     className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${deletedSubTab === 'permanent' ? 'bg-red-600 shadow text-white' : 'text-muted-foreground'}`}
                     onClick={() => setDeletedSubTab('permanent')}>
                     محذوف نهائياً
@@ -3111,7 +3111,7 @@ export default function AdminPage() {
                     return (
                       <Card key={u.id} className={`border-border shadow-sm overflow-hidden ${u.softDeleted || u.permanentlyDeleted ? 'opacity-75' : ''}`}>
                         {/* Collapsed header */}
-                        <button className="w-full p-3 flex items-center gap-3 text-right"
+                        <button type="button" className="w-full p-3 flex items-center gap-3 text-right"
                           onClick={() => setExpandedUser(isExpanded ? null : u.id)}>
                           <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-base overflow-hidden"
                             style={{
@@ -3628,7 +3628,7 @@ export default function AdminPage() {
                     <input type="number" value={sypRateInput} onChange={e => setSypRateEdit(e.target.value)}
                       className="flex-1 border border-border rounded-xl px-4 py-2.5 text-sm font-bold bg-background focus:outline-none focus:ring-2 focus:ring-primary/40"
                       dir="ltr" placeholder="مثال: 13750" min="1" />
-                    <button onClick={() => void queryClient.invalidateQueries({ queryKey: ['admin-syp-rate'] })}
+                    <button type="button" onClick={() => void queryClient.invalidateQueries({ queryKey: ['admin-syp-rate'] })}
                       className="p-2.5 rounded-xl border border-border bg-secondary hover:bg-secondary/80 transition-colors">
                       <RefreshCw className="w-4 h-4 text-foreground/60" />
                     </button>
@@ -3688,7 +3688,7 @@ export default function AdminPage() {
                           <div className="flex items-center gap-1">
                             {!isEditing ? (
                               <>
-                                <button onClick={() => {
+                                <button type="button" onClick={() => {
                                   setEditCurrency(code);
                                   setEditBuyVal(ovr?.buyPrice?.toString() ?? '');
                                   setEditSellVal(ovr?.sellPrice?.toString() ?? '');
@@ -3696,7 +3696,7 @@ export default function AdminPage() {
                                   <Edit3 className="w-3.5 h-3.5 text-primary" />
                                 </button>
                                 {ovr && (
-                                  <button onClick={() => deleteBuySellOverride(code)}
+                                  <button type="button" onClick={() => deleteBuySellOverride(code)}
                                     className="p-1.5 hover:bg-destructive/10 rounded-lg transition-colors">
                                     <Trash2 className="w-3.5 h-3.5 text-destructive" />
                                   </button>
@@ -3704,11 +3704,11 @@ export default function AdminPage() {
                               </>
                             ) : (
                               <>
-                                <button onClick={() => saveBuySellOverride(code)}
+                                <button type="button" onClick={() => saveBuySellOverride(code)}
                                   className="p-1.5 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
                                   <Check className="w-3.5 h-3.5 text-primary" />
                                 </button>
-                                <button onClick={() => setEditCurrency(null)}
+                                <button type="button" onClick={() => setEditCurrency(null)}
                                   className="p-1.5 hover:bg-secondary rounded-lg transition-colors">
                                   <X className="w-3.5 h-3.5 text-muted-foreground" />
                                 </button>
@@ -3793,7 +3793,7 @@ export default function AdminPage() {
                       className="flex-1 border border-border rounded-xl px-4 py-2.5 text-sm font-bold bg-background focus:outline-none focus:ring-2 focus:ring-amber-400/40"
                       dir="ltr"
                     />
-                    <button onClick={() => void queryClient.invalidateQueries({ queryKey: ['admin-gold-override'] })}
+                    <button type="button" onClick={() => void queryClient.invalidateQueries({ queryKey: ['admin-gold-override'] })}
                       className="p-2.5 rounded-xl border border-border bg-secondary hover:bg-secondary/80 transition-colors">
                       <RefreshCw className="w-4 h-4 text-foreground/60" />
                     </button>
@@ -3851,17 +3851,17 @@ export default function AdminPage() {
                             {!isEditing ? (
                               <>
                                 {isInactive && (
-                                  <button onClick={() => reactivateKaratOvr(karatKey)}
+                                  <button type="button" onClick={() => reactivateKaratOvr(karatKey)}
                                     className="text-[9px] font-bold px-2 py-1 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors">
                                     تفعيل
                                   </button>
                                 )}
-                                <button onClick={() => { setEditKarat(karatKey); setEditKaratVal((stored?.priceSYP ?? karatOverrides[karatKey])?.toString() ?? ''); }}
+                                <button type="button" onClick={() => { setEditKarat(karatKey); setEditKaratVal((stored?.priceSYP ?? karatOverrides[karatKey])?.toString() ?? ''); }}
                                   className="p-1.5 hover:bg-primary/10 rounded-lg transition-colors">
                                   <Edit3 className="w-3.5 h-3.5 text-primary" />
                                 </button>
                                 {hasOvr && (
-                                  <button onClick={() => clearKaratOvr(karatKey)}
+                                  <button type="button" onClick={() => clearKaratOvr(karatKey)}
                                     className="p-1.5 hover:bg-destructive/10 rounded-lg transition-colors">
                                     <Trash2 className="w-3.5 h-3.5 text-destructive" />
                                   </button>
@@ -3869,11 +3869,11 @@ export default function AdminPage() {
                               </>
                             ) : (
                               <>
-                                <button onClick={() => saveKaratOverride(karatKey)}
+                                <button type="button" onClick={() => saveKaratOverride(karatKey)}
                                   className="p-1.5 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
                                   <Check className="w-3.5 h-3.5 text-primary" />
                                 </button>
-                                <button onClick={() => { setEditKarat(null); setEditKaratVal(''); }}
+                                <button type="button" onClick={() => { setEditKarat(null); setEditKaratVal(''); }}
                                   className="p-1.5 hover:bg-secondary rounded-lg transition-colors">
                                   <X className="w-3.5 h-3.5 text-muted-foreground" />
                                 </button>
@@ -3943,12 +3943,12 @@ export default function AdminPage() {
                           <div className="flex items-center gap-1">
                             {!isEditing ? (
                               <>
-                                <button onClick={() => { setEditMetal(m.symbol); setEditMetalVal(metalOverrides[m.symbol]?.toString() ?? ''); }}
+                                <button type="button" onClick={() => { setEditMetal(m.symbol); setEditMetalVal(metalOverrides[m.symbol]?.toString() ?? ''); }}
                                   className="p-1.5 hover:bg-primary/10 rounded-lg transition-colors">
                                   <Edit3 className="w-3.5 h-3.5 text-primary" />
                                 </button>
                                 {hasOvr && (
-                                  <button onClick={() => clearMetalOvr(m.symbol)}
+                                  <button type="button" onClick={() => clearMetalOvr(m.symbol)}
                                     className="p-1.5 hover:bg-destructive/10 rounded-lg transition-colors">
                                     <Trash2 className="w-3.5 h-3.5 text-destructive" />
                                   </button>
@@ -3956,11 +3956,11 @@ export default function AdminPage() {
                               </>
                             ) : (
                               <>
-                                <button onClick={() => saveMetalOverride(m.symbol)}
+                                <button type="button" onClick={() => saveMetalOverride(m.symbol)}
                                   className="p-1.5 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
                                   <Check className="w-3.5 h-3.5 text-primary" />
                                 </button>
-                                <button onClick={() => { setEditMetal(null); setEditMetalVal(''); }}
+                                <button type="button" onClick={() => { setEditMetal(null); setEditMetalVal(''); }}
                                   className="p-1.5 hover:bg-secondary rounded-lg transition-colors">
                                   <X className="w-3.5 h-3.5 text-muted-foreground" />
                                 </button>
@@ -4006,7 +4006,7 @@ export default function AdminPage() {
 
               {/* Sub-tabs */}
               <div className="flex gap-2 p-1 bg-secondary rounded-2xl">
-                <button
+                <button type="button"
                   onClick={() => setVerifySubTab('deletion')}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all ${verifySubTab === 'deletion' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}
                 >
@@ -4016,7 +4016,7 @@ export default function AdminPage() {
                     <span className="bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full">{pendingReqs}</span>
                   )}
                 </button>
-                <button
+                <button type="button"
                   onClick={() => setVerifySubTab('verification')}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all ${verifySubTab === 'verification' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}
                 >
@@ -4041,7 +4041,7 @@ export default function AdminPage() {
                   <div className="flex flex-col gap-2">
                     {/* Bulk delete anonymous entries */}
                     {deletionRequests.some(r => !r.fullName) && (
-                      <button
+                      <button type="button"
                         onClick={() => {
                           const anon = deletionRequests.filter(r => !r.fullName);
                           openConfirm({
@@ -4138,7 +4138,7 @@ export default function AdminPage() {
                             {req.email && <p className="text-[10px] text-muted-foreground flex items-center gap-1"><Mail className="w-3 h-3 flex-shrink-0" />{req.email}</p>}
                             {req.accountType && <p className="text-[10px] text-muted-foreground flex items-center gap-1"><User className="w-3 h-3 flex-shrink-0" />{req.accountType === 'provider' ? 'مزود خدمة' : 'شخصي'}</p>}
                             {req.reason && <p className="text-[10px] bg-secondary rounded-lg p-2 mt-0.5">{req.reason}</p>}
-                            <button
+                            <button type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 openConfirm({
@@ -4210,7 +4210,7 @@ export default function AdminPage() {
                               <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                             )}
                             {isProcessed && (
-                              <button
+                              <button type="button"
                                 onClick={e => { e.stopPropagation(); openConfirm({ title: 'إخفاء الطلب', body: 'إخفاء هذا الطلب من القائمة؟', confirmLabel: 'إخفاء', onConfirm: () => { queryClient.setQueryData<VerifyRequest[]>(['admin-verify-reqs', token], prev => prev?.filter(r => r.id !== req.id) ?? []); } }); }}
                                 className="w-5 h-5 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-colors"
                                 title="حذف"
@@ -4405,11 +4405,11 @@ export default function AdminPage() {
                   <div>
                     <p className="text-xs font-bold text-muted-foreground mb-2">المستلم</p>
                     <div className="flex gap-2">
-                      <button onClick={() => { setNotifTarget('all'); setNotifSelectedWallet(null); setNotifSelectedName(''); setNotifUserSearch(''); }}
+                      <button type="button" onClick={() => { setNotifTarget('all'); setNotifSelectedWallet(null); setNotifSelectedName(''); setNotifUserSearch(''); }}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all ${notifTarget === 'all' ? 'bg-primary text-white shadow-sm' : 'bg-secondary text-muted-foreground'}`}>
                         <Users className="w-3.5 h-3.5" /> جميع المستخدمين
                       </button>
-                      <button onClick={() => setNotifTarget('specific')}
+                      <button type="button" onClick={() => setNotifTarget('specific')}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all ${notifTarget === 'specific' ? 'bg-[#D20073] text-white shadow-sm' : 'bg-secondary text-muted-foreground'}`}>
                         <User className="w-3.5 h-3.5" /> مستخدم محدد
                       </button>
@@ -4429,7 +4429,7 @@ export default function AdminPage() {
                         <div className="flex items-center gap-2 p-2 bg-[#D20073]/10 border border-[#D20073]/30 rounded-xl">
                           <User className="w-4 h-4 text-[#D20073] flex-shrink-0" />
                           <span className="text-xs font-bold text-[#D20073] flex-1 truncate">{notifSelectedName}</span>
-                          <button onClick={() => { setNotifSelectedWallet(null); setNotifSelectedName(''); }}
+                          <button type="button" onClick={() => { setNotifSelectedWallet(null); setNotifSelectedName(''); }}
                             className="text-muted-foreground hover:text-foreground">
                             <X className="w-3.5 h-3.5" />
                           </button>
@@ -4440,7 +4440,7 @@ export default function AdminPage() {
                             (u.fullName ?? '').toLowerCase().includes(notifUserSearch.toLowerCase()) ||
                             (u.walletId ?? '').toLowerCase().includes(notifUserSearch.toLowerCase())
                           ).slice(0, 8).map(u => (
-                            <button key={u.id} onClick={() => { setNotifSelectedWallet(u.walletId); setNotifSelectedName(u.fullName || u.businessName || u.walletId || ''); setNotifUserSearch(''); }}
+                            <button type="button" key={u.id} onClick={() => { setNotifSelectedWallet(u.walletId); setNotifSelectedName(u.fullName || u.businessName || u.walletId || ''); setNotifUserSearch(''); }}
                               className="w-full flex items-center gap-2 px-3 py-2 hover:bg-secondary text-right border-b border-border/40 last:border-0">
                               <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                                 <User className="w-3.5 h-3.5 text-primary" />
@@ -4466,7 +4466,7 @@ export default function AdminPage() {
                     ].map(t => {
                       const TIcon = t.icon;
                       return (
-                        <button key={t.val} onClick={() => setNotifType(t.val)}
+                        <button type="button" key={t.val} onClick={() => setNotifType(t.val)}
                           className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-bold transition-all ${
                             notifType === t.val ? t.bg + ' ring-2 ring-offset-1 ring-primary shadow-sm' : 'bg-secondary text-muted-foreground'
                           }`}>
@@ -4524,7 +4524,7 @@ export default function AdminPage() {
                 <span className="font-bold text-sm">سجل الإشعارات ({notifications.length})</span>
                 <div className="flex items-center gap-2">
                   {selectedNotifIds.size > 0 && (
-                    <button
+                    <button type="button"
                       onClick={bulkDeleteNotifications}
                       className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 transition-colors">
                       <Trash2 className="w-3 h-3" /> حذف ({selectedNotifIds.size})
@@ -4534,7 +4534,7 @@ export default function AdminPage() {
                     <span className="text-xs text-muted-foreground">اضغط للتوسيع</span>
                   )}
                   {notifications.length > 1 && (
-                    <button
+                    <button type="button"
                       onClick={() => {
                         if (selectedNotifIds.size === notifications.length) {
                           setSelectedNotifIds(new Set());
@@ -4564,14 +4564,14 @@ export default function AdminPage() {
                         <CardContent className="p-0">
                           <div className="flex items-stretch">
                             {/* Checkbox */}
-                            <button
+                            <button type="button"
                               onClick={e => { e.stopPropagation(); toggleNotifSelect(n.id); }}
                               className={`flex-shrink-0 w-9 flex items-center justify-center border-l border-border/50 transition-colors ${isSelected ? 'bg-red-50 dark:bg-red-900/20' : 'hover:bg-secondary/50'}`}>
                               <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${isSelected ? 'bg-red-500 border-red-500' : 'border-border'}`}>
                                 {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                               </div>
                             </button>
-                          <button
+                          <button type="button"
                             className="flex-1 p-3 flex gap-3 text-right hover:bg-secondary/30 transition-colors min-w-0"
                             onClick={() => setExpandedNotifId(isNotifExpanded ? null : n.id)}
                           >
@@ -4632,13 +4632,13 @@ export default function AdminPage() {
                                     placeholder="نص الإشعار"
                                   />
                                   <div className="flex gap-2">
-                                    <button
+                                    <button type="button"
                                       disabled={savingNotif}
                                       onClick={() => editNotification(n.id)}
                                       className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-bold text-white bg-primary hover:bg-primary/90 transition-colors disabled:opacity-50">
                                       {savingNotif ? '...' : <><Save className="w-3 h-3" /> حفظ</>}
                                     </button>
-                                    <button onClick={() => setEditingNotifId(null)}
+                                    <button type="button" onClick={() => setEditingNotifId(null)}
                                       className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-bold border border-border hover:bg-secondary transition-colors">
                                       إلغاء
                                     </button>
@@ -4647,17 +4647,17 @@ export default function AdminPage() {
                               ) : (
                                 <div className="flex flex-col gap-2">
                                   <div className="flex gap-2">
-                                    <button
+                                    <button type="button"
                                       onClick={() => { setEditingNotifId(n.id); setEditNotifTitle(n.title); setEditNotifBody(n.body); }}
                                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold text-primary bg-primary/10 hover:bg-primary/20 transition-colors">
                                       <Edit3 className="w-3 h-3" /> تعديل
                                     </button>
-                                    <button onClick={() => deleteNotification(n.id)}
+                                    <button type="button" onClick={() => deleteNotification(n.id)}
                                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold text-destructive bg-destructive/10 hover:bg-destructive/20 transition-colors">
                                       <Trash2 className="w-3 h-3" /> حذف
                                     </button>
                                     {(!n.recipient || n.recipient === 'all') && (
-                                      <button
+                                      <button type="button"
                                         onClick={() => {
                                           if (viewedNotifId === n.id) {
                                             setViewedNotifId(null);
@@ -4762,7 +4762,7 @@ export default function AdminPage() {
                             </span>
                           </div>
                           {sypRateIsManual ? (
-                            <button
+                            <button type="button"
                               onClick={() => void saveSypRate(false)}
                               disabled={sypRateSaving}
                               className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors flex-shrink-0 ml-2"
@@ -4770,7 +4770,7 @@ export default function AdminPage() {
                               <X className="w-2.5 h-2.5" /> إلغاء
                             </button>
                           ) : sypRateUpdatedAt && (
-                            <button
+                            <button type="button"
                               onClick={() => void saveSypRate(true)}
                               disabled={sypRateSaving}
                               className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex-shrink-0 ml-2"
@@ -4804,14 +4804,14 @@ export default function AdminPage() {
                             </span>
                           </div>
                           {goldOverrideActive ? (
-                            <button
+                            <button type="button"
                               onClick={() => void clearGoldOvr()}
                               className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors flex-shrink-0 ml-2"
                             >
                               <X className="w-2.5 h-2.5" /> إلغاء
                             </button>
                           ) : goldOverrideInput && (
-                            <button
+                            <button type="button"
                               onClick={() => void saveGoldOverride()}
                               className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex-shrink-0 ml-2"
                             >
@@ -4847,14 +4847,14 @@ export default function AdminPage() {
                               </span>
                             </div>
                             {detail.isManual ? (
-                              <button
+                              <button type="button"
                                 onClick={() => void clearMetalOvr(sym)}
                                 className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors flex-shrink-0 ml-2"
                               >
                                 <X className="w-2.5 h-2.5" /> إلغاء
                               </button>
                             ) : (
-                              <button
+                              <button type="button"
                                 onClick={() => void reactivateMetalOvr(sym)}
                                 className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex-shrink-0 ml-2"
                               >
@@ -4876,7 +4876,7 @@ export default function AdminPage() {
                       ))}
 
                       {/* Refresh button */}
-                      <button
+                      <button type="button"
                         onClick={() => { void queryClient.invalidateQueries({ queryKey: ['admin-syp-rate'] }); void queryClient.invalidateQueries({ queryKey: ['admin-gold-override'] }); void queryClient.invalidateQueries({ queryKey: ['admin-metal-rates'] }); }}
                         className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors py-1"
                       >
@@ -4889,7 +4889,7 @@ export default function AdminPage() {
 
               {/* Override History */}
               <Card className="border-border shadow-sm overflow-hidden">
-                <button
+                <button type="button"
                   className="w-full px-4 py-3 flex items-center justify-between hover:bg-secondary/30 transition-colors"
                   style={{ background: '#7C3AED10' }}
                   onClick={() => {
@@ -4923,7 +4923,7 @@ export default function AdminPage() {
                       <CardContent className="p-3 flex flex-col gap-2">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-[10px] text-muted-foreground">آخر ٥٠ تغيير</span>
-                          <button
+                          <button type="button"
                             onClick={() => void fetchOverrideHistory()}
                             disabled={overrideHistoryLoading}
                             className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
@@ -4984,7 +4984,7 @@ export default function AdminPage() {
                         )}
                         {/* Clear History Button */}
                         <div className="border-t border-border pt-2 mt-1">
-                          <button
+                          <button type="button"
                             onClick={() => setClearHistoryDialogOpen(true)}
                             className="w-full flex items-center justify-center gap-1.5 text-[11px] text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg py-1.5 transition-colors"
                           >
@@ -5021,14 +5021,14 @@ export default function AdminPage() {
                                 ))}
                               </div>
                               <div className="flex gap-2 justify-end mt-1">
-                                <button
+                                <button type="button"
                                   onClick={() => setClearHistoryDialogOpen(false)}
                                   disabled={clearHistoryLoading}
                                   className="px-3 py-1.5 rounded-lg text-xs border border-border hover:bg-secondary transition-colors"
                                 >
                                   إلغاء
                                 </button>
-                                <button
+                                <button type="button"
                                   onClick={() => void handleClearHistory()}
                                   disabled={clearHistoryLoading}
                                   className="px-3 py-1.5 rounded-lg text-xs bg-red-500 hover:bg-red-600 text-white font-bold transition-colors flex items-center gap-1.5 disabled:opacity-60"
@@ -5105,7 +5105,7 @@ export default function AdminPage() {
                     { label: 'المستخدمون النشطون (آخر ساعة)', val: stats?.activeUsers ?? 0, color: '#059669', onClick: () => setActiveTab('users') },
                     { label: 'طلبات العضوية المعلقة', val: pendingApps, color: '#7C3AED', onClick: () => setActiveTab('requests') },
                   ].map(s => (
-                    <button key={s.label} onClick={s.onClick}
+                    <button type="button" key={s.label} onClick={s.onClick}
                       className="flex items-center justify-between py-2 border-b border-border last:border-0 w-full text-right hover:bg-secondary/50 active:bg-secondary transition-colors rounded-lg px-1.5 -mx-1.5 cursor-pointer">
                       <span className="text-sm text-foreground/80">{s.label}</span>
                       <span className="font-black text-base" style={{ color: s.color }}>{s.val}</span>
@@ -5211,7 +5211,7 @@ export default function AdminPage() {
                     <Info className="w-4 h-4 text-muted-foreground" />
                     <span className="font-bold text-sm">معلومات النظام</span>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={() => { setSysInfoEditing(v => !v); setSysInfoPassword(''); setSysInfoMsg(''); }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
                       sysInfoEditing ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary hover:bg-primary/20'
@@ -5411,7 +5411,7 @@ export default function AdminPage() {
                   dir="rtl"
                 />
                 {vendorSearch && (
-                  <button onClick={() => setVendorSearch('')} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <button type="button" onClick={() => setVendorSearch('')} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                     <X className="w-4 h-4" />
                   </button>
                 )}
@@ -5561,7 +5561,7 @@ export default function AdminPage() {
               ) : (
                 <>
                   <div className="flex items-center gap-3">
-                    <button onClick={() => { setCatView('categories'); setCatSelectedId(null); }}
+                    <button type="button" onClick={() => { setCatView('categories'); setCatSelectedId(null); }}
                       className="p-2 hover:bg-secondary rounded-xl transition-colors">
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -5625,7 +5625,7 @@ export default function AdminPage() {
                     ) : 'لا توجد طلبات معلقة'}
                   </p>
                 </div>
-                <button onClick={() => void queryClient.invalidateQueries({ queryKey: ['admin-vendor-apps', token] })}
+                <button type="button" onClick={() => void queryClient.invalidateQueries({ queryKey: ['admin-vendor-apps', token] })}
                   className="p-2 hover:bg-secondary rounded-xl transition-colors">
                   <RefreshCw className="w-4 h-4 text-muted-foreground" />
                 </button>
@@ -5649,7 +5649,7 @@ export default function AdminPage() {
                             تم قبول: {notifyApp.businessName}
                           </p>
                         </div>
-                        <button onClick={() => setNotifyApp(null)}
+                        <button type="button" onClick={() => setNotifyApp(null)}
                           className="p-1 hover:bg-black/10 rounded-lg transition-colors">
                           <X className="w-3.5 h-3.5 text-muted-foreground" />
                         </button>
@@ -5695,7 +5695,7 @@ export default function AdminPage() {
                         <UserCheck className="w-4 h-4 text-primary" />
                         <p className="text-sm font-black text-primary">قبول: {acceptingApp.businessName}</p>
                       </div>
-                      <button onClick={() => setAcceptingApp(null)}
+                      <button type="button" onClick={() => setAcceptingApp(null)}
                         className="p-1.5 hover:bg-black/10 rounded-lg transition-colors">
                         <X className="w-4 h-4 text-muted-foreground" />
                       </button>
@@ -5779,7 +5779,7 @@ export default function AdminPage() {
                           <p className="text-[10px] text-muted-foreground">{rejectingApp.businessName} — {rejectingApp.fullName}</p>
                         </div>
                       </div>
-                      <button onClick={() => setRejectingApp(null)} className="p-1 hover:bg-secondary rounded-lg">
+                      <button type="button" onClick={() => setRejectingApp(null)} className="p-1 hover:bg-secondary rounded-lg">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
@@ -5843,7 +5843,7 @@ export default function AdminPage() {
                     ? vendorApplications.length
                     : vendorApplications.filter(a => a.status === f.id).length;
                   return (
-                    <button key={f.id}
+                    <button type="button" key={f.id}
                       onClick={() => setVendorAppFilter(f.id as typeof vendorAppFilter)}
                       className={`flex-1 py-2 rounded-xl text-[10px] font-bold transition-all flex flex-col items-center gap-0.5 ${
                         vendorAppFilter === f.id ? 'bg-card shadow text-foreground' : 'text-muted-foreground'
@@ -5877,7 +5877,7 @@ export default function AdminPage() {
                       return (
                         <Card key={app.id} className="border-none shadow-sm overflow-hidden">
                           {/* Clickable header */}
-                          <button
+                          <button type="button"
                             className="w-full p-3 flex items-start gap-2 text-right hover:bg-secondary/20 transition-colors"
                             onClick={() => setExpandedAppId(isAppExpanded ? null : appKey)}
                           >
@@ -6356,7 +6356,7 @@ export default function AdminPage() {
                   </h3>
                   <p className="text-xs text-muted-foreground mt-0.5">أسعار تنحرف بشكل كبير عن المتوسط</p>
                 </div>
-                <button
+                <button type="button"
                   onClick={async () => {
                     setSuspiciousLoading(true);
                     try {
@@ -6437,7 +6437,7 @@ export default function AdminPage() {
                       <div className="px-4 py-3 flex items-center gap-2" style={{ background: 'linear-gradient(90deg,#ef444418,#f8717108)' }}>
                         <Flag className="w-3.5 h-3.5 text-red-500" />
                         <span className="font-bold text-xs text-red-700 dark:text-red-400">بلاغات المستخدمين ({reports.length})</span>
-                        <button
+                        <button type="button"
                           className="mr-auto text-[9px] px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 hover:bg-red-200 transition-colors"
                           onClick={() => { localStorage.removeItem('syp-vendor-report-list'); }}
                         >مسح الكل</button>
@@ -6550,7 +6550,7 @@ export default function AdminPage() {
                     {msgUserSearch.trim() && !msgSelectedUser && (
                       <div className="mt-1 border border-border rounded-lg bg-card max-h-40 overflow-y-auto divide-y divide-border shadow-md z-10 relative">
                         {users.filter(u => [u.fullName ?? '', u.email ?? ''].join(' ').toLowerCase().includes(msgUserSearch.toLowerCase())).slice(0, 8).map(u => (
-                          <button key={u.walletId} className="w-full text-right px-3 py-2 hover:bg-accent/30 transition-colors text-sm flex items-center gap-2"
+                          <button type="button" key={u.walletId} className="w-full text-right px-3 py-2 hover:bg-accent/30 transition-colors text-sm flex items-center gap-2"
                             onClick={() => { setMsgSelectedUser(u); setMsgUserSearch(u.fullName ?? u.email ?? ''); }}>
                             <User className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                             <span>{u.fullName ?? '—'}</span>
@@ -6567,7 +6567,7 @@ export default function AdminPage() {
                         <User className="w-3.5 h-3.5 text-primary" />
                         <span className="font-medium">{msgSelectedUser.fullName ?? '—'}</span>
                         <span className="text-muted-foreground">{msgSelectedUser.email}</span>
-                        <button onClick={() => { setMsgSelectedUser(null); setMsgUserSearch(''); }} className="mr-auto text-muted-foreground hover:text-foreground">
+                        <button type="button" onClick={() => { setMsgSelectedUser(null); setMsgUserSearch(''); }} className="mr-auto text-muted-foreground hover:text-foreground">
                           <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -6629,7 +6629,7 @@ export default function AdminPage() {
                             <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{m.body}</p>
                             <p className="text-xs text-muted-foreground/50 mt-1">{new Date(m.created_at).toLocaleDateString('ar-SY', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
                           </div>
-                          <button onClick={() => deleteSentMsg(m.id)}
+                          <button type="button" onClick={() => deleteSentMsg(m.id)}
                             className="p-1 hover:bg-destructive/10 rounded-lg transition-colors shrink-0 mt-0.5"
                             title="حذف الرسالة">
                             <Trash2 className="w-3.5 h-3.5 text-destructive/60 hover:text-destructive" />
@@ -6672,7 +6672,7 @@ export default function AdminPage() {
                     <p className="text-[10px] text-muted-foreground">{VENDOR_CATEGORIES_AR[vendorDetail.category] ?? vendorDetail.category}</p>
                   </div>
                 </div>
-                <button onClick={() => setVendorDetail(null)} className="p-1.5 hover:bg-secondary rounded-lg">
+                <button type="button" onClick={() => setVendorDetail(null)} className="p-1.5 hover:bg-secondary rounded-lg">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -6731,7 +6731,7 @@ export default function AdminPage() {
                   <span className={`text-xs font-bold ${vendorDetailEdit.isActive ? 'text-green-700' : 'text-red-600'}`}>
                     {vendorDetailEdit.isActive ? 'الحساب نشط' : 'الحساب موقوف'}
                   </span>
-                  <button
+                  <button type="button"
                     onClick={() => vendorDetailEdit.isActive ? setVendorBanConfirm(true) : toggleVendorBan()}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${vendorDetailEdit.isActive ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}>
                     {vendorDetailEdit.isActive
@@ -6751,7 +6751,7 @@ export default function AdminPage() {
                       <p className="text-[9px] text-amber-600/70 dark:text-amber-500/60">توهج ذهبي نابض</p>
                     </div>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={() => toggleLegendaryVendor(vendorDetail.id)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
                       legendaryVendors.has(vendorDetail.id)
@@ -6774,7 +6774,7 @@ export default function AdminPage() {
                       <p className="text-[9px] text-amber-600/70 dark:text-amber-500/60">تظهر جانب اسم التاجر</p>
                     </div>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={() => toggleVerifiedVendor(vendorDetail.id)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
                       verifiedVendors.has(vendorDetail.id)
@@ -6787,7 +6787,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* البيانات الشخصية للتاجر — card button */}
-                <button
+                <button type="button"
                   onClick={() => { setVendorPersonalDataOpen(true); setVendorPersonalDataEditing(false); }}
                   className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-border bg-secondary/20 hover:bg-secondary/40 transition-colors active:scale-[.99]">
                   <div className="flex items-center gap-2.5">
@@ -6836,7 +6836,7 @@ export default function AdminPage() {
                           {p.priceBuy == null && p.priceSell == null && p.price != null && <span className="text-primary font-bold text-[10px]">{p.price.toLocaleString()}</span>}
                           {p.unit && <span className="text-muted-foreground text-[9px]">/{p.unit}</span>}
                           {/* Toggle active */}
-                          <button
+                          <button type="button"
                             className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold ${p.isActive ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'} transition-colors`}
                             title={p.isActive ? 'إخفاء' : 'إظهار'}
                             onClick={async () => {
@@ -6851,7 +6851,7 @@ export default function AdminPage() {
                             {p.isActive ? 'نشط' : 'مخفي'}
                           </button>
                           {/* Delete */}
-                          <button
+                          <button type="button"
                             className="w-5 h-5 flex items-center justify-center rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-400 hover:text-red-600 transition-colors"
                             title="حذف السعر"
                             onClick={() => openConfirm({
@@ -6987,7 +6987,7 @@ export default function AdminPage() {
                     onChange={e => setVendorRestrictMsg(e.target.value)}
                     className="border border-border rounded-xl px-3 py-2 text-xs bg-background focus:outline-none focus:ring-2 focus:ring-amber-400/40"
                   />
-                  <button
+                  <button type="button"
                     onClick={async () => {
                       const walletId = users.find(u => u.supabaseId === vendorDetailEdit?.supabaseId)?.walletId;
                       const days = parseInt(vendorRestrictDays);
@@ -7015,7 +7015,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* Send custom notification */}
-                <button
+                <button type="button"
                   onClick={() => {
                     const walletId = users.find(u => u.supabaseId === vendorDetailEdit?.supabaseId)?.walletId;
                     setActionNotif({
@@ -7031,13 +7031,13 @@ export default function AdminPage() {
 
                 {/* Ratings / Reports buttons */}
                 <div className="grid grid-cols-2 gap-2">
-                  <button
+                  <button type="button"
                     onClick={() => setVendorDrawerPanel(p => p === 'ratings' ? 'edit' : 'ratings')}
                     className={`flex items-center justify-center gap-1.5 py-2.5 rounded-2xl border text-xs font-bold transition-colors ${vendorDrawerPanel === 'ratings' ? 'bg-amber-50 border-amber-300 text-amber-700 dark:bg-amber-900/20 dark:border-amber-700/50 dark:text-amber-400' : 'border-border text-foreground/70 hover:bg-secondary/60'}`}>
                     <Star className="w-3.5 h-3.5 text-amber-500" />
                     التقييمات ({(vendorRatings[vendorDetail.id] ?? []).length})
                   </button>
-                  <button
+                  <button type="button"
                     onClick={() => setVendorDrawerPanel(p => p === 'reports' ? 'edit' : 'reports')}
                     className={`flex items-center justify-center gap-1.5 py-2.5 rounded-2xl border text-xs font-bold transition-colors ${vendorDrawerPanel === 'reports' ? 'bg-red-50 border-red-300 text-red-700 dark:bg-red-900/20 dark:border-red-700/50 dark:text-red-400' : 'border-border text-foreground/70 hover:bg-secondary/60'}`}>
                     <Flag className="w-3.5 h-3.5 text-red-500" />
@@ -7063,7 +7063,7 @@ export default function AdminPage() {
                               </div>
                               {r.comment && <p className="text-[10px] text-muted-foreground mt-0.5">{r.comment}</p>}
                             </div>
-                            <button onClick={() => {
+                            <button type="button" onClick={() => {
                               const next = { ...vendorRatings, [vendorDetail.id]: (vendorRatings[vendorDetail.id] ?? []).filter(x => x.id !== r.id) };
                               setVendorRatings(next); localStorage.setItem('syp-vendor-ratings', JSON.stringify(next));
                             }} className="text-red-400 hover:text-red-600 flex-shrink-0"><X className="w-3 h-3" /></button>
@@ -7075,10 +7075,10 @@ export default function AdminPage() {
                       <p className="text-[9px] font-bold text-amber-700 dark:text-amber-400">إضافة تقييم</p>
                       <input value={newRatingName} onChange={e => setNewRatingName(e.target.value)} placeholder="اسم المقيّم" className="border border-border rounded-xl px-2 py-1.5 text-xs bg-background focus:outline-none focus:ring-1 focus:ring-primary" />
                       <div className="flex gap-1">{[1,2,3,4,5].map(s => (
-                        <button key={s} onClick={() => setNewRatingStars(s)} className={`text-xl leading-none ${s <= newRatingStars ? 'text-amber-500' : 'text-muted-foreground/30'}`}>★</button>
+                        <button type="button" key={s} onClick={() => setNewRatingStars(s)} className={`text-xl leading-none ${s <= newRatingStars ? 'text-amber-500' : 'text-muted-foreground/30'}`}>★</button>
                       ))}</div>
                       <input value={newRatingComment} onChange={e => setNewRatingComment(e.target.value)} placeholder="تعليق (اختياري)" className="border border-border rounded-xl px-2 py-1.5 text-xs bg-background focus:outline-none focus:ring-1 focus:ring-primary" />
-                      <button onClick={() => {
+                      <button type="button" onClick={() => {
                         if (!newRatingName.trim()) return;
                         const r: VendorRating = { id: Date.now().toString(), vendorId: vendorDetail.id, userName: newRatingName.trim(), rating: newRatingStars, comment: newRatingComment.trim(), createdAt: new Date().toISOString() };
                         const next = { ...vendorRatings, [vendorDetail.id]: [r, ...(vendorRatings[vendorDetail.id] ?? [])] };
@@ -7107,7 +7107,7 @@ export default function AdminPage() {
                               </div>
                               <p className="text-[10px] text-muted-foreground mt-0.5">{r.reason}</p>
                             </div>
-                            <button onClick={() => {
+                            <button type="button" onClick={() => {
                               const next = { ...vendorReports, [vendorDetail.id]: (vendorReports[vendorDetail.id] ?? []).filter(x => x.id !== r.id) };
                               setVendorReports(next); localStorage.setItem('syp-vendor-reports', JSON.stringify(next));
                             }} className="text-red-400 hover:text-red-600 flex-shrink-0"><X className="w-3 h-3" /></button>
@@ -7135,7 +7135,7 @@ export default function AdminPage() {
                       : <><CheckCircle2 className="w-4 h-4" /> حفظ التعديلات</>
                     }
                   </Button>
-                  <button onClick={deleteVendorFromDetail}
+                  <button type="button" onClick={deleteVendorFromDetail}
                     className="h-11 px-4 rounded-2xl bg-destructive/10 hover:bg-destructive/20 text-destructive transition-colors flex items-center gap-1.5 text-sm font-bold">
                     <Trash2 className="w-4 h-4" /> حذف
                   </button>
@@ -7177,12 +7177,12 @@ export default function AdminPage() {
                   <p className="text-[11px] text-amber-700 dark:text-amber-400 leading-relaxed">يمكن إعادة تفعيل الحساب لاحقاً من نفس هذا القسم.</p>
                 </div>
                 <div className="flex gap-2 pt-1">
-                  <button
+                  <button type="button"
                     onClick={() => { setVendorBanConfirm(false); toggleVendorBan(); }}
                     className="flex-1 h-11 rounded-2xl bg-red-600 text-white font-black text-sm flex items-center justify-center gap-1.5 hover:bg-red-700 transition-colors active:scale-[.98]">
                     <UserX className="w-4 h-4" /> تأكيد الإيقاف
                   </button>
-                  <button
+                  <button type="button"
                     onClick={() => setVendorBanConfirm(false)}
                     className="flex-1 h-11 rounded-2xl border border-border font-black text-sm hover:bg-secondary transition-colors active:scale-[.98]">
                     إلغاء
@@ -7219,13 +7219,13 @@ export default function AdminPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
+                  <button type="button"
                     onClick={() => setVendorPersonalDataEditing(v => !v)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${vendorPersonalDataEditing ? 'bg-primary/10 text-primary' : 'bg-secondary text-foreground/70 hover:bg-secondary/80'}`}>
                     <Edit3 className="w-3.5 h-3.5" />
                     {vendorPersonalDataEditing ? 'وضع العرض' : 'تعديل'}
                   </button>
-                  <button onClick={() => setVendorPersonalDataOpen(false)} className="p-1.5 hover:bg-secondary rounded-lg">
+                  <button type="button" onClick={() => setVendorPersonalDataOpen(false)} className="p-1.5 hover:bg-secondary rounded-lg">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -7353,7 +7353,7 @@ export default function AdminPage() {
                     )}
                   </div>
                 </div>
-                <button onClick={() => setActionNotif(null)} className="p-1.5 hover:bg-secondary rounded-xl">
+                <button type="button" onClick={() => setActionNotif(null)} className="p-1.5 hover:bg-secondary rounded-xl">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -7406,7 +7406,7 @@ export default function AdminPage() {
                     className="flex-1 h-11 font-black gap-2 rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90">
                     {actionNotif.sending ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري الإرسال...</> : <><Bell className="w-4 h-4" /> إرسال الإشعار</>}
                   </Button>
-                  <button onClick={() => setActionNotif(null)}
+                  <button type="button" onClick={() => setActionNotif(null)}
                     className="h-11 px-4 rounded-2xl border border-border text-sm font-bold hover:bg-secondary transition-colors">
                     تخطي
                   </button>
@@ -7440,11 +7440,11 @@ export default function AdminPage() {
                 </div>
               </div>
               <div className="flex gap-2">
-                <button onClick={confirmDeleteVendor}
+                <button type="button" onClick={confirmDeleteVendor}
                   className="flex-1 h-11 rounded-2xl bg-destructive text-destructive-foreground font-black text-sm flex items-center justify-center gap-1.5 hover:bg-destructive/90 transition-colors">
                   <Trash2 className="w-4 h-4" /> حذف نهائي
                 </button>
-                <button onClick={() => setVendorDeleteConfirm(false)}
+                <button type="button" onClick={() => setVendorDeleteConfirm(false)}
                   className="flex-1 h-11 rounded-2xl border border-border font-black text-sm hover:bg-secondary transition-colors">
                   إلغاء
                 </button>
@@ -7488,7 +7488,7 @@ export default function AdminPage() {
                 </div>
               </div>
               <div className={`px-6 pb-6 flex gap-2.5 ${confirmModal.alertOnly ? 'justify-center' : ''}`}>
-                <button
+                <button type="button"
                   onClick={async () => {
                     closeConfirm();
                     if (confirmModal.onConfirm) await confirmModal.onConfirm();
@@ -7497,7 +7497,7 @@ export default function AdminPage() {
                   {confirmModal.confirmLabel ?? 'تأكيد'}
                 </button>
                 {!confirmModal.alertOnly && (
-                  <button
+                  <button type="button"
                     onClick={closeConfirm}
                     className="flex-1 h-12 rounded-2xl border border-border font-black text-sm hover:bg-secondary transition-all active:scale-95">
                     {confirmModal.cancelLabel ?? 'إلغاء'}

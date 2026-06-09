@@ -165,7 +165,7 @@ function CatFilterRow({ cats, category, setCategory, searchStr }: {
   return (
     <div ref={rowRef} className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
       {cats.map(c => (
-        <button
+        <button type="button"
           key={c.id}
           onClick={() => setCategory(c.id)}
           className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-2xl text-[10px] font-bold border shadow-sm transition-all"
@@ -316,7 +316,7 @@ function LocalMarketSection() {
             من المصادر المحلية الموثوقة
           </span>
         </h2>
-        <button onClick={fetchPrices} className="p-1.5 hover:bg-secondary rounded-xl transition-colors">
+        <button type="button" onClick={fetchPrices} className="p-1.5 hover:bg-secondary rounded-xl transition-colors">
           <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
         </button>
       </div>
@@ -324,7 +324,7 @@ function LocalMarketSection() {
       {/* Filters */}
       <div className="flex flex-col gap-2 mb-4">
         <div className="flex gap-2">
-          <button
+          <button type="button"
             onClick={detectGovernorate}
             disabled={geoLoading}
             className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-[11px] font-bold border transition-all flex-shrink-0"
@@ -335,7 +335,7 @@ function LocalMarketSection() {
           </button>
 
           <div className="relative flex-1">
-            <button
+            <button type="button"
               onClick={() => setShowGovPicker(v => !v)}
               className={`w-full flex items-center gap-1.5 px-3 py-2 rounded-2xl text-[11px] font-bold border transition-all ${
                 governorate
@@ -350,7 +350,7 @@ function LocalMarketSection() {
                   : 'اختيار المحافظة'}
               </span>
               {governorate
-                ? <button onClick={e => { e.stopPropagation(); setGovernorate(''); setDetectedCity(''); }}><X className="w-2.5 h-2.5" /></button>
+                ? <button type="button" onClick={e => { e.stopPropagation(); setGovernorate(''); setDetectedCity(''); }}><X className="w-2.5 h-2.5" /></button>
                 : <ChevronDown className="w-3 h-3 opacity-60 flex-shrink-0" />}
             </button>
             <AnimatePresence>
@@ -364,7 +364,7 @@ function LocalMarketSection() {
                 >
                   <div className="p-1 flex flex-col gap-0.5 max-h-56 overflow-y-auto">
                     {SYRIAN_GOVERNORATES.map(g => (
-                      <button
+                      <button type="button"
                         key={g}
                         onClick={() => { setGovernorate(g); setShowGovPicker(false); }}
                         className={`text-right px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
@@ -422,7 +422,7 @@ function LocalMarketSection() {
               : 'لم يقم أي تاجر بإدخال أسعار في هذه الفئة'}
           </p>
           {(category || governorate) && (
-            <button
+            <button type="button"
               onClick={() => { setCategory(''); setGovernorate(''); }}
               className="mt-3 text-[11px] font-bold px-3 py-1.5 rounded-xl bg-primary/15 text-primary hover:bg-primary/25 transition-colors"
             >
@@ -478,7 +478,7 @@ function LocalMarketSection() {
                         {p.sources.length > 0 && (
                           <div className="flex flex-wrap gap-1 px-0.5">
                             {visibleSources.map((src, si) => (
-                              <button
+                              <button type="button"
                                 key={si}
                                 onClick={() => setVendorPopup({
                                   name: src.businessName, logoUrl: src.logoUrl,
@@ -495,7 +495,7 @@ function LocalMarketSection() {
                               </button>
                             ))}
                             {hasMoreSources && (
-                              <button
+                              <button type="button"
                                 onClick={() => setExpandedVendors(prev => {
                                   const next = new Set(prev);
                                   if (next.has(cardKey)) next.delete(cardKey); else next.add(cardKey);
@@ -628,7 +628,7 @@ function LocalMarketSection() {
                   <h3 className="font-black text-base text-blue-600 dark:text-blue-400">{vendorPopup.name}</h3>
                   <GoldenBadge size={22} />
                 </div>
-                <button onClick={() => setVendorPopup(null)} className="p-1.5 hover:bg-secondary rounded-xl">
+                <button type="button" onClick={() => setVendorPopup(null)} className="p-1.5 hover:bg-secondary rounded-xl">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -1300,7 +1300,7 @@ export default function HomePage() {
             className="pr-9 h-10 rounded-xl bg-secondary/50 border-border"
           />
           {newsSearch && (
-            <button
+            <button type="button"
               onClick={() => { setNewsSearch(''); setDebouncedSearch(''); }}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
             >✕</button>

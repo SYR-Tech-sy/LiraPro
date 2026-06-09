@@ -83,13 +83,13 @@ function PricingTypeModal({ onSelect, onClose }: PricingTypeModalProps) {
       >
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="font-bold text-base">نوع التسعير</h3>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
+          <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
         <div className="p-4 flex flex-col gap-3">
           <p className="text-xs text-muted-foreground">اختر كيفية تقييم الممتلكات</p>
-          <button
+          <button type="button"
             onClick={() => onSelect('local')}
             className="flex items-center gap-3 p-4 rounded-xl border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all text-right"
           >
@@ -101,7 +101,7 @@ function PricingTypeModal({ onSelect, onClose }: PricingTypeModalProps) {
               <p className="text-xs text-muted-foreground mt-0.5">يستخدم أسعار مزودي السوق المحلية</p>
             </div>
           </button>
-          <button
+          <button type="button"
             onClick={() => onSelect('global')}
             className="flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary/30 hover:bg-secondary/50 transition-all text-right"
           >
@@ -197,7 +197,7 @@ function AddHoldingModal({ onClose, onAdd, rates, goldData: _goldData, t, pricin
               </p>
             )}
           </div>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
+          <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-secondary">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
@@ -205,7 +205,7 @@ function AddHoldingModal({ onClose, onAdd, rates, goldData: _goldData, t, pricin
         <div className="p-4 flex flex-col gap-4 overflow-y-auto flex-1">
           <div className="flex gap-1.5 flex-wrap">
             {TYPE_TABS.map(tp => (
-              <button key={tp.id}
+              <button type="button" key={tp.id}
                 onClick={() => { setType(tp.id); setSelectedCode(''); setSelectedCat(''); setAmount(''); }}
                 className={`flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all min-w-[70px] ${type === tp.id ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:border-primary/30'}`}>
                 {tp.label}
@@ -222,7 +222,7 @@ function AddHoldingModal({ onClose, onAdd, rates, goldData: _goldData, t, pricin
               </div>
               <div className="max-h-44 overflow-y-auto flex flex-col gap-1 rounded-xl border border-border p-1">
                 {filteredCurrencies.map(c => (
-                  <button key={c} onClick={() => setSelectedCode(c)}
+                  <button type="button" key={c} onClick={() => setSelectedCode(c)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${selectedCode === c ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary'}`}>
                     <CurrencyFlagIcon code={c} />
                     <span dir="ltr">{c}</span>
@@ -236,7 +236,7 @@ function AddHoldingModal({ onClose, onAdd, rates, goldData: _goldData, t, pricin
           {type === 'gold' && (
             <div className="grid grid-cols-3 gap-2">
               {GOLD_KARATS.map(k => (
-                <button key={k} onClick={() => setSelectedCode(k.toString())}
+                <button type="button" key={k} onClick={() => setSelectedCode(k.toString())}
                   className={`py-3 rounded-xl text-sm font-bold border-2 transition-all ${selectedCode === k.toString() ? 'bg-yellow-600 text-white border-yellow-600 shadow' : 'border-border hover:border-yellow-400'}`}>
                   عيار {k}
                 </button>
@@ -247,7 +247,7 @@ function AddHoldingModal({ onClose, onAdd, rates, goldData: _goldData, t, pricin
           {type === 'crypto' && (
             <div className="max-h-44 overflow-y-auto flex flex-col gap-1 rounded-xl border border-border p-1">
               {CRYPTO_LIST.map(c => (
-                <button key={c.id} onClick={() => setSelectedCode(c.symbol)}
+                <button type="button" key={c.id} onClick={() => setSelectedCode(c.symbol)}
                   className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${selectedCode === c.symbol ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary'}`}>
                   <span className="font-mono text-xs font-bold w-10 text-left" dir="ltr">{c.symbol}</span>
                   <span>{c.name}</span>
@@ -268,7 +268,7 @@ function AddHoldingModal({ onClose, onAdd, rates, goldData: _goldData, t, pricin
                 {COMMODITY_CATS.map(cat => {
                   const Icon = cat.icon;
                   return (
-                    <button key={cat.id} onClick={() => setSelectedCat(cat.id)}
+                    <button type="button" key={cat.id} onClick={() => setSelectedCat(cat.id)}
                       className="flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 transition-all"
                       style={selectedCat === cat.id
                         ? { background: cat.color + '25', borderColor: cat.color, boxShadow: `0 0 0 2px ${cat.color}40` }
@@ -397,7 +397,7 @@ export default function WalletPage() {
               <p className="text-primary-foreground/70 text-xs font-medium">إجمالي الممتلكات</p>
               <div className="flex rounded-lg overflow-hidden border border-white/20">
                 {(['SYP', 'USD'] as const).map(c => (
-                  <button key={c} onClick={() => setDisplayCurrency(c)}
+                  <button type="button" key={c} onClick={() => setDisplayCurrency(c)}
                     className={`px-3 py-1 text-xs font-bold transition-all ${displayCurrency === c ? 'bg-white/20' : ''}`}>
                     {c}
                   </button>
@@ -417,7 +417,7 @@ export default function WalletPage() {
 
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-base">{t('myHoldings')}</h3>
-          <button onClick={handleAddClick}
+          <button type="button" onClick={handleAddClick}
             className="flex items-center gap-1 bg-primary text-primary-foreground rounded-full px-3 py-1.5 text-xs font-bold shadow">
             <Plus className="w-3.5 h-3.5" /> {t('addHolding')}
           </button>
@@ -448,7 +448,7 @@ export default function WalletPage() {
                       <p className="font-bold text-sm text-primary">{formatNum(valueSYP, { decimals: 0 })} ل.س</p>
                       <p className="text-xs text-foreground/60 dark:text-white/70">${formatNum(valueUSD, { decimals: 2 })}</p>
                     </div>
-                    <button onClick={() => removeHolding(h.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors flex-shrink-0">
+                    <button type="button" onClick={() => removeHolding(h.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors flex-shrink-0">
                       <Trash2 className="w-4 h-4 text-destructive" />
                     </button>
                   </CardContent>

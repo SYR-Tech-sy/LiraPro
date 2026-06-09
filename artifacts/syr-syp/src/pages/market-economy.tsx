@@ -265,7 +265,7 @@ function DetailModal({ commodity, category, onClose, onAddAlert }: DetailModalPr
               <p className="text-[11px] text-muted-foreground">{commodity.nameEn} · لكل {commodity.unit}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-secondary transition-colors">
+          <button type="button" onClick={onClose} className="p-2 rounded-xl hover:bg-secondary transition-colors">
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
@@ -341,7 +341,7 @@ function DetailModal({ commodity, category, onClose, onAddAlert }: DetailModalPr
 
         {/* Actions */}
         <div className="mx-5 flex gap-2">
-          <button
+          <button type="button"
             onClick={onAddAlert}
             className="flex-1 flex items-center justify-center gap-2 h-12 rounded-2xl font-bold text-sm text-white transition-all active:scale-95"
             style={{ background: category.color }}
@@ -349,7 +349,7 @@ function DetailModal({ commodity, category, onClose, onAddAlert }: DetailModalPr
             <Bell className="w-4 h-4" />
             إضافة تنبيه سعري
           </button>
-          <button
+          <button type="button"
             onClick={onClose}
             className="h-12 px-4 rounded-2xl font-bold text-sm border border-border hover:bg-secondary transition-colors"
           >
@@ -444,7 +444,7 @@ export default function MarketEconomyPage() {
       {/* Location Filter Buttons */}
       <div className="flex gap-2 flex-wrap">
         {/* Locate me */}
-        <button
+        <button type="button"
           onClick={handleLocate}
           disabled={geoLoading}
           className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-[11px] font-bold border transition-all flex-shrink-0 bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
@@ -457,7 +457,7 @@ export default function MarketEconomyPage() {
 
         {/* Governorate picker */}
         <div className="relative" onClick={e => e.stopPropagation()}>
-          <button
+          <button type="button"
             onClick={() => setShowGovPicker(v => !v)}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl text-[11px] font-bold border transition-all flex-shrink-0 ${
               selectedGov
@@ -468,7 +468,7 @@ export default function MarketEconomyPage() {
             <MapPin className="w-3.5 h-3.5" />
             {selectedGov || 'اختيار المحافظة'}
             {selectedGov
-              ? <button onClick={e => { e.stopPropagation(); setSelectedGov(''); }} className="mr-0.5 hover:opacity-70"><X className="w-3 h-3" /></button>
+              ? <button type="button" onClick={e => { e.stopPropagation(); setSelectedGov(''); }} className="mr-0.5 hover:opacity-70"><X className="w-3 h-3" /></button>
               : <ChevronDown className="w-3 h-3 opacity-60" />}
           </button>
 
@@ -484,7 +484,7 @@ export default function MarketEconomyPage() {
               >
                 <div className="p-1 flex flex-col gap-0.5 max-h-60 overflow-y-auto">
                   {SYRIAN_GOVERNORATES.map(g => (
-                    <button
+                    <button type="button"
                       key={g}
                       onClick={() => { setSelectedGov(g); setShowGovPicker(false); }}
                       className={`text-right px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
@@ -523,7 +523,7 @@ export default function MarketEconomyPage() {
             <div className="flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-bold bg-primary/10 text-primary border border-primary/20">
               <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
               <span>عرض أسعار محافظة <strong>{selectedGov}</strong> — الأسعار مرجعية وقد تتفاوت حسب المنطقة</span>
-              <button onClick={() => setSelectedGov('')} className="mr-auto hover:opacity-70">
+              <button type="button" onClick={() => setSelectedGov('')} className="mr-auto hover:opacity-70">
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -537,7 +537,7 @@ export default function MarketEconomyPage() {
           const Icon = cat.icon;
           const isActive = activeCat === cat.id;
           return (
-            <button
+            <button type="button"
               key={cat.id}
               onClick={() => { setActiveCat(cat.id); setSearch(''); }}
               className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-[11px] font-bold flex-shrink-0 transition-all"
@@ -563,7 +563,7 @@ export default function MarketEconomyPage() {
           className="w-full pr-9 pl-9 h-10 rounded-xl border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
         {search && (
-          <button onClick={() => setSearch('')} className="absolute left-3 top-1/2 -translate-y-1/2">
+          <button type="button" onClick={() => setSearch('')} className="absolute left-3 top-1/2 -translate-y-1/2">
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
         )}

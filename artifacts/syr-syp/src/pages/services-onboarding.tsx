@@ -27,7 +27,7 @@ export default function ServicesOnboardingPage() {
     >
       {/* Back button */}
       <div className="flex items-center gap-3">
-        <button
+        <button type="button"
           onClick={() => navigate('/app/home')}
           className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
         >

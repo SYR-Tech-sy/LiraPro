@@ -291,7 +291,7 @@ function PriceFormModal({
         transition={{ type: 'spring', damping: 22, stiffness: 380, mass: 0.8 }}>
         <div className="sticky top-0 bg-card px-4 py-3 border-b border-border flex items-center justify-between flex-shrink-0">
           <h3 className="font-black text-sm">{editData ? 'تعديل السعر' : 'إضافة سعر جديد'}</h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-secondary rounded-lg"><X className="w-4 h-4" /></button>
+          <button type="button" onClick={onClose} className="p-1.5 hover:bg-secondary rounded-lg"><X className="w-4 h-4" /></button>
         </div>
 
         <form onSubmit={handleSave} className="flex flex-col overflow-y-auto">
@@ -577,7 +577,7 @@ export default function VendorDashboard() {
       <div className="sticky top-14 z-40 bg-background/95 backdrop-blur-xl border-b border-border/60 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/app/home">
-            <button className="p-1.5 hover:bg-secondary rounded-lg transition-colors">
+            <button type="button" className="p-1.5 hover:bg-secondary rounded-lg transition-colors">
               <ChevronLeft className="w-5 h-5 rotate-180" />
             </button>
           </Link>
@@ -585,7 +585,7 @@ export default function VendorDashboard() {
             <span className="font-black text-sm">{profile?.businessName ?? 'لوحة التاجر'}</span>
           </div>
         </div>
-        <button
+        <button type="button"
           onClick={() => void handleRefresh()}
           disabled={isRefreshing}
           className="p-2 hover:bg-secondary rounded-xl transition-colors disabled:opacity-60"
@@ -649,7 +649,7 @@ export default function VendorDashboard() {
             { id: 'prices', label: 'أسعاري', icon: DollarSign },
             { id: 'stats', label: 'الإحصائيات', icon: BarChart2 },
           ].map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id as 'prices' | 'stats')}
+            <button type="button" key={tab.id} onClick={() => setActiveTab(tab.id as 'prices' | 'stats')}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all ${
                 activeTab === tab.id ? 'bg-card shadow text-foreground' : 'text-muted-foreground'}`}>
               <tab.icon className="w-3.5 h-3.5" />
@@ -684,12 +684,12 @@ export default function VendorDashboard() {
                               {!p.isActive && <span className="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">غير نشط</span>}
                             </div>
                             <div className="flex items-center gap-1">
-                              <button onClick={() => { setEditPrice(p); setShowForm(true); }}
+                              <button type="button" onClick={() => { setEditPrice(p); setShowForm(true); }}
                                 className="flex items-center gap-1 px-2 py-1 hover:bg-primary/10 rounded-lg transition-colors">
                                 <Edit3 className="w-3.5 h-3.5 text-primary" />
                                 <span className="text-[10px] font-bold text-primary">تعديل</span>
                               </button>
-                              <button onClick={() => handleDelete(p.id)}
+                              <button type="button" onClick={() => handleDelete(p.id)}
                                 className="p-1.5 hover:bg-destructive/10 rounded-lg transition-colors">
                                 <Trash2 className="w-3.5 h-3.5 text-destructive" />
                               </button>

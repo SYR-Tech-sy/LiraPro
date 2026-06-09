@@ -46,7 +46,7 @@ export default function MetalsPage() {
         <span className="text-amber-700 dark:text-amber-300 text-xs leading-relaxed flex-1">
           هذه الأسعار وفق الأسعار العالمية، لعرض الأسعار المحلية انتقل إلى قسم الذهب.
         </span>
-        <button
+        <button type="button"
           onClick={() => navigate('/app/home?cat=gold')}
           className="flex items-center gap-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 px-2 py-1 rounded-xl border border-amber-300 dark:border-amber-600 bg-amber-100 dark:bg-amber-900/40 flex-shrink-0 hover:opacity-80 transition-opacity"
         >
