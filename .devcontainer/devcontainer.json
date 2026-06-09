@@ -1,0 +1,61 @@
+{
+  "name": "LiraPro Dev",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24"
+    }
+  },
+  "onCreateCommand": "npm install -g pnpm@9 && pnpm install",
+  "postCreateCommand": "pnpm run build 2>/dev/null || true",
+  "forwardPorts": [8080, 19371],
+  "portsAttributes": {
+    "8080": {
+      "label": "API Server",
+      "onAutoForward": "notify"
+    },
+    "19371": {
+      "label": "Frontend",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "secrets": {
+    "SUPABASE_URL": {
+      "description": "Supabase project URL (e.g. https://xxxx.supabase.co)",
+      "documentationUrl": "https://supabase.com/dashboard/project/_/settings/api"
+    },
+    "SUPABASE_ANON_KEY": {
+      "description": "Supabase anonymous/public key",
+      "documentationUrl": "https://supabase.com/dashboard/project/_/settings/api"
+    },
+    "SUPABASE_SERVICE_KEY": {
+      "description": "Supabase service role key (keep secret)",
+      "documentationUrl": "https://supabase.com/dashboard/project/_/settings/api"
+    },
+    "DATABASE_URL": {
+      "description": "PostgreSQL connection string (e.g. postgresql://user:pass@host:5432/db)"
+    },
+    "SESSION_SECRET": {
+      "description": "Random secret string for Express sessions (at least 32 characters)"
+    },
+    "METAL_PRICE_API_KEY": {
+      "description": "MetalPriceAPI key for gold/metal prices (optional)"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-typescript-next",
+        "drizzle-team.drizzle-vscode"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "typescript.tsdk": "node_modules/typescript/lib"
+      }
+    }
+  }
+}
