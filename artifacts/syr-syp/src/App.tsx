@@ -1,7 +1,8 @@
 import React, { lazy, Suspense, useState, useEffect, useRef, useMemo } from 'react';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect, Link } from 'wouter';
 import { QueryClientProvider, QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from 'sonner';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Moon, Sun, Menu, User, ArrowLeftRight, Home as HomeIcon, Gem, Coins, Settings, Shield, Info, LogOut, BarChart2, Bell, Wallet, Bitcoin, RefreshCw, CreditCard, Building2, Landmark, Store, ShieldX, Clock, Trash2, HelpCircle, MessageSquare } from 'lucide-react';
 import { LandingSimCard } from '@/components/landing-sim-card';
@@ -1353,6 +1354,86 @@ function AppSideEffects() {
     navigator.serviceWorker.addEventListener('message', handleMsg);
     return () => navigator.serviceWorker.removeEventListener('message', handleMsg);
   }, [isSignedIn, getToken]);
+
+  useEffect(() => {
+    const reported = new Set<string>();
+    const reportError = async (payload: {
+      message: string;
+      url: string;
+      page: string;
+      stack?: string;
+      userId?: string;
+      userName?: string;
+      userEmail?: string;
+      meta?: Record<string, unknown>;
+    }) => {
+      try {
+        const signature = `${payload.message}::${payload.stack ?? ''}::${payload.url}`;
+        if (reported.has(signature)) return;
+        reported.add(signature);
+        await fetch('/api/errors', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        toast.success('تم إرسال المشكلة إلى الفريق، وسيُعمل على حلها.');
+      } catch {
+        // ignore reporting failures
+      }
+    };
+
+    const handleError = (event: ErrorEvent) => {
+      if (!event || event.message === 'Script error.') return;
+      const page = window.location.pathname + window.location.search;
+      const userName = user?.user_metadata?.full_name as string | undefined ?? user?.user_metadata?.first_name as string | undefined;
+      reportError({
+        message: event.message || 'Unknown error',
+        url: event.filename || page,
+        page,
+        stack: event.error?.stack ?? undefined,
+        userId: user?.id,
+        userName,
+        userEmail: user?.email ?? undefined,
+        meta: {
+          lineno: event.lineno,
+          colno: event.colno,
+          userAgent: navigator.userAgent,
+        },
+      });
+    };
+
+    const handleRejection = (event: PromiseRejectionEvent) => {
+      const reason = event.reason;
+      const message = typeof reason === 'string'
+        ? reason
+        : reason instanceof Error
+          ? reason.message
+          : JSON.stringify(reason ?? 'Unhandled rejection');
+      const stack = reason instanceof Error ? reason.stack : undefined;
+      const page = window.location.pathname + window.location.search;
+      const userName = user?.user_metadata?.full_name as string | undefined ?? user?.user_metadata?.first_name as string | undefined;
+      reportError({
+        message: `Unhandled promise rejection: ${message}`,
+        url: page,
+        page,
+        stack,
+        userId: user?.id,
+        userName,
+        userEmail: user?.email ?? undefined,
+        meta: {
+          userAgent: navigator.userAgent,
+        },
+      });
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleRejection);
+    };
+  }, [user]);
 
   return null;
 }

@@ -14,13 +14,13 @@ import {
   PersonStanding, Store, Inbox, ClipboardList, ClipboardCheck,
   Megaphone, Radio,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useGetExchangeRates, useGetGoldPrices } from '@workspace/api-client-react';
 import { AdminBadge, RainbowBadge, GoldenBadge, BlueBadge, ChatBadge } from '@/components/golden-badge';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast as _toast } from 'sonner';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -45,6 +45,7 @@ const TABS = [
   { id: 'tickets', label: 'التذاكر', icon: LifeBuoy },
   { id: 'notifications', label: 'الإشعارات', icon: Bell },
   { id: 'messages', label: 'الرسائل', icon: MessageSquare },
+  { id: 'errors', label: 'الأخطاء', icon: AlertOctagon },
   { id: 'system', label: 'النظام', icon: Settings },
   { id: 'suspicious', label: 'مشبوه', icon: AlertTriangle },
 ];
@@ -157,6 +158,31 @@ interface VerifyRequest {
   requestedAt: string;
   status: 'pending' | 'approved' | 'rejected';
   approvedAt?: string;
+}
+
+interface LoggedErrorOccurrence {
+  id: string;
+  ts: string;
+  message: string;
+  stack?: string;
+  context?: string;
+}
+
+interface LoggedError {
+  id: string;
+  userId?: string;
+  userName?: string;
+  userEmail?: string;
+  page?: string;
+  url: string;
+  message: string;
+  stack?: string;
+  meta?: unknown;
+  status: 'new' | 'investigating' | 'resolved';
+  createdAt: string;
+  updatedAt: string;
+  count: number;
+  occurrences: LoggedErrorOccurrence[];
 }
 
 const GOVERNORATES = ['إدلب','دمشق','ريف دمشق','حلب','حمص','حماة','اللاذقية','طرطوس','دير الزور','الرقة','الحسكة','درعا','السويداء','القنيطرة'];
@@ -1340,6 +1366,23 @@ async function adminFetchVerifyRequests(token: string) {
     return all.sort((a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime());
   } catch { return [] as VerifyRequest[]; }
 }
+async function adminFetchErrors(token: string): Promise<LoggedError[]> {
+  try {
+    const res = await fetch('/api/admin/errors', { headers: { 'X-Admin-Token': token } });
+    if (!res.ok) return [];
+    return res.json() as Promise<LoggedError[]>;
+  } catch {
+    return [];
+  }
+}
+async function adminUpdateErrorStatus(token: string, id: string, status: LoggedError['status']) {
+  const res = await fetch(`/api/admin/errors/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+    body: JSON.stringify({ status }),
+  });
+  return res.ok;
+}
 async function adminFetchVendorPrices(supabaseId: string, token: string) {
   const res = await fetch(`/api/admin/vendors/${supabaseId}/prices`, { headers: { 'X-Admin-Token': token } });
   if (!res.ok) return [];
@@ -1385,6 +1428,9 @@ export default function AdminPage() {
   // adminFetchAdminMessages kept for future use; messages now stored in localStorage via localSentMsgs
   void adminFetchAdminMessages;
   const { data: verifyRequests = [] } = useQuery({ queryKey: ['admin-verify-reqs', token], queryFn: () => adminFetchVerifyRequests(token!), enabled: !!token, refetchInterval: 15000, staleTime: 0, refetchOnMount: true });
+  const { data: adminErrors = [] } = useQuery({ queryKey: ['admin-errors', token], queryFn: () => adminFetchErrors(token!), enabled: !!token, refetchInterval: 15000, staleTime: 0 });
+  const [errorsFilter, setErrorsFilter] = useState<'all' | 'new' | 'investigating' | 'resolved'>('all');
+  const [updatingErrorStatus, setUpdatingErrorStatus] = useState<string | null>(null);
   const [vendorAppFilter, setVendorAppFilter] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
   const [createVendorOpen, setCreateVendorOpen] = useState(false);
   const [vendorForm, setVendorForm] = useState({ supabaseId: '', businessName: '', fullName: '', email: '', phone: '', governorate: '', city: '', address: '', category: '', trustScore: '50', logoUrl: '' });
@@ -2739,6 +2785,21 @@ export default function AdminPage() {
     } catch { return 0; }
   })();
 
+  const pendingErrors = adminErrors.filter(e => e.status === 'new').length;
+  const filteredErrors = adminErrors
+    .filter(e => errorsFilter === 'all' ? true : e.status === errorsFilter)
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+  const changeErrorStatus = async (errorId: string, status: LoggedError['status']) => {
+    if (!token) return;
+    setUpdatingErrorStatus(errorId);
+    const ok = await adminUpdateErrorStatus(token, errorId, status);
+    setUpdatingErrorStatus(null);
+    if (ok) {
+      queryClient.invalidateQueries({ queryKey: ['admin-errors', token] });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f1f5f9] dark:bg-background" dir="rtl">
 
@@ -2774,8 +2835,25 @@ export default function AdminPage() {
             const isActive = activeTab === tab.id;
             const pendingVerify = verifyRequests.filter(r => r.status === 'pending').length;
             const totalRequestsBadge = pendingReqs + pendingVerify;
-            const hasBadge = (tab.id === 'requests' && totalRequestsBadge > 0) || (tab.id === 'applications' && (pendingApps > 0 || newEvents.applications > 0)) || (tab.id === 'support' && pendingSupportMsgs > 0) || (tab.id === 'tickets' && pendingTickets > 0) || (tab.id === 'users' && newEvents.users > 0);
-            const badgeCount = tab.id === 'requests' ? totalRequestsBadge : tab.id === 'applications' ? (pendingApps + newEvents.applications) : tab.id === 'support' ? pendingSupportMsgs : tab.id === 'tickets' ? pendingTickets : tab.id === 'users' ? newEvents.users : 0;
+            const hasBadge = (tab.id === 'requests' && totalRequestsBadge > 0)
+              || (tab.id === 'applications' && (pendingApps > 0 || newEvents.applications > 0))
+              || (tab.id === 'support' && pendingSupportMsgs > 0)
+              || (tab.id === 'tickets' && pendingTickets > 0)
+              || (tab.id === 'errors' && pendingErrors > 0)
+              || (tab.id === 'users' && newEvents.users > 0);
+            const badgeCount = tab.id === 'requests'
+              ? totalRequestsBadge
+              : tab.id === 'applications'
+                ? (pendingApps + newEvents.applications)
+                : tab.id === 'support'
+                  ? pendingSupportMsgs
+                  : tab.id === 'tickets'
+                    ? pendingTickets
+                    : tab.id === 'errors'
+                      ? pendingErrors
+                      : tab.id === 'users'
+                        ? newEvents.users
+                        : 0;
             return (
               <button type="button"
                 key={tab.id}
@@ -4279,6 +4357,123 @@ export default function AdminPage() {
             <motion.div key="tickets" variants={tabVariants} initial="hidden" animate="visible" exit="exit"
               className="flex flex-col gap-4">
               <AdminTicketsPanel onOpenConv={userId => { setSupportInitUserId(userId); setActiveTab('support'); }} />
+            </motion.div>
+          )}
+
+          {activeTab === 'errors' && (
+            <motion.div key="errors" variants={tabVariants} initial="hidden" animate="visible" exit="exit"
+              className="flex flex-col gap-4">
+              <Card className="border-border shadow-sm overflow-hidden">
+                <div className="px-4 py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between border-b border-border">
+                  <div className="flex items-center gap-2">
+                    <AlertOctagon className="w-4 h-4 text-amber-600" />
+                    <span className="font-bold text-sm">لوحة الأخطاء</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {(['all','new','investigating','resolved'] as const).map(status => (
+                      <button key={status} type="button"
+                        onClick={() => setErrorsFilter(status)}
+                        className={`rounded-full px-3 py-2 text-[11px] font-bold transition ${errorsFilter === status ? 'bg-primary text-white' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}>
+                        {status === 'all' ? 'الكل' : status === 'new' ? 'جديدة' : status === 'investigating' ? 'قيد التحقيق' : 'محلولة'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <CardContent className="p-4 flex flex-col gap-4">
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                    <Badge variant="outline" className="justify-between min-w-0 gap-2">
+                      <span>إجمالي الأخطاء</span>
+                      <span className="font-black">{adminErrors.length}</span>
+                    </Badge>
+                    <Badge variant="outline" className="justify-between min-w-0 gap-2">
+                      <span>جديدة</span>
+                      <span className="font-black">{pendingErrors}</span>
+                    </Badge>
+                    <Badge variant="outline" className="justify-between min-w-0 gap-2">
+                      <span>قيد التحقيق</span>
+                      <span className="font-black">{adminErrors.filter(e => e.status === 'investigating').length}</span>
+                    </Badge>
+                    <Badge variant="outline" className="justify-between min-w-0 gap-2">
+                      <span>محلولة</span>
+                      <span className="font-black">{adminErrors.filter(e => e.status === 'resolved').length}</span>
+                    </Badge>
+                  </div>
+                  <div className="text-xs text-muted-foreground">عرض: {errorsFilter === 'all' ? 'الكل' : errorsFilter === 'new' ? 'جديدة' : errorsFilter === 'investigating' ? 'قيد التحقيق' : 'محلولة'}</div>
+                  {filteredErrors.length === 0 ? (
+                    <div className="text-center py-12">
+                      <AlertOctagon className="w-10 h-10 mx-auto text-muted-foreground" />
+                      <p className="text-sm font-bold mt-3">لا توجد أخطاء في الوقت الحالي</p>
+                      <p className="text-xs text-muted-foreground mt-1">سيظهر سجل الأخطاء هنا بمجرد اكتشاف مشكلة جديدة.</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      {filteredErrors.slice(0, 20).map(error => (
+                        <Card key={error.id} className="border-border shadow-sm">
+                          <CardHeader className="px-4 py-3">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                              <div className="flex flex-col gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Badge variant={error.status === 'new' ? 'destructive' : error.status === 'investigating' ? 'secondary' : 'default'}>
+                                    {error.status === 'new' ? 'جديدة' : error.status === 'investigating' ? 'قيد التحقيق' : 'محلولة'}
+                                  </Badge>
+                                  <span className="text-xs text-muted-foreground">عدد الظهور: {error.count}</span>
+                                </div>
+                                <p className="text-sm font-black text-foreground break-words">{error.message}</p>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {(['new','investigating','resolved'] as const).map(status => (
+                                  <button key={status} type="button"
+                                    onClick={() => void changeErrorStatus(error.id, status)}
+                                    disabled={updatingErrorStatus === error.id || error.status === status}
+                                    className={`rounded-xl px-3 py-2 text-[11px] font-bold transition ${error.status === status ? 'bg-primary text-white' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'} ${updatingErrorStatus === error.id ? 'opacity-70 cursor-wait' : ''}`}>
+                                    {status === 'new' ? 'جديدة' : status === 'investigating' ? 'قيد التحقيق' : 'محلولة'}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="px-4 py-3 space-y-3">
+                            <div className="grid gap-2 sm:grid-cols-3">
+                              <div className="text-xs text-muted-foreground">
+                                <span className="font-semibold text-foreground">الصفحة:</span> {error.page ?? error.url}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                <span className="font-semibold text-foreground">آخر تحديث:</span> {new Date(error.updatedAt).toLocaleString('ar-SY', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                <span className="font-semibold text-foreground">آخر حدث:</span> {error.occurrences.length > 0 ? new Date(error.occurrences[0].ts).toLocaleString('ar-SY', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
+                              </div>
+                            </div>
+                            {(error.userId || error.userName || error.userEmail) && (
+                              <div className="text-xs text-muted-foreground">
+                                <span className="font-semibold text-foreground">المستخدم:</span>
+                                {error.userName ? ` ${error.userName}` : ''}{error.userEmail ? ` (${error.userEmail})` : ''}{error.userId ? ` — ${error.userId}` : ''}
+                              </div>
+                            )}
+                            <div className="text-xs text-muted-foreground break-words">
+                              <span className="font-semibold text-foreground">الرابط:</span>
+                              <a href={error.url} target="_blank" rel="noreferrer" className="text-primary underline break-all">{error.url}</a>
+                            </div>
+                            {error.stack && (
+                              <details className="rounded-2xl border border-border bg-secondary/40 p-3 text-xs text-muted-foreground">
+                                <summary className="cursor-pointer font-semibold">عرض أثر الاستدعاء</summary>
+                                <pre className="whitespace-pre-wrap break-words mt-2 text-[11px] leading-snug">{error.stack}</pre>
+                              </details>
+                            )}
+                          </CardContent>
+                          <CardFooter className="px-4 py-3 bg-slate-50 dark:bg-slate-900/40">
+                            <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+                              <span>عدد الوقائع: {error.occurrences.length}</span>
+                              <span>حدثت لأول مرة: {new Date(error.createdAt).toLocaleDateString('ar-SY', { month: 'short', day: 'numeric' })}</span>
+                              <span className="text-xs">{error.occurrences.length > 0 ? `آخر سياق: ${error.occurrences[0].context ?? 'غير متوفر'}` : ''}</span>
+                            </div>
+                          </CardFooter>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </motion.div>
           )}
 

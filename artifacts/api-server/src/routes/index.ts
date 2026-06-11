@@ -22,6 +22,7 @@ import applicationsRouter from "./applications";
 import verifyRequestsRouter from "./verify-requests";
 import supportChatRouter from "./support-chat";
 import supportTicketsRouter from "./support-tickets";
+import errorsRouter from "./errors";
 import avatarRouter from "./avatar";
 import downloadRouter from "./download";
 import pushRouter from "./push";
@@ -59,6 +60,8 @@ router.use(verifyRequestsRouter);
 
 // Support tickets (backend storage)
 router.use(supportTicketsRouter);
+// Error logging and admin error dashboard
+router.use(errorsRouter);
 // AI support chat + avatar upload
 router.use(supportChatRouter);
 router.use(avatarRouter);

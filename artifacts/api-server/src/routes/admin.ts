@@ -12,7 +12,7 @@ const router = Router();
 
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "SYRSYP2026ADMIN";
 
-function verifyAdmin(req: Request, res: Response): boolean {
+export function verifyAdmin(req: Request, res: Response): boolean {
   const token = req.headers["x-admin-token"];
   if (token !== ADMIN_TOKEN) {
     res.status(401).json({ error: "Unauthorized" });
